@@ -45,7 +45,7 @@ def generate_checksum_dict(root, filenames):
     return checksum_dict
 
 
-def main(path):
+def main(path, no_action, recursive):
     from pprint import pprint
 
     for root, dirs, filenames in os.walk(path):
@@ -56,7 +56,14 @@ def main(path):
             if len(hashes[hash]) > 1:
                 for pair in itertools.combinations(hashes[hash], 2):
                     if compare_filename(*pair):
-                        print(pick_basename(*pair))
+                        orig, dup = pick_basename(*pair)
+                        if no_action:
+                            print('{0} skipped\n{1} deleted'.format(orig, dup))
+                        else:
+                            pass
+        
+        if not recursive:
+            break
 
 
 if __name__ == '__main__':
@@ -64,6 +71,12 @@ if __name__ == '__main__':
     parser.add_argument(
         '-p', '--path', required=True,
         help='This is the path you want to run the checker against')
+    parser.add_argument(
+        '-n', '--no-action', default=False, action='store_true',
+        help='This will print the output without changing anyfiles')
+    parser.add_argument(
+        '-r', '--recursive', default=False, action='store_true',
+        help='This option toggles whether the program should search recursively')
     args = parser.parse_args()
 
-    main(args.path)
+    main(args.path, args.no_action, args.recursive)
