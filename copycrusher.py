@@ -2,8 +2,9 @@
 import os
 import hashlib
 import argparse
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 
+Filename = namedtuple('Filename', ['name', 'ext'])
 
 def generate_checksum(filename):
     md5 = hashlib.md5()
@@ -12,6 +13,15 @@ def generate_checksum(filename):
             md5.update(chunk)
     return md5.digest()
 
+def is_substring(string1, string2):
+    length = min(len(string1), len(string2))
+    return string1[:length] == string2[:length]
+
+def compare_filename(file1, file2):
+    filename1 = Filename(os.path.splitext(file1))
+    filename2 = Filename(os.path.splitext(file2))
+
+    return is_substring(filename1.name, filename2.name) and is_substring(filename1.ext, filename2.ext)
 
 def generate_checksum_dict(path):
     checksum_dict = defaultdict(list)
@@ -26,6 +36,7 @@ def generate_checksum_dict(path):
 def main(path):
     from pprint import pprint
     hashes = generate_checksum_dict(path)
+
 
 
 if __name__ == '__main__':
