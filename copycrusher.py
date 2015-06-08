@@ -22,8 +22,8 @@ def is_substring(string1, string2):
 
 
 def compare_filename(file1, file2):
-    filename1 = Filename(os.path.splitext(file1))
-    filename2 = Filename(os.path.splitext(file2))
+    filename1 = Filename(*os.path.splitext(file1))
+    filename2 = Filename(*os.path.splitext(file2))
 
     return is_substring(filename1.name, filename2.name) and is_substring(
         filename1.ext, filename2.ext)
