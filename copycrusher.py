@@ -29,6 +29,12 @@ def compare_filename(file1, file2):
         filename1.ext, filename2.ext)
 
 
+def pick_basename(file1, file2):
+    if len(file1) > len(file2):
+        return file2, file1
+    else:
+        return file1, file2
+
 def generate_checksum_dict(root, filenames):
     checksum_dict = defaultdict(list)
 
@@ -50,7 +56,7 @@ def main(path):
             if len(hashes[hash]) > 1:
                 for pair in itertools.combinations(hashes[hash], 2):
                     if compare_filename(*pair):
-                        print(pair)
+                        print(pick_basename(*pair))
 
 
 if __name__ == '__main__':
