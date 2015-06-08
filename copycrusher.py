@@ -60,7 +60,7 @@ def main(path, no_action, recursive):
                         if no_action:
                             print('{0} skipped\n{1} deleted'.format(orig, dup))
                         else:
-                            pass
+                            os.remove(dup)
         
         if not recursive:
             break
