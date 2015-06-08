@@ -54,7 +54,7 @@ def main(path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-p', '--path',
+        '-p', '--path', required=True,
         help='This is the path you want to run the checker against')
     args = parser.parse_args()
 
