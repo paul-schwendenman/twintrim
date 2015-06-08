@@ -1,6 +1,9 @@
 #! /usr/bin/env python3
 import os
 import hashlib
+import argparse
+from collections import defaultdict
+
 
 def generate_checksum(filename):
     md5 = hashlib.md5()
@@ -9,24 +12,25 @@ def generate_checksum(filename):
             md5.update(chunk)
     return md5.digest()
 
+
 def generate_checksum_dict(path):
-    checksum_dict = {}
+    checksum_dict = defaultdict(list)
 
     for root, dirs, filenames in os.walk(path):
         for filename in filenames:
-	    print filename
-            checksum_dict[filename] = generate_checksum(filename)
-            
+            checksum_dict[generate_checksum(os.path.join(root, filename))].append(filename)
+
     return checksum_dict
 
 
-def main():
+def main(path):
     from pprint import pprint
-    #pprint(generate_checksum_dict('/home/paul/downloads'))
-    pprint(generate_checksum_dict('.'))
-                
+    hashes = generate_checksum_dict(path)
 
-    
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--path', help='This is the path you want to run the checker against')
+    args = parser.parse_args()
+
+    main(args.path)
