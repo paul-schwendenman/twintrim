@@ -2,6 +2,7 @@
 import os
 import hashlib
 import argparse
+import itertools
 from collections import defaultdict, namedtuple
 
 Filename = namedtuple('Filename', ['name', 'ext'])
@@ -42,6 +43,12 @@ def generate_checksum_dict(path):
 def main(path):
     from pprint import pprint
     hashes = generate_checksum_dict(path)
+
+    for hash in hashes:
+        if len(hashes[hash]) > 1:
+            for pair in itertools.combinations(hashes[hash], 2):
+                if compare_filename(*pair):
+                    print(pair)
 
 
 if __name__ == '__main__':
