@@ -26,9 +26,13 @@ def is_substring(string1, string2):
     return string1[:length] == string2[:length]
 
 
-def compare_filename(file1, file2):
+def compare_filename_name(file1, file2):
     return is_substring(file1.base, file2.base) and is_substring(
         file1.ext, file2.ext)
+
+
+def compare_filename_checksum(file1, file2):
+    return generate_checksum(file1.path) == generate_checksum(file2.path)
 
 
 def pick_basename(file1, file2):
@@ -54,7 +58,7 @@ def generate_filename_dict(filenames):
     for filename in filenames:
         match = regex.match(filename.name)
         if match:
-            filename_dict[''.join(match.group(1, 4))].append(filename.name)
+            filename_dict[''.join(match.group(1, 4))].append(filename)
 
     return filename_dict
 
@@ -66,7 +70,17 @@ def main(path, no_action, recursive):
         if not recursive and root != path:
             continue
         hashes = generate_filename_dict(create_filenames(filenames, root))
-        pprint(hashes)
+
+        for hash in hashes:
+            if len(hashes[hash]) > 1:
+                for pair in itertools.combinations(hashes[hash], 2):
+                    if compare_filename_checksum(*pair):
+                        orig, dup = pick_basename(*pair)
+                        if no_action:
+                            #print('{1} deleted'.format(orig.name, dup.name))
+                            print('{1} deleted. {0} kept'.format(orig.name, dup.name))
+                        else:
+                            os.remove(dup.path)
 
 
 def mmain(path, no_action, recursive):
@@ -81,7 +95,7 @@ def mmain(path, no_action, recursive):
         for hash in hashes:
             if len(hashes[hash]) > 1:
                 for pair in itertools.combinations(hashes[hash], 2):
-                    if compare_filename(*pair):
+                    if compare_filename_name(*pair):
                         orig, dup = pick_basename(*pair)
                         if no_action:
                             print('{1} deleted'.format(orig.name, dup.name))
