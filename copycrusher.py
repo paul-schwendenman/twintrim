@@ -57,7 +57,7 @@ def main(path, no_action, recursive):
                     if compare_filename(*pair):
                         orig, dup = pick_basename(*pair)
                         if no_action:
-                            print('{0} skipped\n{1} deleted'.format(orig.name, dup.name))
+                            print('{1} deleted'.format(orig.name, dup.name))
                         else:
                             os.remove(dup.path)
         
