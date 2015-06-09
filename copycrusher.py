@@ -36,7 +36,7 @@ def compare_filename_checksum(file1, file2):
 
 
 def pick_basename(file1, file2):
-    if len(file1) > len(file2):
+    if len(file1.name) > len(file2.name):
         return file2, file1
     else:
         return file1, file2
@@ -77,8 +77,8 @@ def main(path, no_action, recursive):
                     if compare_filename_checksum(*pair):
                         orig, dup = pick_basename(*pair)
                         if no_action:
-                            #print('{1} deleted'.format(orig.name, dup.name))
-                            print('{1} deleted. {0} kept'.format(orig.name, dup.name))
+                            print('{1} deleted'.format(orig.name, dup.name))
+                            #print('{1} deleted. {0} kept'.format(orig.name, dup.name))
                         else:
                             os.remove(dup.path)
 
