@@ -148,7 +148,8 @@ def main(path, no_action, recursive, generate_dict, compare_filename):
                     if compare_filename(*pair):
                         orig, dup = pick_basename(*pair)
                         if no_action:
-                            print('{1} to be deleted'.format(orig.name, dup.name))
+                            print('{1} to be deleted'.format(orig.name,
+                                                             dup.name))
                             logger.info('{1} would have been deleted'.format(
                                 orig.name, dup.name))
                         else:
