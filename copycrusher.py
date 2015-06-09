@@ -164,8 +164,7 @@ def main(path, no_action, recursive, generate_dict, compare_filename):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-p', '--path',
-        required=True,
+        'path',
         help='This is the path you want to run the checker against')
     parser.add_argument(
         '-n', '--no-action',
