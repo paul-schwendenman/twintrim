@@ -9,7 +9,6 @@ from collections import defaultdict, namedtuple
 
 logger = logging.getLogger('')
 
-
 Filename = namedtuple('Filename', ['name', 'base', 'ext', 'path'])
 
 
@@ -54,7 +53,9 @@ def is_substring(string1, string2):
 
     '''
     length = min(len(string1), len(string2))
-    logger.debug("Testing {0}[{1}] and {2}[{3}] -> {4}".format(string1[:length], string1[length:], string2[:length], string2[length:], string1[:length] == string2[:length]))
+    logger.debug("Testing {0}[{1}] and {2}[{3}] -> {4}".format(
+        string1[:length], string1[length:], string2[:length], string2[length:],
+        string1[:length] == string2[:length]))
     return string1[:length] == string2[:length]
 
 
@@ -62,7 +63,8 @@ def compare_filename_name(file1, file2):
     '''
     Uses is_substring to determine if both base and extension match.
     '''
-    logger.info("Comparing {0} and {1} by substring".format(file1.path, file2.path))
+    logger.info("Comparing {0} and {1} by substring".format(file1.path,
+                                                            file2.path))
     return is_substring(file1.base, file2.base) and is_substring(file1.ext,
                                                                  file2.ext)
 
@@ -71,7 +73,8 @@ def compare_filename_checksum(file1, file2):
     '''
     Uses the generate_checksum function to compare two files
     '''
-    logger.info("Comparing {0} and {1} by checksum".format(file1.path, file2.path))
+    logger.info("Comparing {0} and {1} by checksum".format(file1.path,
+                                                           file2.path))
     return generate_checksum(file1.path) == generate_checksum(file2.path)
 
 
@@ -82,7 +85,8 @@ def pick_basename(file1, file2):
     It picks "file.txt" over "file (1).txt", but beware it also picks
     "f.txt" over "file.txt".
     '''
-    logger.debug("Finding the shortest of {0} and {1}".format(file1.name, file2.name))
+    logger.debug("Finding the shortest of {0} and {1}".format(file1.name,
+                                                              file2.name))
     if len(file1.name) > len(file2.name):
         return file2, file1
     else:
@@ -116,8 +120,10 @@ def generate_filename_dict(filenames):
     for filename in filenames:
         match = regex.match(filename.name)
         if match:
-            logger.debug('Matches for {0}: {1}'.format(filename, ' ,'.join(match.groups())))
-            logger.info("Found a match for {0} adding to key {1}".format(filename, ''.join(match.group(1, 4))))
+            logger.debug('Matches for {0}: {1}'.format(
+                filename, ' ,'.join(match.groups())))
+            logger.info("Found a match for {0} adding to key {1}".format(
+                filename, ''.join(match.group(1, 4))))
             filename_dict[''.join(match.group(1, 4))].append(filename)
 
     return filename_dict
@@ -136,19 +142,25 @@ def main(path, no_action, recursive, generate_dict, compare_filename):
         for hash in hashes:
             if len(hashes[hash]) > 1:
                 logger.info("Investigating duplicate hash {0}".format(hash))
-                logger.debug("Keys for {0} are {1}".format(hash, ' ,'.join(hashes[hash])))
+                logger.debug("Keys for {0} are {1}".format(
+                    hash, ' ,'.join(hashes[hash])))
                 for pair in itertools.combinations(hashes[hash], 2):
                     if compare_filename(*pair):
                         orig, dup = pick_basename(*pair)
-                        logger.debug("Duplicate pair found {0} and {1}".format(orig, dup))
+                        logger.debug("Duplicate pair found {0} and {1}".format(
+                            orig, dup))
                         if no_action:
                             print('{1} deleted'.format(orig.name, dup.name))
-                            logger.info('{1} would have been deleted'.format(orig.name, dup.name))
+                            logger.info('{1} would have been deleted'.format(
+                                orig.name, dup.name))
                         else:
-                            logger.info('{1} was deleted'.format(orig.name, dup.name))
+                            logger.info('{1} was deleted'.format(orig.name,
+                                                                 dup.name))
                             os.remove(dup.path)
             else:
-                logger.debug('Skipping non duplicate hash {0} for key {1}'.format(hash, ' ,'.join(hashes[hash])))
+                logger.debug(
+                    'Skipping non duplicate hash {0} for key {1}'.format(
+                        hash, ' ,'.join(hashes[hash])))
 
 
 if __name__ == '__main__':
@@ -173,19 +185,16 @@ if __name__ == '__main__':
         action='store_true',
         help=
         'This option toggles whether the program searchs first by checksum rather than name')
-    parser.add_argument(
-        '--verbosity',
-        type=int,
-        default=0,
-        help='Set debug level')
-    parser.add_argument(
-        '--log-file',
-        help='This option sets a log file to write.')
-    parser.add_argument(
-        '--log-level',
-        type=int,
-        default=3,
-        help='Set debug level in log file')
+    parser.add_argument('--verbosity',
+                        type=int,
+                        default=0,
+                        help='Set debug level')
+    parser.add_argument('--log-file',
+                        help='This option sets a log file to write.')
+    parser.add_argument('--log-level',
+                        type=int,
+                        default=3,
+                        help='Set debug level in log file')
     args = parser.parse_args()
 
     if args.log_level and not args.log_file:
@@ -193,7 +202,8 @@ if __name__ == '__main__':
 
     stream = logging.StreamHandler()
     stream.setLevel(args.verbosity * 10)
-    formatter_simple = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    formatter_simple = logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(message)s')
     stream.setFormatter(formatter_simple)
     logger.addHandler(stream)
 
