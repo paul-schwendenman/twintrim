@@ -4,7 +4,10 @@ import hashlib
 import argparse
 import itertools
 import re
+import logging
 from collections import defaultdict, namedtuple
+
+logger = logging.getLogger('')
 
 
 Filename = namedtuple('Filename', ['name', 'base', 'ext', 'path'])
@@ -153,7 +156,23 @@ if __name__ == '__main__':
         action='store_true',
         help=
         'This option toggles whether the program searchs first by checksum rather than name')
+    parser.add_argument(
+        '--verbosity',
+        type=int,
+        default=0,
+        help='Set debug level')
+    parser.add_argument(
+        '--log-file',
+        help='This option sets a log file to write.')
+    parser.add_argument(
+        '--log-level',
+        type=int,
+        default=3,
+        help='Set debug level in log file')
     args = parser.parse_args()
+
+    if args.log_level and not args.log_file:
+        parser.error('Log level set without log file')
 
     if args.checksum:
         main(args.path, args.no_action, args.recursive, generate_checksum_dict,
