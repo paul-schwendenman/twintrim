@@ -14,7 +14,7 @@ Filename = namedtuple('Filename', ['name', 'base', 'ext', 'path'])
 
 def create_filenames(filenames, root):
     '''
-    Makes a genrator that yields Filename objects
+    Makes a generator that yields Filename objects
 
     Filename objects are a helper to allow multiple representations
     of the same file to be transfered cleanly.
@@ -52,11 +52,7 @@ def is_substring(string1, string2):
         is_substring('that', 'this')  -> False
 
     '''
-    length = min(len(string1), len(string2))
-    logger.debug("Testing {0}[{1}] and {2}[{3}] -> {4}".format(
-        string1[:length], string1[length:], string2[:length], string2[length:],
-        string1[:length] == string2[:length]))
-    return string1[:length] == string2[:length]
+    return string1 in string2 or string2 in string1
 
 
 def compare_filename_name(file1, file2):
@@ -80,7 +76,8 @@ def compare_filename_checksum(file1, file2):
 
 def pick_basename(file1, file2):
     '''
-    This convience will help to find the shorter (often better) filename
+    This convenience function will help to find the shorter (often better)
+    filename
 
     It picks "file.txt" over "file (1).txt", but beware it also picks
     "f.txt" over "file.txt".
