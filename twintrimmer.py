@@ -156,6 +156,9 @@ def main(path, no_action, recursive, generate_dict, compare_filename):
                             logger.info('{1} was deleted'.format(orig.name,
                                                                  dup.name))
                             os.remove(dup.path)
+                    else:
+                        logger.info('Files {0} and {1} did not match'.format(
+                            pair[0].name, pair[1].name))
             else:
                 logger.debug(
                     'Skipping non duplicate hash {0} for key {1}'.format(
