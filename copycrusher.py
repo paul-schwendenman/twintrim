@@ -5,8 +5,11 @@ import argparse
 import itertools
 from collections import defaultdict, namedtuple
 
-Filename = namedtuple('Filename', ['name', 'ext'])
+Filename = namedtuple('Filename', ['name', 'base', 'ext', 'path'])
 
+def create_filenames(filenames, root):
+    for filename in filenames:
+        yield Filename(filename, *os.path.splitext(filename), path=os.path.join(root, filename))
 
 def generate_checksum(filename):
     md5 = hashlib.md5()
@@ -22,11 +25,8 @@ def is_substring(string1, string2):
 
 
 def compare_filename(file1, file2):
-    filename1 = Filename(*os.path.splitext(file1))
-    filename2 = Filename(*os.path.splitext(file2))
-
-    return is_substring(filename1.name, filename2.name) and is_substring(
-        filename1.ext, filename2.ext)
+    return is_substring(file1.base, file2.base) and is_substring(
+        file1.ext, file2.ext)
 
 
 def pick_basename(file1, file2):
@@ -35,12 +35,11 @@ def pick_basename(file1, file2):
     else:
         return file1, file2
 
-def generate_checksum_dict(root, filenames):
+def generate_checksum_dict(filenames):
     checksum_dict = defaultdict(list)
 
     for filename in filenames:
-        checksum_dict[generate_checksum(
-            os.path.join(root, filename))].append(filename)
+        checksum_dict[generate_checksum(filename.path)].append(filename)
 
     return checksum_dict
 
@@ -49,7 +48,7 @@ def main(path, no_action, recursive):
     from pprint import pprint
 
     for root, dirs, filenames in os.walk(path):
-        hashes = generate_checksum_dict(root, filenames)
+        hashes = generate_checksum_dict(create_filenames(filenames, root))
         #pprint(hashes)
 
         for hash in hashes:
@@ -58,9 +57,9 @@ def main(path, no_action, recursive):
                     if compare_filename(*pair):
                         orig, dup = pick_basename(*pair)
                         if no_action:
-                            print('{0} skipped\n{1} deleted'.format(orig, dup))
+                            print('{0} skipped\n{1} deleted'.format(orig.name, dup.name))
                         else:
-                            os.remove(dup)
+                            os.remove(dup.path)
         
         if not recursive:
             break
