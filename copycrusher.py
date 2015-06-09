@@ -53,7 +53,7 @@ def generate_checksum_dict(filenames):
 def generate_filename_dict(filenames):
     filename_dict = defaultdict(list)
 
-    regex = re.compile(r'(^.+?)( \((\d)\)){0,1}(\..+)$')
+    regex = re.compile(r'(^.+?)( \((\d)\))*(\..+)$')
 
     for filename in filenames:
         match = regex.match(filename.name)
