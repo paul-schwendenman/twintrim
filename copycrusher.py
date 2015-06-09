@@ -8,9 +8,11 @@ from collections import defaultdict, namedtuple
 
 Filename = namedtuple('Filename', ['name', 'base', 'ext', 'path'])
 
+
 def create_filenames(filenames, root):
     for filename in filenames:
-        yield Filename(filename, *os.path.splitext(filename), path=os.path.join(root, filename))
+        yield Filename(filename, *os.path.splitext(filename),
+                       path=os.path.join(root, filename))
 
 
 def generate_checksum(filename):
@@ -27,8 +29,8 @@ def is_substring(string1, string2):
 
 
 def compare_filename_name(file1, file2):
-    return is_substring(file1.base, file2.base) and is_substring(
-        file1.ext, file2.ext)
+    return is_substring(file1.base, file2.base) and is_substring(file1.ext,
+                                                                 file2.ext)
 
 
 def compare_filename_checksum(file1, file2):
@@ -40,6 +42,7 @@ def pick_basename(file1, file2):
         return file2, file1
     else:
         return file1, file2
+
 
 def generate_checksum_dict(filenames):
     checksum_dict = defaultdict(list)
@@ -86,20 +89,30 @@ def main(path, no_action, recursive, generate_dict, compare_filename):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-p', '--path', required=True,
+        '-p', '--path',
+        required=True,
         help='This is the path you want to run the checker against')
     parser.add_argument(
-        '-n', '--no-action', default=False, action='store_true',
+        '-n', '--no-action',
+        default=False,
+        action='store_true',
         help='This will print the output without changing anyfiles')
     parser.add_argument(
-        '-r', '--recursive', default=False, action='store_true',
+        '-r', '--recursive',
+        default=False,
+        action='store_true',
         help='This option toggles whether the program should search recursively')
     parser.add_argument(
-        '-c', '--checksum', default=False, action='store_true',
-        help='This option toggles whether the program searchs first by checksum rather than name')
+        '-c', '--checksum',
+        default=False,
+        action='store_true',
+        help=
+        'This option toggles whether the program searchs first by checksum rather than name')
     args = parser.parse_args()
 
     if args.checksum:
-        main(args.path, args.no_action, args.recursive, generate_checksum_dict, compare_filename_name)
+        main(args.path, args.no_action, args.recursive, generate_checksum_dict,
+             compare_filename_name)
     else:
-        main(args.path, args.no_action, args.recursive, generate_filename_dict, compare_filename_checksum)
+        main(args.path, args.no_action, args.recursive, generate_filename_dict,
+             compare_filename_checksum)
