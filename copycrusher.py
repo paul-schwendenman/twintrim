@@ -3,6 +3,7 @@ import os
 import hashlib
 import argparse
 import itertools
+import re
 from collections import defaultdict, namedtuple
 
 Filename = namedtuple('Filename', ['name', 'base', 'ext', 'path'])
@@ -10,6 +11,7 @@ Filename = namedtuple('Filename', ['name', 'base', 'ext', 'path'])
 def create_filenames(filenames, root):
     for filename in filenames:
         yield Filename(filename, *os.path.splitext(filename), path=os.path.join(root, filename))
+
 
 def generate_checksum(filename):
     md5 = hashlib.md5()
@@ -44,10 +46,35 @@ def generate_checksum_dict(filenames):
     return checksum_dict
 
 
+def generate_filename_dict(filenames):
+    filename_dict = defaultdict(list)
+
+    regex = re.compile(r'(^\w+)( \(\d\)){0,1}(\.\w+)$')
+
+    for filename in filenames:
+        match = regex.match(filename.name)
+        if match:
+            filename_dict[''.join(match.group(1, 3))].append(filename.name)
+
+    return filename_dict
+
+
 def main(path, no_action, recursive):
     from pprint import pprint
 
     for root, dirs, filenames in os.walk(path):
+        if not recursive and root != path:
+            continue
+        hashes = generate_filename_dict(create_filenames(filenames, root))
+        pprint(hashes)
+
+
+def mmain(path, no_action, recursive):
+    from pprint import pprint
+
+    for root, dirs, filenames in os.walk(path):
+        if not recursive and root != path:
+            continue
         hashes = generate_checksum_dict(create_filenames(filenames, root))
         #pprint(hashes)
 
@@ -60,9 +87,6 @@ def main(path, no_action, recursive):
                             print('{1} deleted'.format(orig.name, dup.name))
                         else:
                             os.remove(dup.path)
-        
-        if not recursive:
-            break
 
 
 if __name__ == '__main__':
