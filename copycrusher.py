@@ -158,7 +158,7 @@ def main(path, no_action, recursive, generate_dict, compare_filename):
             else:
                 logger.debug(
                     'Skipping non duplicate hash {0} for key {1}'.format(
-                        hash, ' ,'.join(hashes[hash])))
+                        hash, ', '.join([item.name for item in hashes[hash]])))
 
 
 if __name__ == '__main__':
