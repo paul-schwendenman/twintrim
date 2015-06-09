@@ -20,6 +20,7 @@ def create_filenames(filenames, root):
     Filename objects are a helper to allow multiple representations
     of the same file to be transfered cleanly.
     '''
+    logger.debug("Creating Filename objects")
     for filename in filenames:
         yield Filename(filename, *os.path.splitext(filename),
                        path=os.path.join(root, filename))
@@ -30,6 +31,7 @@ def generate_checksum(filename):
     A helper function that will generate the
     check sum of a file.
     '''
+    logger.info("Generating checksum for {0}".format(filename))
     md5 = hashlib.md5()
     with open(filename, 'rb') as f:
         for chunk in iter(lambda: f.read(128 * md5.block_size), b''):
@@ -52,6 +54,7 @@ def is_substring(string1, string2):
 
     '''
     length = min(len(string1), len(string2))
+    logger.debug("Testing {0}[{1}] and {2}[{3}] -> {4}".format(string1[:length], string1[length:], string2[:length], string2[length:], string1[:length] == string2[:length]))
     return string1[:length] == string2[:length]
 
 
@@ -59,6 +62,7 @@ def compare_filename_name(file1, file2):
     '''
     Uses is_substring to determine if both base and extension match.
     '''
+    logger.info("Comparing {0} and {1} by substring".format(file1.path, file2.path))
     return is_substring(file1.base, file2.base) and is_substring(file1.ext,
                                                                  file2.ext)
 
@@ -67,6 +71,7 @@ def compare_filename_checksum(file1, file2):
     '''
     Uses the generate_checksum function to compare two files
     '''
+    logger.info("Comparing {0} and {1} by checksum".format(file1.path, file2.path))
     return generate_checksum(file1.path) == generate_checksum(file2.path)
 
 
@@ -77,6 +82,7 @@ def pick_basename(file1, file2):
     It picks "file.txt" over "file (1).txt", but beware it also picks
     "f.txt" over "file.txt".
     '''
+    logger.debug("Finding the shortest of {0} and {1}".format(file1.name, file2.name))
     if len(file1.name) > len(file2.name):
         return file2, file1
     else:
@@ -88,6 +94,7 @@ def generate_checksum_dict(filenames):
     This function will create a dictionary of checksums mapped to
     a list of filenames.
     '''
+    logger.debug("Generating dictionary based on checksum")
     checksum_dict = defaultdict(list)
 
     for filename in filenames:
@@ -101,6 +108,7 @@ def generate_filename_dict(filenames):
     This function will create a dictionary of filename parts mapped to a list
     of the real filenames.
     '''
+    logger.debug("Generating dictionary based on filename")
     filename_dict = defaultdict(list)
 
     regex = re.compile(r'(^.+?)( \((\d)\))*(\..+)$')
@@ -108,6 +116,8 @@ def generate_filename_dict(filenames):
     for filename in filenames:
         match = regex.match(filename.name)
         if match:
+            logger.debug('Matches for {0}: {1}'.format(filename, ' ,'.join(match.groups())))
+            logger.info("Found a match for {0} adding to key {1}".format(filename, ''.join(match.group(1, 4))))
             filename_dict[''.join(match.group(1, 4))].append(filename)
 
     return filename_dict
@@ -119,19 +129,26 @@ def main(path, no_action, recursive, generate_dict, compare_filename):
     '''
     for root, dirs, filenames in os.walk(path):
         if not recursive and root != path:
+            logger.debug("Skipping child directory {0}".format(root))
             continue
         hashes = generate_dict(create_filenames(filenames, root))
 
         for hash in hashes:
             if len(hashes[hash]) > 1:
+                logger.info("Investigating duplicate hash {0}".format(hash))
+                logger.debug("Keys for {0} are {1}".format(hash, ' ,'.join(hashes[hash])))
                 for pair in itertools.combinations(hashes[hash], 2):
                     if compare_filename(*pair):
                         orig, dup = pick_basename(*pair)
+                        logger.debug("Duplicate pair found {0} and {1}".format(orig, dup))
                         if no_action:
                             print('{1} deleted'.format(orig.name, dup.name))
-                            #print('{1} deleted. {0} kept'.format(orig.name, dup.name))
+                            logger.info('{1} would have been deleted'.format(orig.name, dup.name))
                         else:
+                            logger.info('{1} was deleted'.format(orig.name, dup.name))
                             os.remove(dup.path)
+            else:
+                logger.debug('Skipping non duplicate hash {0} for key {1}'.format(hash, ' ,'.join(hashes[hash])))
 
 
 if __name__ == '__main__':
@@ -173,6 +190,18 @@ if __name__ == '__main__':
 
     if args.log_level and not args.log_file:
         parser.error('Log level set without log file')
+
+    stream = logging.StreamHandler()
+    stream.setLevel(args.verbosity * 10)
+    formatter_simple = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    stream.setFormatter(formatter_simple)
+    logger.addHandler(stream)
+
+    if args.log_file:
+        log_file = logging.FileHandler(args.log_file)
+        log_file.setFormatter(formatter_simple)
+        log_file.setLevel(args.log_level * 10)
+        logger.addHandler(log_file)
 
     if args.checksum:
         main(args.path, args.no_action, args.recursive, generate_checksum_dict,
