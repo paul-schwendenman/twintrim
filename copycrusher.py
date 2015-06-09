@@ -49,12 +49,12 @@ def generate_checksum_dict(filenames):
 def generate_filename_dict(filenames):
     filename_dict = defaultdict(list)
 
-    regex = re.compile(r'(^\w+)( \(\d\)){0,1}(\.\w+)$')
+    regex = re.compile(r'(^\w+)( \((\d)\)){0,1}(\.\w+)$')
 
     for filename in filenames:
         match = regex.match(filename.name)
         if match:
-            filename_dict[''.join(match.group(1, 3))].append(filename.name)
+            filename_dict[''.join(match.group(1, 4))].append(filename.name)
 
     return filename_dict
 
