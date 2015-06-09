@@ -19,7 +19,7 @@ def create_filenames(filenames, root):
     Filename objects are a helper to allow multiple representations
     of the same file to be transfered cleanly.
     '''
-    logger.debug("Creating Filename objects")
+    logger.info("Creating Filename objects")
     for filename in filenames:
         yield Filename(filename, *os.path.splitext(filename),
                        path=os.path.join(root, filename))
@@ -98,7 +98,7 @@ def generate_checksum_dict(filenames):
     This function will create a dictionary of checksums mapped to
     a list of filenames.
     '''
-    logger.debug("Generating dictionary based on checksum")
+    logger.info("Generating dictionary based on checksum")
     checksum_dict = defaultdict(list)
 
     for filename in filenames:
@@ -112,7 +112,7 @@ def generate_filename_dict(filenames):
     This function will create a dictionary of filename parts mapped to a list
     of the real filenames.
     '''
-    logger.debug("Generating dictionary based on filename")
+    logger.info("Generating dictionary based on regular expression")
     filename_dict = defaultdict(list)
 
     regex = re.compile(r'(^.+?)( \((\d)\))*(\..+)$')
@@ -120,10 +120,10 @@ def generate_filename_dict(filenames):
     for filename in filenames:
         match = regex.match(filename.name)
         if match:
-            logger.debug('Matches for {0}: {1}'.format(
-                filename, ' ,'.join(match.groups())))
+            logger.debug('Regex groups for {0}: {1}'.format(
+                filename.name, str(match.groups())))
             logger.info("Found a match for {0} adding to key {1}".format(
-                filename, ''.join(match.group(1, 4))))
+                filename.name, ''.join(match.group(1, 4))))
             filename_dict[''.join(match.group(1, 4))].append(filename)
 
     return filename_dict
@@ -143,14 +143,12 @@ def main(path, no_action, recursive, generate_dict, compare_filename):
             if len(hashes[hash]) > 1:
                 logger.info("Investigating duplicate hash {0}".format(hash))
                 logger.debug("Keys for {0} are {1}".format(
-                    hash, ' ,'.join(hashes[hash])))
+                    hash, ', '.join([item.name for item in hashes[hash]])))
                 for pair in itertools.combinations(hashes[hash], 2):
                     if compare_filename(*pair):
                         orig, dup = pick_basename(*pair)
-                        logger.debug("Duplicate pair found {0} and {1}".format(
-                            orig, dup))
                         if no_action:
-                            print('{1} deleted'.format(orig.name, dup.name))
+                            print('{1} to be deleted'.format(orig.name, dup.name))
                             logger.info('{1} would have been deleted'.format(
                                 orig.name, dup.name))
                         else:
@@ -197,21 +195,24 @@ if __name__ == '__main__':
                         help='Set debug level in log file')
     args = parser.parse_args()
 
-    if args.log_level and not args.log_file:
+    if args.log_level != 3 and not args.log_file:
         parser.error('Log level set without log file')
 
     stream = logging.StreamHandler()
-    stream.setLevel(args.verbosity * 10)
+    stream.setLevel((5 - args.verbosity) * 10)
     formatter_simple = logging.Formatter(
         '%(asctime)s - %(levelname)s - %(message)s')
     stream.setFormatter(formatter_simple)
     logger.addHandler(stream)
+    logger.setLevel(logging.DEBUG)
 
     if args.log_file:
         log_file = logging.FileHandler(args.log_file)
         log_file.setFormatter(formatter_simple)
-        log_file.setLevel(args.log_level * 10)
+        log_file.setLevel((5 - args.log_level) * 10)
         logger.addHandler(log_file)
+
+    logger.debug("Args: {0}".format(args))
 
     if args.checksum:
         main(args.path, args.no_action, args.recursive, generate_checksum_dict,
