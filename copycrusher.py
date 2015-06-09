@@ -63,42 +63,22 @@ def generate_filename_dict(filenames):
     return filename_dict
 
 
-def main(path, no_action, recursive):
+def main(path, no_action, recursive, generate_dict, compare_filename):
     from pprint import pprint
 
     for root, dirs, filenames in os.walk(path):
         if not recursive and root != path:
             continue
-        hashes = generate_filename_dict(create_filenames(filenames, root))
+        hashes = generate_dict(create_filenames(filenames, root))
 
         for hash in hashes:
             if len(hashes[hash]) > 1:
                 for pair in itertools.combinations(hashes[hash], 2):
-                    if compare_filename_checksum(*pair):
+                    if compare_filename(*pair):
                         orig, dup = pick_basename(*pair)
                         if no_action:
                             print('{1} deleted'.format(orig.name, dup.name))
                             #print('{1} deleted. {0} kept'.format(orig.name, dup.name))
-                        else:
-                            os.remove(dup.path)
-
-
-def mmain(path, no_action, recursive):
-    from pprint import pprint
-
-    for root, dirs, filenames in os.walk(path):
-        if not recursive and root != path:
-            continue
-        hashes = generate_checksum_dict(create_filenames(filenames, root))
-        #pprint(hashes)
-
-        for hash in hashes:
-            if len(hashes[hash]) > 1:
-                for pair in itertools.combinations(hashes[hash], 2):
-                    if compare_filename_name(*pair):
-                        orig, dup = pick_basename(*pair)
-                        if no_action:
-                            print('{1} deleted'.format(orig.name, dup.name))
                         else:
                             os.remove(dup.path)
 
@@ -114,6 +94,12 @@ if __name__ == '__main__':
     parser.add_argument(
         '-r', '--recursive', default=False, action='store_true',
         help='This option toggles whether the program should search recursively')
+    parser.add_argument(
+        '-c', '--checksum', default=False, action='store_true',
+        help='This option toggles whether the program searchs first by checksum rather than name')
     args = parser.parse_args()
 
-    main(args.path, args.no_action, args.recursive)
+    if args.checksum:
+        main(args.path, args.no_action, args.recursive, generate_checksum_dict, compare_filename_name)
+    else:
+        main(args.path, args.no_action, args.recursive, generate_filename_dict, compare_filename_checksum)
