@@ -90,7 +90,7 @@ def generate_checksum_dict(filenames):
     return checksum_dict
 
 
-def generate_filename_dict(filenames, regex=r'(^.+?)( \((\d)\))*(\..+)$'):
+def generate_filename_dict(filenames, regex=r'(^.+?)(?: \(\d\))*(\..+)$'):
     '''
     This function will create a dictionary of filename parts mapped to a list
     of the real filenames.
@@ -105,9 +105,7 @@ def generate_filename_dict(filenames, regex=r'(^.+?)( \((\d)\))*(\..+)$'):
         if match:
             logger.debug('Regex groups for {0}: {1}'.format(
                 filename.name, str(match.groups())))
-            logger.info("Found a match for {0} adding to key {1}".format(
-                filename.name, match.group(1)))
-            filename_dict[match.group(1)].add(filename)
+            filename_dict[match.groups()].add(filename)
 
     return filename_dict
 
