@@ -130,23 +130,28 @@ def main(path, no_action, recursive):
                 hashes = generate_checksum_dict(names[name])
                 for hash in hashes:
                     if len(hashes[hash]) > 1:
-                        logger.info("Investigating duplicate checksum {0}".format(hash))
+                        logger.info(
+                            "Investigating duplicate checksum {0}".format(hash))
                         logger.debug("Keys for {0} are {1}".format(
-                            hash, ', '.join([item.name for item in names[name]])))
-                        best = set(functools.reduce(pick_shorter_name, hashes[hash]))
+                            hash, ', '.join([item.name
+                                             for item in names[name]])))
+                        best = set(functools.reduce(pick_shorter_name,
+                                                    hashes[hash]))
                         for bad in hashes[hash] - best:
                             if no_action:
                                 print('{0} to be deleted'.format(bad.name))
-                                logger.info('{0} would have been deleted'.format(
-                                    bad.name))
+                                logger.info(
+                                    '{0} would have been deleted'.format(
+                                        bad.name))
                             else:
                                 logger.info('{0} was deleted'.format(bad.name))
                                 os.remove(bad.path)
-    
+
                     else:
                         logger.debug(
                             'Skipping non duplicate checksum {0} for key {1}'.format(
-                                hash, ', '.join([item.name for item in hashes[hash]])))
+                                hash, ', '.join([item.name
+                                                 for item in hashes[hash]])))
 
             else:
                 logger.debug(
