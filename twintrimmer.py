@@ -96,10 +96,10 @@ def generate_checksum_dict(filenames):
     a list of filenames.
     '''
     logger.info("Generating dictionary based on checksum")
-    checksum_dict = defaultdict(list)
+    checksum_dict = defaultdict(set)
 
     for filename in filenames:
-        checksum_dict[generate_checksum(filename.path)].append(filename)
+        checksum_dict[generate_checksum(filename.path)].add(filename)
 
     return checksum_dict
 
@@ -110,7 +110,7 @@ def generate_filename_dict(filenames):
     of the real filenames.
     '''
     logger.info("Generating dictionary based on regular expression")
-    filename_dict = defaultdict(list)
+    filename_dict = defaultdict(set)
 
     regex = re.compile(r'(^.+?)( \((\d)\))*(\..+)$')
 
@@ -121,7 +121,7 @@ def generate_filename_dict(filenames):
                 filename.name, str(match.groups())))
             logger.info("Found a match for {0} adding to key {1}".format(
                 filename.name, ''.join(match.group(1, 4))))
-            filename_dict[''.join(match.group(1, 4))].append(filename)
+            filename_dict[''.join(match.group(1, 4))].add(filename)
 
     return filename_dict
 
