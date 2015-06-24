@@ -5,6 +5,7 @@ import argparse
 import functools
 import re
 import logging
+import textwrap
 from collections import defaultdict, namedtuple
 
 logger = logging.getLogger('')
@@ -163,7 +164,32 @@ def main(path, no_action, recursive, skip_regex, regex_pattern):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    epilog = '''
+    Examples:
+
+        Find matches with default regex:
+
+            $ ./twintrimmer.py -n ~/downloads
+
+        Find matches ignoring the extension:
+
+            $  ls examples/
+            Google.html  Google.html~
+            $ ./twintrimmer.py -n -p '(^.+?)(?: \(\d\))*\..+' examples/
+            examples/Google.html~ to be deleted
+
+        Find matches with "__1" added to basename:
+
+            $ ls examples/underscore/
+            file__1.txt  file.txt
+            $ ./twintrimmer.py -n -p '(.+?)(?:__\d)*\..*' examples/underscore/
+            examples/underscore/file__1.txt to be deleted
+    '''
+
+    parser = argparse.ArgumentParser(
+        description='Tool for removing duplicate files',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=textwrap.dedent(epilog))
     parser.add_argument(
         'path',
         help='This is the path you want to run the checker against')
