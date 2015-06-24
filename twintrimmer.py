@@ -112,7 +112,31 @@ def generate_filename_dict(filenames):
     return filename_dict
 
 
-def main(path, no_action, recursive):
+def remove_by_checksum(list_of_names, no_action):
+    hashes = generate_checksum_dict(list_of_names)
+    for hash in hashes:
+        if len(hashes[hash]) > 1:
+            logger.info("Investigating duplicate checksum {0}".format(hash))
+            logger.debug("Keys for {0} are {1}".format(hash, ', '.join([
+                item.name for item in hashes[hash]
+            ])))
+            best = functools.reduce(pick_shorter_name, hashes[hash])
+            for bad in hashes[hash] - {best}:
+                if no_action:
+                    print('{0} to be deleted'.format(bad.name))
+                    logger.info('{0} would have been deleted'.format(bad.name))
+                else:
+                    logger.info('{0} was deleted'.format(bad.name))
+                    os.remove(bad.path)
+            logger.info('{0} was kept as only copy'.format(best.name))
+
+        else:
+            logger.debug(
+                'Skipping non duplicate checksum {0} for key {1}'.format(
+                    hash, ', '.join([item.name for item in hashes[hash]])))
+
+
+def main(path, no_action, recursive, skip_regex):
     '''
     This function handles all options and steps through the directory
     '''
@@ -120,45 +144,23 @@ def main(path, no_action, recursive):
         if not recursive and root != path:
             logger.debug("Skipping child directory {0}".format(root))
             continue
-        names = generate_filename_dict(create_filenames(filenames, root))
 
-        for name in names:
-            if len(names[name]) > 1:
-                logger.info("Investigating duplicate name {0}".format(name))
-                logger.debug("Keys for {0} are {1}".format(
-                    name, ', '.join([item.name for item in names[name]])))
-                hashes = generate_checksum_dict(names[name])
-                for hash in hashes:
-                    if len(hashes[hash]) > 1:
-                        logger.info(
-                            "Investigating duplicate checksum {0}".format(hash))
-                        logger.debug("Keys for {0} are {1}".format(
-                            hash, ', '.join([item.name
-                                             for item in names[name]])))
-                        best = functools.reduce(pick_shorter_name,
-                                                hashes[hash])
-                        for bad in hashes[hash] - {best}:
-                            if no_action:
-                                print('{0} to be deleted'.format(bad.name))
-                                logger.info(
-                                    '{0} would have been deleted'.format(
-                                        bad.name))
-                            else:
-                                logger.info('{0} was deleted'.format(bad.name))
-                                os.remove(bad.path)
-                        logger.info(
-                            '{0} was kept as only copy'.format(best.name))
+        if not skip_regex:
+            names = generate_filename_dict(create_filenames(filenames, root))
 
-                    else:
-                        logger.debug(
-                            'Skipping non duplicate checksum {0} for key {1}'.format(
-                                hash, ', '.join([item.name
-                                                 for item in hashes[hash]])))
-
-            else:
-                logger.debug(
-                    'Skipping non duplicate name {0} for key {1}'.format(
+            for name in names:
+                if len(names[name]) > 1:
+                    logger.info("Investigating duplicate name {0}".format(name))
+                    logger.debug("Keys for {0} are {1}".format(
                         name, ', '.join([item.name for item in names[name]])))
+                    remove_by_checksum(names[name], no_action)
+                else:
+                    logger.debug(
+                        'Skipping non duplicate name {0} for key {1}'.format(
+                            name, ', '.join([item.name
+                                             for item in names[name]])))
+        else:
+            remove_by_checksum(create_filenames(filenames, root), no_action)
 
 
 if __name__ == '__main__':
@@ -186,6 +188,14 @@ if __name__ == '__main__':
                         type=int,
                         default=3,
                         help='Set debug level in log file')
+    parser.add_argument(
+        '-c', '--only-checksum',
+        default=False,
+        action='store_true',
+        dest='skip_regex',
+        help=
+        'This option toggles whether the program searches only by checksum rather than name first')
+
     args = parser.parse_args()
 
     if args.log_level != 3 and not args.log_file:
@@ -207,4 +217,4 @@ if __name__ == '__main__':
 
     logger.debug("Args: {0}".format(args))
 
-    main(args.path, args.no_action, args.recursive)
+    main(args.path, args.no_action, args.recursive, args.skip_regex)
