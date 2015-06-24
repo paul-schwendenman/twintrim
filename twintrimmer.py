@@ -2,7 +2,7 @@
 import os
 import hashlib
 import argparse
-import itertools
+import functools
 import re
 import logging
 from collections import defaultdict, namedtuple
@@ -55,39 +55,25 @@ def is_substring(string1, string2):
     return string1 in string2 or string2 in string1
 
 
-def compare_filename_name(file1, file2):
-    '''
-    Uses is_substring to determine if both base and extension match.
-    '''
-    logger.info("Comparing {0} and {1} by substring".format(file1.path,
-                                                            file2.path))
-    return is_substring(file1.base, file2.base) and is_substring(file1.ext,
-                                                                 file2.ext)
-
-
-def compare_filename_checksum(file1, file2):
-    '''
-    Uses the generate_checksum function to compare two files
-    '''
-    logger.info("Comparing {0} and {1} by checksum".format(file1.path,
-                                                           file2.path))
-    return generate_checksum(file1.path) == generate_checksum(file2.path)
-
-
-def pick_basename(file1, file2):
-    '''
+def pick_shorter_name(file1, file2):
+    ''' 
     This convenience function will help to find the shorter (often better)
-    filename
+    filename.  If the file names are the same length it returns the file
+    that is less, hoping for numerically.
 
     It picks "file.txt" over "file (1).txt", but beware it also picks
     "f.txt" over "file.txt".
+    
+    It also picks "file (1).txt" over "file (2).txt"
     '''
     logger.debug("Finding the shortest of {0} and {1}".format(file1.name,
                                                               file2.name))
     if len(file1.name) > len(file2.name):
-        return file2, file1
+        return file2
+    elif len(file1.name) < len(file2.name) or file1.name < file2.name:
+        return file1
     else:
-        return file1, file2
+        return file2
 
 
 def generate_checksum_dict(filenames):
@@ -136,30 +122,36 @@ def main(path, no_action, recursive):
             continue
         names = generate_filename_dict(create_filenames(filenames, root))
 
-        for hash in hashes:
-            if len(hashes[hash]) > 1:
-                logger.info("Investigating duplicate hash {0}".format(hash))
+        for name in names:
+            if len(names[name]) > 1:
+                logger.info("Investigating duplicate name {0}".format(name))
                 logger.debug("Keys for {0} are {1}".format(
-                    hash, ', '.join([item.name for item in hashes[hash]])))
-                for pair in itertools.combinations(hashes[hash], 2):
-                    if compare_filename(*pair):
-                        orig, dup = pick_basename(*pair)
-                        if no_action:
-                            print('{1} to be deleted'.format(orig.name,
-                                                             dup.name))
-                            logger.info('{1} would have been deleted'.format(
-                                orig.name, dup.name))
-                        else:
-                            logger.info('{1} was deleted'.format(orig.name,
-                                                                 dup.name))
-                            os.remove(dup.path)
+                    name, ', '.join([item.name for item in names[name]])))
+                hashes = generate_checksum_dict(names[name])
+                for hash in hashes:
+                    if len(hashes[hash]) > 1:
+                        logger.info("Investigating duplicate checksum {0}".format(hash))
+                        logger.debug("Keys for {0} are {1}".format(
+                            hash, ', '.join([item.name for item in names[name]])))
+                        best = set(functools.reduce(pick_shorter_name, hashes[hash]))
+                        for bad in hashes[hash] - best:
+                            if no_action:
+                                print('{0} to be deleted'.format(bad.name))
+                                logger.info('{0} would have been deleted'.format(
+                                    bad.name))
+                            else:
+                                logger.info('{0} was deleted'.format(bad.name))
+                                os.remove(bad.path)
+    
                     else:
-                        logger.info('Files {0} and {1} did not match'.format(
-                            pair[0].name, pair[1].name))
+                        logger.debug(
+                            'Skipping non duplicate checksum {0} for key {1}'.format(
+                                hash, ', '.join([item.name for item in hashes[hash]])))
+
             else:
                 logger.debug(
-                    'Skipping non duplicate hash {0} for key {1}'.format(
-                        hash, ', '.join([item.name for item in hashes[hash]])))
+                    'Skipping non duplicate name {0} for key {1}'.format(
+                        name, ', '.join([item.name for item in names[name]])))
 
 
 if __name__ == '__main__':
