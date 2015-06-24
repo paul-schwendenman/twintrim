@@ -134,7 +134,7 @@ def remove_by_checksum(list_of_names, no_action):
                     hash, ', '.join([item.name for item in hashes[hash]])))
 
 
-def main(path, no_action, recursive, skip_regex):
+def main(path, no_action, recursive, skip_regex, regex_pattern):
     '''
     This function handles all options and steps through the directory
     '''
@@ -144,7 +144,8 @@ def main(path, no_action, recursive, skip_regex):
             continue
 
         if not skip_regex:
-            names = generate_filename_dict(create_filenames(filenames, root))
+            names = generate_filename_dict(create_filenames(filenames, root),
+                                           regex_pattern)
 
             for name in names:
                 if len(names[name]) > 1:
@@ -187,6 +188,11 @@ if __name__ == '__main__':
                         default=3,
                         help='Set debug level in log file')
     parser.add_argument(
+        '-p', '--pattern',
+        type=str,
+        default=r'(^.+?)(?: \(\d\))*(\..+)$',
+        help='Filename regex (default: r\'(^.+?)(?: \(\d\))*(\..+)$\')')
+    parser.add_argument(
         '-c', '--only-checksum',
         default=False,
         action='store_true',
@@ -198,6 +204,9 @@ if __name__ == '__main__':
 
     if args.log_level != 3 and not args.log_file:
         parser.error('Log level set without log file')
+
+    if args.pattern != r'(^.+?)(?: \(\d\))*(\..+)$' and args.skip_regex:
+        parser.error('Pattern set while skipping regex checking')
 
     stream = logging.StreamHandler()
     stream.setLevel((5 - args.verbosity) * 10)
@@ -215,4 +224,5 @@ if __name__ == '__main__':
 
     logger.debug("Args: {0}".format(args))
 
-    main(args.path, args.no_action, args.recursive, args.skip_regex)
+    main(args.path, args.no_action, args.recursive, args.skip_regex,
+         args.pattern)
