@@ -135,9 +135,9 @@ def main(path, no_action, recursive):
                         logger.debug("Keys for {0} are {1}".format(
                             hash, ', '.join([item.name
                                              for item in names[name]])))
-                        best = set(functools.reduce(pick_shorter_name,
-                                                    hashes[hash]))
-                        for bad in hashes[hash] - best:
+                        best = functools.reduce(pick_shorter_name,
+                                                    hashes[hash])
+                        for bad in hashes[hash] - {best}:
                             if no_action:
                                 print('{0} to be deleted'.format(bad.name))
                                 logger.info(
@@ -146,6 +146,7 @@ def main(path, no_action, recursive):
                             else:
                                 logger.info('{0} was deleted'.format(bad.name))
                                 os.remove(bad.path)
+                        logger.info('{0} was kept as only copy'.format(best.name))
 
                     else:
                         logger.debug(
