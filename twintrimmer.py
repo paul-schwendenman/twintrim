@@ -126,7 +126,7 @@ def generate_filename_dict(filenames):
     return filename_dict
 
 
-def main(path, no_action, recursive, generate_dict, compare_filename):
+def main(path, no_action, recursive):
     '''
     This function handles all options and steps through the directory
     '''
@@ -134,7 +134,7 @@ def main(path, no_action, recursive, generate_dict, compare_filename):
         if not recursive and root != path:
             logger.debug("Skipping child directory {0}".format(root))
             continue
-        hashes = generate_dict(create_filenames(filenames, root))
+        names = generate_filename_dict(create_filenames(filenames, root))
 
         for hash in hashes:
             if len(hashes[hash]) > 1:
@@ -177,12 +177,6 @@ if __name__ == '__main__':
         default=False,
         action='store_true',
         help='This option toggles whether the program should search recursively')
-    parser.add_argument(
-        '-c', '--checksum',
-        default=False,
-        action='store_true',
-        help=
-        'This option toggles whether the program searchs first by checksum rather than name')
     parser.add_argument('--verbosity',
                         type=int,
                         default=0,
@@ -214,9 +208,4 @@ if __name__ == '__main__':
 
     logger.debug("Args: {0}".format(args))
 
-    if args.checksum:
-        main(args.path, args.no_action, args.recursive, generate_checksum_dict,
-             compare_filename_name)
-    else:
-        main(args.path, args.no_action, args.recursive, generate_filename_dict,
-             compare_filename_checksum)
+    main(args.path, args.no_action, args.recursive)
