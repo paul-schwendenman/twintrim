@@ -123,12 +123,12 @@ def remove_by_checksum(list_of_names, no_action):
             best = functools.reduce(pick_shorter_name, hashes[hash])
             for bad in hashes[hash] - {best}:
                 if no_action:
-                    print('{0} to be deleted'.format(bad.name))
-                    logger.info('{0} would have been deleted'.format(bad.name))
+                    print('{0} to be deleted'.format(bad.path))
+                    logger.info('{0} would have been deleted'.format(bad.path))
                 else:
-                    logger.info('{0} was deleted'.format(bad.name))
+                    logger.info('{0} was deleted'.format(bad.path))
                     os.remove(bad.path)
-            logger.info('{0} was kept as only copy'.format(best.name))
+            logger.info('{0} was kept as only copy'.format(best.path))
 
         else:
             logger.debug(
