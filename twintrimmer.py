@@ -190,41 +190,34 @@ if __name__ == '__main__':
         description='Tool for removing duplicate files',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=textwrap.dedent(epilog))
-    parser.add_argument(
-        'path',
-        help='This is the path you want to run the checker against')
-    parser.add_argument(
-        '-n', '--no-action',
-        default=False,
-        action='store_true',
-        help='This will print the output without changing anyfiles')
-    parser.add_argument(
-        '-r', '--recursive',
-        default=False,
-        action='store_true',
-        help='This option toggles whether the program should search recursively')
+    parser.add_argument('path', help='path to check')
+    parser.add_argument('-n', '--no-action',
+                        default=False,
+                        action='store_true',
+                        help='show what files would have been deleted')
+    parser.add_argument('-r', '--recursive',
+                        default=False,
+                        action='store_true',
+                        help='search directories recursively')
     parser.add_argument('--verbosity',
                         type=int,
                         default=0,
-                        help='Set debug level')
-    parser.add_argument('--log-file',
-                        help='This option sets a log file to write.')
+                        help='set print debug level')
+    parser.add_argument('--log-file', help='write to log file.')
     parser.add_argument('--log-level',
                         type=int,
                         default=3,
-                        help='Set debug level in log file')
-    parser.add_argument(
-        '-p', '--pattern',
-        type=str,
-        default=r'(^.+?)(?: \(\d\))*(\..+)$',
-        help='Filename regex (default: r\'(^.+?)(?: \(\d\))*(\..+)$\')')
+                        help='set log file debug level')
+    parser.add_argument('-p', '--pattern',
+                        type=str,
+                        default=r'(^.+?)(?: \(\d\))*(\..+)$',
+                        help='set filename matching regex')
     parser.add_argument(
         '-c', '--only-checksum',
         default=False,
         action='store_true',
         dest='skip_regex',
-        help=
-        'This option toggles whether the program searches only by checksum rather than name first')
+        help='toggle searching by checksum rather than name first')
 
     args = parser.parse_args()
 
