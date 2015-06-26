@@ -122,7 +122,7 @@ def remove_by_checksum(list_of_names, no_action):
             best = functools.reduce(pick_shorter_name, hashes[hash])
             for bad in hashes[hash] - {best}:
                 if no_action:
-                    print('{0} to be deleted'.format(bad.path))
+                    print('{0} would have been deleted'.format(bad.path))
                     logger.info('{0} would have been deleted'.format(bad.path))
                 else:
                     logger.info('{0} was deleted'.format(bad.path))
@@ -176,7 +176,7 @@ if __name__ == '__main__':
             $  ls examples/
             Google.html  Google.html~
             $ ./twintrimmer.py -n -p '(^.+?)(?: \(\d\))*\..+' examples/
-            examples/Google.html~ to be deleted
+            examples/Google.html~ would have been deleted
 
         find matches with "__1" added to basename:
 
