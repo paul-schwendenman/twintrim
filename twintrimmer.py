@@ -165,20 +165,20 @@ def main(path, no_action, recursive, skip_regex, regex_pattern):
 
 if __name__ == '__main__':
     epilog = '''
-    Examples:
+    examples:
 
-        Find matches with default regex:
+        find matches with default regex:
 
             $ ./twintrimmer.py -n ~/downloads
 
-        Find matches ignoring the extension:
+        find matches ignoring the extension:
 
             $  ls examples/
             Google.html  Google.html~
             $ ./twintrimmer.py -n -p '(^.+?)(?: \(\d\))*\..+' examples/
             examples/Google.html~ to be deleted
 
-        Find matches with "__1" added to basename:
+        find matches with "__1" added to basename:
 
             $ ls examples/underscore/
             file__1.txt  file.txt
@@ -187,7 +187,7 @@ if __name__ == '__main__':
     '''
 
     parser = argparse.ArgumentParser(
-        description='Tool for removing duplicate files',
+        description='tool for removing duplicate files',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=textwrap.dedent(epilog))
     parser.add_argument('path', help='path to check')

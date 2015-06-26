@@ -22,29 +22,48 @@ validating the content with a checksum.
 Usage
 -------
 
-usage: twintrimmer.py [-h] [-n] [-r] [-c] [--verbosity VERBOSITY]
+usage: twintrimmer.py [-h] [-n] [-r] [--verbosity VERBOSITY]
                       [--log-file LOG_FILE] [--log-level LOG_LEVEL]
+                      [-p PATTERN] [-c]
                       path
 
+tool for removing duplicate files
+
 positional arguments:
-  path                  This is the path you want to run the checker against
+  path                  path to check
 
 optional arguments:
   -h, --help            show this help message and exit
-  -n, --no-action       This will print the output without changing anyfiles
-  -r, --recursive       This option toggles whether the program should search
-                        recursively
-  -c, --checksum        This option toggles whether the program searchs first
-                        by checksum rather than name
+  -n, --no-action       show what files would have been deleted
+  -r, --recursive       search directories recursively
   --verbosity VERBOSITY
-                        Set debug level
-  --log-file LOG_FILE   This option sets a log file to write.
+                        set print debug level
+  --log-file LOG_FILE   write to log file.
   --log-level LOG_LEVEL
-                        Set debug level in log file
+                        set log file debug level
+  -p PATTERN, --pattern PATTERN
+                        set filename matching regex
+  -c, --only-checksum   toggle searching by checksum rather than name first
 
-Usage example::
+examples:
 
-	./twintrimmer.py ~/downloads/
+    find matches with default regex::
+
+        $ ./twintrimmer.py -n ~/downloads
+
+    find matches ignoring the extension::
+
+        $  ls examples/
+        Google.html  Google.html~
+        $ ./twintrimmer.py -n -p '(^.+?)(?: \(\d\))*\..+' examples/
+        examples/Google.html~ to be deleted
+
+    find matches with "__1" added to basename::
+
+        $ ls examples/underscore/
+        file__1.txt  file.txt
+        $ ./twintrimmer.py -n -p '(.+?)(?:__\d)*\..*' examples/underscore/
+        examples/underscore/file__1.txt to be deleted
 
 
 
