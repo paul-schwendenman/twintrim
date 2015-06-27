@@ -173,7 +173,7 @@ def remove_by_checksum(list_of_names, no_action, interactive):
                     hash, ', '.join([item.name for item in hashes[hash]])))
 
 
-def main(path, no_action, recursive, skip_regex, regex_pattern, interactive):
+def walk_path(path, no_action, recursive, skip_regex, regex_pattern, interactive):
     '''
     This function handles all options and steps through the directory
     '''
@@ -202,7 +202,7 @@ def main(path, no_action, recursive, skip_regex, regex_pattern, interactive):
                                interactive)
 
 
-if __name__ == '__main__':
+def main():
     epilog = '''
     examples:
 
@@ -287,5 +287,9 @@ if __name__ == '__main__':
 
     logger.debug("Args: {0}".format(args))
 
-    main(args.path, args.no_action, args.recursive, args.skip_regex,
+    walk_path(args.path, args.no_action, args.recursive, args.skip_regex,
          args.pattern, args.interactive)
+
+
+if __name__ == '__main__':
+    main()
