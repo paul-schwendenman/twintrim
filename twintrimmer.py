@@ -77,6 +77,39 @@ def pick_shorter_name(file1, file2):
         return file2
 
 
+def ask_for_best(default, rest):
+    hashes = [default] + list(rest)
+    for num, hash in enumerate(hashes):
+        if hash == default:
+            print("{0}. {1} (default)".format(num, hash.name))
+        else:
+            print("{0}. {1}".format(num, hash.name))
+
+    try:
+        while True:
+            result = input('Pick which file to keep (^C to skip): ')
+            if result == '':
+                best = default
+                break
+            elif result.isdigit() and int(result) in range(len(hashes)):
+                best = hashes[int(result)]
+                break
+            elif result in [file.name for file in hashes]:
+                best = [file for file in hashes if file.name == result][0]
+                break
+        rest = set(hashes) - {best}
+        logger.warning('User picked {0} over {1}'.format(best, default))
+
+    except KeyboardInterrupt:
+        print('\nSkipped')
+        logger.warning('User skipped in interactive mode')
+        best = default
+        rest = {}
+
+    finally:
+        return best, rest
+
+
 def generate_checksum_dict(filenames):
     '''
     This function will create a dictionary of checksums mapped to
@@ -111,7 +144,7 @@ def generate_filename_dict(filenames, regex=r'(^.+?)(?: \(\d\))*(\..+)$'):
     return filename_dict
 
 
-def remove_by_checksum(list_of_names, no_action):
+def remove_by_checksum(list_of_names, no_action, interactive):
     hashes = generate_checksum_dict(list_of_names)
     for hash in hashes:
         if len(hashes[hash]) > 1:
@@ -120,7 +153,12 @@ def remove_by_checksum(list_of_names, no_action):
                 item.name for item in hashes[hash]
             ])))
             best = functools.reduce(pick_shorter_name, hashes[hash])
-            for bad in hashes[hash] - {best}:
+            rest = hashes[hash] - {best}
+
+            if interactive:
+                best, rest = ask_for_best(best, rest)
+
+            for bad in rest:
                 if no_action:
                     print('{0} would have been deleted'.format(bad.path))
                     logger.info('{0} would have been deleted'.format(bad.path))
@@ -135,7 +173,7 @@ def remove_by_checksum(list_of_names, no_action):
                     hash, ', '.join([item.name for item in hashes[hash]])))
 
 
-def main(path, no_action, recursive, skip_regex, regex_pattern):
+def main(path, no_action, recursive, skip_regex, regex_pattern, interactive):
     '''
     This function handles all options and steps through the directory
     '''
@@ -153,14 +191,15 @@ def main(path, no_action, recursive, skip_regex, regex_pattern):
                     logger.info("Investigating duplicate name {0}".format(name))
                     logger.debug("Keys for {0} are {1}".format(
                         name, ', '.join([item.name for item in names[name]])))
-                    remove_by_checksum(names[name], no_action)
+                    remove_by_checksum(names[name], no_action, interactive)
                 else:
                     logger.debug(
                         'Skipping non duplicate name {0} for key {1}'.format(
                             name, ', '.join([item.name
                                              for item in names[name]])))
         else:
-            remove_by_checksum(create_filenames(filenames, root), no_action)
+            remove_by_checksum(create_filenames(filenames, root), no_action,
+                               interactive)
 
 
 if __name__ == '__main__':
@@ -219,6 +258,11 @@ if __name__ == '__main__':
         dest='skip_regex',
         help='toggle searching by checksum rather than name first')
 
+    parser.add_argument('-i', '--interactive',
+                        default=False,
+                        action='store_true',
+                        help='ask for file deletion interactively')
+
     args = parser.parse_args()
 
     if args.log_level != 3 and not args.log_file:
@@ -244,4 +288,4 @@ if __name__ == '__main__':
     logger.debug("Args: {0}".format(args))
 
     main(args.path, args.no_action, args.recursive, args.skip_regex,
-         args.pattern)
+         args.pattern, args.interactive)

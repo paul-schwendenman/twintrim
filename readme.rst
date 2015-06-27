@@ -44,6 +44,7 @@ optional arguments:
   -p PATTERN, --pattern PATTERN
                         set filename matching regex
   -c, --only-checksum   toggle searching by checksum rather than name first
+  -i, --interactive     ask for file deletion interactively
 
 examples:
 
