@@ -18,7 +18,7 @@ def create_filenames(filenames, root):
     Makes a generator that yields Filename objects
 
     Filename objects are a helper to allow multiple representations
-    of the same file to be transfered cleanly.
+    of the same file to be transferred cleanly.
     '''
     logger.info("Creating Filename objects")
     for filename in filenames:
