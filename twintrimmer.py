@@ -145,6 +145,10 @@ def generate_filename_dict(filenames, regex=r'(^.+?)(?: \(\d\))*(\..+)$'):
 
 
 def remove_by_checksum(list_of_names, no_action, interactive):
+    '''
+    This function first groups the files by checksum, and then removes all
+    but one copy of the file.
+    '''
     hashes = generate_checksum_dict(list_of_names)
     for hash in hashes:
         if len(hashes[hash]) > 1:
@@ -176,7 +180,8 @@ def remove_by_checksum(list_of_names, no_action, interactive):
 def walk_path(path, no_action, recursive, skip_regex, regex_pattern,
               interactive):
     '''
-    This function handles all options and steps through the directory
+    This function steps through the directory structure and identifies
+    groups for more in depth investigation.
     '''
     for root, dirs, filenames in os.walk(path):
         if not recursive and root != path:
@@ -204,6 +209,9 @@ def walk_path(path, no_action, recursive, skip_regex, regex_pattern,
 
 
 def main():
+    '''
+        The main function handles all the parsing of arguments.
+    '''
     epilog = '''
     examples:
 
