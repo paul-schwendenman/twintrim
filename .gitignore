@@ -1,2 +1,6 @@
 *~
-*.pyc
+*.py[cod]
+
+# Distribution / packaging
+dist/
+*.egg-info/
