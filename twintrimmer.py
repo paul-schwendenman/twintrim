@@ -13,7 +13,7 @@ import logging
 import textwrap
 from collections import defaultdict, namedtuple
 
-logger = logging.getLogger('')
+LOGGER = logging.getLogger('')
 
 Filename = namedtuple('Filename', ['name', 'base', 'ext', 'path'])
 
@@ -25,7 +25,7 @@ def create_filenames(filenames, root):
     Filename objects are a helper to allow multiple representations
     of the same file to be transferred cleanly.
     '''
-    logger.info("Creating Filename objects")
+    LOGGER.info("Creating Filename objects")
     for filename in filenames:
         yield Filename(filename, *os.path.splitext(filename),
                        path=os.path.join(root, filename))
@@ -36,7 +36,7 @@ def generate_checksum(filename):
     A helper function that will generate the
     check sum of a file.
     '''
-    logger.info("Generating checksum for {0}".format(filename))
+    LOGGER.info("Generating checksum for %s", filename)
     md5 = hashlib.md5()
     with open(filename, 'rb') as file:
         for chunk in iter(lambda: file.read(128 * md5.block_size), b''):
@@ -72,8 +72,7 @@ def pick_shorter_name(file1, file2):
 
     It also picks "file (1).txt" over "file (2).txt"
     '''
-    logger.debug("Finding the shortest of {0} and {1}".format(file1.name,
-                                                              file2.name))
+    LOGGER.debug("Finding the shortest of %s and %s", file1.name, file2.name)
     if len(file1.name) > len(file2.name):
         return file2
     elif len(file1.name) < len(file2.name) or file1.name < file2.name:
@@ -107,11 +106,11 @@ def ask_for_best(default, rest):
                 best = [file for file in files if file.name == result][0]
                 break
         rest = set(files) - {best}
-        logger.warning('User picked {0} over {1}'.format(best, default))
+        LOGGER.warning('User picked %s over %s', best, default)
 
     except KeyboardInterrupt:
         print('\nSkipped')
-        logger.warning('User skipped in interactive mode')
+        LOGGER.warning('User skipped in interactive mode')
         best = default
         rest = {}
 
@@ -123,7 +122,7 @@ def generate_checksum_dict(filenames):
     This function will create a dictionary of checksums mapped to
     a list of filenames.
     '''
-    logger.info("Generating dictionary based on checksum")
+    LOGGER.info("Generating dictionary based on checksum")
     checksum_dict = defaultdict(set)
 
     for filename in filenames:
@@ -137,7 +136,7 @@ def generate_filename_dict(filenames, expr=r'(^.+?)(?: \(\d\))*(\..+)$'):
     This function will create a dictionary of filename parts mapped to a list
     of the real filenames.
     '''
-    logger.info("Generating dictionary based on regular expression")
+    LOGGER.info("Generating dictionary based on regular expression")
     filename_dict = defaultdict(set)
 
     regex = re.compile(expr)
@@ -145,8 +144,8 @@ def generate_filename_dict(filenames, expr=r'(^.+?)(?: \(\d\))*(\..+)$'):
     for filename in filenames:
         match = regex.match(filename.name)
         if match:
-            logger.debug('Regex groups for {0}: {1}'.format(
-                filename.name, str(match.groups())))
+            LOGGER.debug('Regex groups for %s: %s', filename.name,
+                         str(match.groups()))
             filename_dict[match.groups()].add(filename)
 
     return filename_dict
@@ -160,10 +159,9 @@ def remove_by_checksum(list_of_names, no_action, interactive):
     files = generate_checksum_dict(list_of_names)
     for file in files:
         if len(files[file]) > 1:
-            logger.info("Investigating duplicate checksum {0}".format(file))
-            logger.debug("Keys for {0} are {1}".format(file, ', '.join([
-                item.name for item in files[file]
-            ])))
+            LOGGER.info("Investigating duplicate checksum %s", file)
+            LOGGER.debug("Keys for %s are %s", file,
+                         ', '.join([item.name for item in files[file]]))
             best = functools.reduce(pick_shorter_name, files[file])
             rest = files[file] - {best}
 
@@ -173,16 +171,15 @@ def remove_by_checksum(list_of_names, no_action, interactive):
             for bad in rest:
                 if no_action:
                     print('{0} would have been deleted'.format(bad.path))
-                    logger.info('{0} would have been deleted'.format(bad.path))
+                    LOGGER.info('%s would have been deleted', bad.path)
                 else:
-                    logger.info('{0} was deleted'.format(bad.path))
+                    LOGGER.info('%s was deleted', bad.path)
                     os.remove(bad.path)
-            logger.info('{0} was kept as only copy'.format(best.path))
+            LOGGER.info('%s was kept as only copy', best.path)
 
         else:
-            logger.debug(
-                'Skipping non duplicate checksum {0} for key {1}'.format(
-                    file, ', '.join([item.name for item in files[file]])))
+            LOGGER.debug('Skipping non duplicate checksum %s for key %s', file,
+                         ', '.join([item.name for item in files[file]]))
 
 
 def walk_path(path, no_action, recursive, skip_regex, regex_pattern,
@@ -193,7 +190,7 @@ def walk_path(path, no_action, recursive, skip_regex, regex_pattern,
     '''
     for root, _, filenames in os.walk(path):
         if not recursive and root != path:
-            logger.debug("Skipping child directory {0}".format(root))
+            LOGGER.debug("Skipping child directory %s", root)
             continue
 
         if not skip_regex:
@@ -202,15 +199,15 @@ def walk_path(path, no_action, recursive, skip_regex, regex_pattern,
 
             for name in names:
                 if len(names[name]) > 1:
-                    logger.info("Investigating duplicate name {0}".format(name))
-                    logger.debug("Keys for {0} are {1}".format(
-                        name, ', '.join([item.name for item in names[name]])))
+                    LOGGER.info("Investigating duplicate name %s", name)
+                    LOGGER.debug("Keys for %s are %s", name,
+                                 ', '.join([item.name
+                                            for item in names[name]]))
                     remove_by_checksum(names[name], no_action, interactive)
                 else:
-                    logger.debug(
-                        'Skipping non duplicate name {0} for key {1}'.format(
-                            name, ', '.join([item.name
-                                             for item in names[name]])))
+                    LOGGER.debug('Skipping non duplicate name %s for key %s',
+                                 name, ', '.join([item.name
+                                                  for item in names[name]]))
         else:
             remove_by_checksum(create_filenames(filenames, root), no_action,
                                interactive)
@@ -293,16 +290,16 @@ def main():
     formatter_simple = logging.Formatter(
         '%(asctime)s - %(levelname)s - %(message)s')
     stream.setFormatter(formatter_simple)
-    logger.addHandler(stream)
-    logger.setLevel(logging.DEBUG)
+    LOGGER.addHandler(stream)
+    LOGGER.setLevel(logging.DEBUG)
 
     if args.log_file:
         log_file = logging.FileHandler(args.log_file)
         log_file.setFormatter(formatter_simple)
         log_file.setLevel((5 - args.log_level) * 10)
-        logger.addHandler(log_file)
+        LOGGER.addHandler(log_file)
 
-    logger.debug("Args: {0}".format(args))
+    LOGGER.debug("Args: %s", args)
 
     walk_path(args.path, args.no_action, args.recursive, args.skip_regex,
               args.pattern, args.interactive)
