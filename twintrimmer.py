@@ -1,4 +1,9 @@
 #! /usr/bin/env python3
+'''
+Twin trim
+
+A duplicate file remover
+'''
 import os
 import hashlib
 import argparse
@@ -33,8 +38,8 @@ def generate_checksum(filename):
     '''
     logger.info("Generating checksum for {0}".format(filename))
     md5 = hashlib.md5()
-    with open(filename, 'rb') as f:
-        for chunk in iter(lambda: f.read(128 * md5.block_size), b''):
+    with open(filename, 'rb') as file:
+        for chunk in iter(lambda: file.read(128 * md5.block_size), b''):
             md5.update(chunk)
     return md5.digest()
 
@@ -57,14 +62,14 @@ def is_substring(string1, string2):
 
 
 def pick_shorter_name(file1, file2):
-    ''' 
+    '''
     This convenience function will help to find the shorter (often better)
     filename.  If the file names are the same length it returns the file
     that is less, hoping for numerically.
 
     It picks "file.txt" over "file (1).txt", but beware it also picks
     "f.txt" over "file.txt".
-    
+
     It also picks "file (1).txt" over "file (2).txt"
     '''
     logger.debug("Finding the shortest of {0} and {1}".format(file1.name,
@@ -78,12 +83,16 @@ def pick_shorter_name(file1, file2):
 
 
 def ask_for_best(default, rest):
-    hashes = [default] + list(rest)
-    for num, hash in enumerate(hashes):
-        if hash == default:
-            print("{0}. {1} (default)".format(num, hash.name))
+    '''
+    This function allows the user to interactively select which file is
+    selected to be preserved.
+    '''
+    files = [default] + list(rest)
+    for num, file in enumerate(files):
+        if file == default:
+            print("{0}. {1} (default)".format(num, file.name))
         else:
-            print("{0}. {1}".format(num, hash.name))
+            print("{0}. {1}".format(num, file.name))
 
     try:
         while True:
@@ -91,13 +100,13 @@ def ask_for_best(default, rest):
             if result == '':
                 best = default
                 break
-            elif result.isdigit() and int(result) in range(len(hashes)):
-                best = hashes[int(result)]
+            elif result.isdigit() and int(result) in range(len(files)):
+                best = files[int(result)]
                 break
-            elif result in [file.name for file in hashes]:
-                best = [file for file in hashes if file.name == result][0]
+            elif result in [file.name for file in files]:
+                best = [file for file in files if file.name == result][0]
                 break
-        rest = set(hashes) - {best}
+        rest = set(files) - {best}
         logger.warning('User picked {0} over {1}'.format(best, default))
 
     except KeyboardInterrupt:
@@ -106,8 +115,7 @@ def ask_for_best(default, rest):
         best = default
         rest = {}
 
-    finally:
-        return best, rest
+    return best, rest
 
 
 def generate_checksum_dict(filenames):
@@ -124,7 +132,7 @@ def generate_checksum_dict(filenames):
     return checksum_dict
 
 
-def generate_filename_dict(filenames, regex=r'(^.+?)(?: \(\d\))*(\..+)$'):
+def generate_filename_dict(filenames, expr=r'(^.+?)(?: \(\d\))*(\..+)$'):
     '''
     This function will create a dictionary of filename parts mapped to a list
     of the real filenames.
@@ -132,7 +140,7 @@ def generate_filename_dict(filenames, regex=r'(^.+?)(?: \(\d\))*(\..+)$'):
     logger.info("Generating dictionary based on regular expression")
     filename_dict = defaultdict(set)
 
-    regex = re.compile(regex)
+    regex = re.compile(expr)
 
     for filename in filenames:
         match = regex.match(filename.name)
@@ -149,15 +157,15 @@ def remove_by_checksum(list_of_names, no_action, interactive):
     This function first groups the files by checksum, and then removes all
     but one copy of the file.
     '''
-    hashes = generate_checksum_dict(list_of_names)
-    for hash in hashes:
-        if len(hashes[hash]) > 1:
-            logger.info("Investigating duplicate checksum {0}".format(hash))
-            logger.debug("Keys for {0} are {1}".format(hash, ', '.join([
-                item.name for item in hashes[hash]
+    files = generate_checksum_dict(list_of_names)
+    for file in files:
+        if len(files[file]) > 1:
+            logger.info("Investigating duplicate checksum {0}".format(file))
+            logger.debug("Keys for {0} are {1}".format(file, ', '.join([
+                item.name for item in files[file]
             ])))
-            best = functools.reduce(pick_shorter_name, hashes[hash])
-            rest = hashes[hash] - {best}
+            best = functools.reduce(pick_shorter_name, files[file])
+            rest = files[file] - {best}
 
             if interactive:
                 best, rest = ask_for_best(best, rest)
@@ -174,7 +182,7 @@ def remove_by_checksum(list_of_names, no_action, interactive):
         else:
             logger.debug(
                 'Skipping non duplicate checksum {0} for key {1}'.format(
-                    hash, ', '.join([item.name for item in hashes[hash]])))
+                    file, ', '.join([item.name for item in files[file]])))
 
 
 def walk_path(path, no_action, recursive, skip_regex, regex_pattern,
@@ -183,7 +191,7 @@ def walk_path(path, no_action, recursive, skip_regex, regex_pattern,
     This function steps through the directory structure and identifies
     groups for more in depth investigation.
     '''
-    for root, dirs, filenames in os.walk(path):
+    for root, _, filenames in os.walk(path):
         if not recursive and root != path:
             logger.debug("Skipping child directory {0}".format(root))
             continue
@@ -212,7 +220,7 @@ def main():
     '''
         The main function handles all the parsing of arguments.
     '''
-    epilog = '''
+    epilog = r'''
     examples:
 
         find matches with default regex:
