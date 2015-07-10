@@ -138,7 +138,7 @@ def ask_for_best(default, rest):
     return best, rest
 
 
-def generate_checksum_dict(filenames):
+def generate_checksum_dict(filenames, hash_name):
     '''
     This function will create a dictionary of checksums mapped to
     a list of filenames.
@@ -147,7 +147,7 @@ def generate_checksum_dict(filenames):
     checksum_dict = defaultdict(set)
 
     for filename in filenames:
-        checksum_dict[generate_checksum(filename.path)].add(filename)
+        checksum_dict[generate_checksum(filename.path, hash_name)].add(filename)
 
     return checksum_dict
 
@@ -172,12 +172,12 @@ def generate_filename_dict(filenames, expr=r'(^.+?)(?: \(\d\))*(\..+)$'):
     return filename_dict
 
 
-def remove_by_checksum(list_of_names, no_action, interactive):
+def remove_by_checksum(list_of_names, no_action, interactive, hash_name):
     '''
     This function first groups the files by checksum, and then removes all
     but one copy of the file.
     '''
-    files = generate_checksum_dict(list_of_names)
+    files = generate_checksum_dict(list_of_names, hash_name)
     for file in files:
         if len(files[file]) > 1:
             LOGGER.info("Investigating duplicate checksum %s", file)
@@ -204,7 +204,7 @@ def remove_by_checksum(list_of_names, no_action, interactive):
 
 
 def walk_path(path, no_action, recursive, skip_regex, regex_pattern,
-              interactive):
+              interactive, hash_name):
     '''
     This function steps through the directory structure and identifies
     groups for more in depth investigation.
@@ -224,14 +224,14 @@ def walk_path(path, no_action, recursive, skip_regex, regex_pattern,
                     LOGGER.debug("Keys for %s are %s", name,
                                  ', '.join([item.name
                                             for item in names[name]]))
-                    remove_by_checksum(names[name], no_action, interactive)
+                    remove_by_checksum(names[name], no_action, interactive, hash_name)
                 else:
                     LOGGER.debug('Skipping non duplicate name %s for key %s',
                                  name, ', '.join([item.name
                                                   for item in names[name]]))
         else:
             remove_by_checksum(create_filenames(filenames, root), no_action,
-                               interactive)
+                               interactive, hash_name)
 
 
 def main():
@@ -330,7 +330,7 @@ def main():
     LOGGER.debug("Args: %s", args)
 
     walk_path(args.path, args.no_action, args.recursive, args.skip_regex,
-              args.pattern, args.interactive)
+              args.pattern, args.interactive, args.hash_function)
 
 
 if __name__ == '__main__':
