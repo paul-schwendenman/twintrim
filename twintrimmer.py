@@ -178,8 +178,6 @@ def remove_by_checksum(list_of_names, no_action, interactive):
                         os.remove(bad.path)
                     except OSError as err:
                         LOGGER.error(err)
-                    except:
-                        LOGGER.exception('Caught Exception')
             LOGGER.info('%s was kept as only copy', best.path)
 
         else:
