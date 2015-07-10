@@ -302,6 +302,7 @@ def main():
     parser.add_argument('--hash-function',
                         type=str,
                         default='md5',
+                        choices=hashlib.algorithms_available,
                         help='set hash function to use for checksums')
     args = parser.parse_args()
 
@@ -310,12 +311,6 @@ def main():
 
     if args.pattern != r'(^.+?)(?: \(\d\))*(\..+)$' and args.skip_regex:
         parser.error('Pattern set while skipping regex checking')
-
-    if args.hash_function not in hashlib.algorithms_available:
-        parser.error(
-            'Invalid hash function selected. \nrecommended: {0}\nall: {1}'.format(
-                ', '.join(hashlib.algorithms_guaranteed),
-                ', '.join(hashlib.algorithms_available)))
 
     stream = logging.StreamHandler()
     stream.setLevel((5 - args.verbosity) * 10)
