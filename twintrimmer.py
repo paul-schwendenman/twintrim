@@ -31,17 +31,38 @@ def create_filenames(filenames, root):
                        path=os.path.join(root, filename))
 
 
-def generate_checksum(filename):
+def generate_checksum(filename, hash_name='md5'):
     '''
     A helper function that will generate the
     check sum of a file.
+
+    According to the hashlib documentation:
+    - hashlib.sha1 should be prefered over hashlib.new('sha1')
+    - the list of available function will change depending on the openssl
+      library
+    - the same function might exist with multiple spellings i.e. SHA1 and sha1
     '''
-    LOGGER.info("Generating checksum for %s", filename)
-    md5 = hashlib.md5()
+    LOGGER.info("Generating checksum with %s for %s", hash_name, filename)
+
+    if hash_name.lower() == 'md5':
+        hash_func = hashlib.md5()
+    elif hash_name.lower() == 'sha1':
+        hash_func = hashlib.sha1()
+    elif hash_name.lower() == 'sha256':
+        hash_func = hashlib.sha256()
+    elif hash_name.lower() == 'sha512':
+        hash_func = hashlib.sha512()
+    elif hash_name.lower() == 'sha224':
+        hash_func = hashlib.sha224()
+    elif hash_name.lower() == 'sha384':
+        hash_func = hashlib.sha384()
+    else:
+        hash_func = hashlib.new(hash_name)
+    
     with open(filename, 'rb') as file:
-        for chunk in iter(lambda: file.read(128 * md5.block_size), b''):
-            md5.update(chunk)
-    return md5.hexdigest()
+        for chunk in iter(lambda: file.read(128 * hash_func.block_size), b''):
+            hash_func.update(chunk)
+    return hash_func.hexdigest()
 
 
 def is_substring(string1, string2):
@@ -277,6 +298,10 @@ def main():
                         action='store_true',
                         help='ask for file deletion interactively')
 
+    parser.add_argument('--hash-function',
+                        type=str,
+                        default='md5',
+                        help='set hash function to use for checksums')
     args = parser.parse_args()
 
     if args.log_level != 3 and not args.log_file:
@@ -284,6 +309,9 @@ def main():
 
     if args.pattern != r'(^.+?)(?: \(\d\))*(\..+)$' and args.skip_regex:
         parser.error('Pattern set while skipping regex checking')
+
+    if args.hash_function not in hashlib.algorithms_available:
+        parser.error('Invalid hash function selected. \nrecommended: {0}\nall: {1}'.format(', '.join(hashlib.algorithms_guaranteed), ', '.join(hashlib.algorithms_available)))
 
     stream = logging.StreamHandler()
     stream.setLevel((5 - args.verbosity) * 10)
