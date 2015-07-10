@@ -41,7 +41,7 @@ def generate_checksum(filename):
     with open(filename, 'rb') as file:
         for chunk in iter(lambda: file.read(128 * md5.block_size), b''):
             md5.update(chunk)
-    return md5.digest()
+    return md5.hexdigest()
 
 
 def is_substring(string1, string2):
