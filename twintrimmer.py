@@ -44,17 +44,17 @@ def generate_checksum(filename, hash_name='md5'):
     '''
     LOGGER.info("Generating checksum with %s for %s", hash_name, filename)
 
-    if hash_name.lower() == 'md5':
+    if hash_name.lower() in ('md5', 'MD5'):
         hash_func = hashlib.md5()
-    elif hash_name.lower() == 'sha1':
+    elif hash_name.lower() in ('sha1', 'SHA1'):
         hash_func = hashlib.sha1()
-    elif hash_name.lower() == 'sha256':
+    elif hash_name.lower() in ('sha256', 'SHA256'):
         hash_func = hashlib.sha256()
-    elif hash_name.lower() == 'sha512':
+    elif hash_name.lower() in ('sha512', 'SHA512'):
         hash_func = hashlib.sha512()
-    elif hash_name.lower() == 'sha224':
+    elif hash_name.lower() in ('sha224', 'SHA224'):
         hash_func = hashlib.sha224()
-    elif hash_name.lower() == 'sha384':
+    elif hash_name.lower() in ('sha384', 'SHA384'):
         hash_func = hashlib.sha384()
     else:
         hash_func = hashlib.new(hash_name)
