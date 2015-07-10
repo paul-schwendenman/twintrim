@@ -149,7 +149,8 @@ def generate_checksum_dict(filenames, hash_name):
 
     for filename in filenames:
         try:
-            checksum_dict[generate_checksum(filename.path, hash_name)].add(filename)
+            checksum_dict[generate_checksum(filename.path,
+                                            hash_name)].add(filename)
         except OSError as err:
             LOGGER.error('Checksum generation error: %s', err)
 
