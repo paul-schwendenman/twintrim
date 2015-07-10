@@ -174,7 +174,12 @@ def remove_by_checksum(list_of_names, no_action, interactive):
                     LOGGER.info('%s would have been deleted', bad.path)
                 else:
                     LOGGER.info('%s was deleted', bad.path)
-                    os.remove(bad.path)
+                    try:
+                        os.remove(bad.path)
+                    except OSError as err:
+                        LOGGER.error(err)
+                    except:
+                        LOGGER.exception('Caught Exception')
             LOGGER.info('%s was kept as only copy', best.path)
 
         else:
@@ -254,7 +259,7 @@ def main():
                         help='search directories recursively')
     parser.add_argument('--verbosity',
                         type=int,
-                        default=0,
+                        default=1,
                         help='set print debug level')
     parser.add_argument('--log-file', help='write to log file.')
     parser.add_argument('--log-level',
