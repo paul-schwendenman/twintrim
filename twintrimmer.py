@@ -4,6 +4,7 @@ Twin trim
 
 A duplicate file remover
 '''
+import sys
 import os
 import hashlib
 import argparse
@@ -282,6 +283,9 @@ def main():
 
     args = parser.parse_args()
 
+    if not os.path.isdir(args.path):
+        parser.error('path was not a directory: "{0}"'.format(args.path))
+
     if args.log_level != 3 and not args.log_file:
         parser.error('Log level set without log file')
 
@@ -297,7 +301,10 @@ def main():
     LOGGER.setLevel(logging.DEBUG)
 
     if args.log_file:
-        log_file = logging.FileHandler(args.log_file)
+        try:
+            log_file = logging.FileHandler(args.log_file)
+        except OSError as err:
+            sys.exit("Couldn't open log file: {0}".format(err))
         log_file.setFormatter(formatter_simple)
         log_file.setLevel((5 - args.log_level) * 10)
         LOGGER.addHandler(log_file)
