@@ -32,17 +32,38 @@ def create_filenames(filenames, root):
                        path=os.path.join(root, filename))
 
 
-def generate_checksum(filename):
+def generate_checksum(filename, hash_name='md5'):
     '''
     A helper function that will generate the
     check sum of a file.
+
+    According to the hashlib documentation:
+    - hashlib.sha1 should be prefered over hashlib.new('sha1')
+    - the list of available function will change depending on the openssl
+      library
+    - the same function might exist with multiple spellings i.e. SHA1 and sha1
     '''
-    LOGGER.info("Generating checksum for %s", filename)
-    md5 = hashlib.md5()
+    LOGGER.info("Generating checksum with %s for %s", hash_name, filename)
+
+    if hash_name.lower() in ('md5', 'MD5'):
+        hash_func = hashlib.md5()
+    elif hash_name.lower() in ('sha1', 'SHA1'):
+        hash_func = hashlib.sha1()
+    elif hash_name.lower() in ('sha256', 'SHA256'):
+        hash_func = hashlib.sha256()
+    elif hash_name.lower() in ('sha512', 'SHA512'):
+        hash_func = hashlib.sha512()
+    elif hash_name.lower() in ('sha224', 'SHA224'):
+        hash_func = hashlib.sha224()
+    elif hash_name.lower() in ('sha384', 'SHA384'):
+        hash_func = hashlib.sha384()
+    else:
+        hash_func = hashlib.new(hash_name)
+
     with open(filename, 'rb') as file:
-        for chunk in iter(lambda: file.read(128 * md5.block_size), b''):
-            md5.update(chunk)
-    return md5.digest()
+        for chunk in iter(lambda: file.read(128 * hash_func.block_size), b''):
+            hash_func.update(chunk)
+    return hash_func.hexdigest()
 
 
 def is_substring(string1, string2):
@@ -118,7 +139,7 @@ def ask_for_best(default, rest):
     return best, rest
 
 
-def generate_checksum_dict(filenames):
+def generate_checksum_dict(filenames, hash_name):
     '''
     This function will create a dictionary of checksums mapped to
     a list of filenames.
@@ -128,7 +149,7 @@ def generate_checksum_dict(filenames):
 
     for filename in filenames:
         try:
-            checksum_dict[generate_checksum(filename.path)].add(filename)
+            checksum_dict[generate_checksum(filename.path, hash_name)].add(filename)
         except OSError as err:
             LOGGER.error('Checksum generation error: %s', err)
 
@@ -155,12 +176,12 @@ def generate_filename_dict(filenames, expr=r'(^.+?)(?: \(\d\))*(\..+)$'):
     return filename_dict
 
 
-def remove_by_checksum(list_of_names, no_action, interactive):
+def remove_by_checksum(list_of_names, no_action, interactive, hash_name):
     '''
     This function first groups the files by checksum, and then removes all
     but one copy of the file.
     '''
-    files = generate_checksum_dict(list_of_names)
+    files = generate_checksum_dict(list_of_names, hash_name)
     for file in files:
         if len(files[file]) > 1:
             LOGGER.info("Investigating duplicate checksum %s", file)
@@ -190,7 +211,7 @@ def remove_by_checksum(list_of_names, no_action, interactive):
 
 
 def walk_path(path, no_action, recursive, skip_regex, regex_pattern,
-              interactive):
+              interactive, hash_name):
     '''
     This function steps through the directory structure and identifies
     groups for more in depth investigation.
@@ -210,14 +231,15 @@ def walk_path(path, no_action, recursive, skip_regex, regex_pattern,
                     LOGGER.debug("Keys for %s are %s", name,
                                  ', '.join([item.name
                                             for item in names[name]]))
-                    remove_by_checksum(names[name], no_action, interactive)
+                    remove_by_checksum(names[name], no_action, interactive,
+                                       hash_name)
                 else:
                     LOGGER.debug('Skipping non duplicate name %s for key %s',
                                  name, ', '.join([item.name
                                                   for item in names[name]]))
         else:
             remove_by_checksum(create_filenames(filenames, root), no_action,
-                               interactive)
+                               interactive, hash_name)
 
 
 def main():
@@ -284,6 +306,11 @@ def main():
                         action='store_true',
                         help='ask for file deletion interactively')
 
+    parser.add_argument('--hash-function',
+                        type=str,
+                        default='md5',
+                        choices=hashlib.algorithms_available,
+                        help='set hash function to use for checksums')
     args = parser.parse_args()
 
     if not os.path.isdir(args.path):
@@ -320,7 +347,7 @@ def main():
     LOGGER.debug("Args: %s", args)
 
     walk_path(args.path, args.no_action, args.recursive, args.skip_regex,
-              args.pattern, args.interactive)
+              args.pattern, args.interactive, args.hash_function)
 
 
 if __name__ == '__main__':
