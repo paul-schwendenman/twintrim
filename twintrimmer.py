@@ -58,7 +58,7 @@ def generate_checksum(filename, hash_name='md5'):
         hash_func = hashlib.sha384()
     else:
         hash_func = hashlib.new(hash_name)
-    
+
     with open(filename, 'rb') as file:
         for chunk in iter(lambda: file.read(128 * hash_func.block_size), b''):
             hash_func.update(chunk)
@@ -224,7 +224,8 @@ def walk_path(path, no_action, recursive, skip_regex, regex_pattern,
                     LOGGER.debug("Keys for %s are %s", name,
                                  ', '.join([item.name
                                             for item in names[name]]))
-                    remove_by_checksum(names[name], no_action, interactive, hash_name)
+                    remove_by_checksum(names[name], no_action, interactive,
+                                       hash_name)
                 else:
                     LOGGER.debug('Skipping non duplicate name %s for key %s',
                                  name, ', '.join([item.name
@@ -311,7 +312,10 @@ def main():
         parser.error('Pattern set while skipping regex checking')
 
     if args.hash_function not in hashlib.algorithms_available:
-        parser.error('Invalid hash function selected. \nrecommended: {0}\nall: {1}'.format(', '.join(hashlib.algorithms_guaranteed), ', '.join(hashlib.algorithms_available)))
+        parser.error(
+            'Invalid hash function selected. \nrecommended: {0}\nall: {1}'.format(
+                ', '.join(hashlib.algorithms_guaranteed),
+                ', '.join(hashlib.algorithms_available)))
 
     stream = logging.StreamHandler()
     stream.setLevel((5 - args.verbosity) * 10)
