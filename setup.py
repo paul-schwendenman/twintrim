@@ -4,7 +4,7 @@
 from setuptools import setup
 
 setup(name='twintrimmer',
-      version='0.4',
+      version='0.5',
       description='tool for removing duplicate files',
       author='Paul Schwendenman',
       url='https://github.com/paul-schwendenman/twintrim',
