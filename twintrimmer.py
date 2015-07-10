@@ -127,7 +127,10 @@ def generate_checksum_dict(filenames):
     checksum_dict = defaultdict(set)
 
     for filename in filenames:
-        checksum_dict[generate_checksum(filename.path)].add(filename)
+        try:
+            checksum_dict[generate_checksum(filename.path)].add(filename)
+        except OSError as err:
+            LOGGER.error('Checksum generation error: %s', err)
 
     return checksum_dict
 
@@ -178,7 +181,7 @@ def remove_by_checksum(list_of_names, no_action, interactive):
                     try:
                         os.remove(bad.path)
                     except OSError as err:
-                        LOGGER.error(err)
+                        LOGGER.error('File deletion error: %s', err)
             LOGGER.info('%s was kept as only copy', best.path)
 
         else:
@@ -291,6 +294,11 @@ def main():
 
     if args.pattern != r'(^.+?)(?: \(\d\))*(\..+)$' and args.skip_regex:
         parser.error('Pattern set while skipping regex checking')
+
+    try:
+        re.compile(args.pattern)
+    except re.error:
+        parser.error('Invalid regular expression: "{0}"'.format(args.pattern))
 
     stream = logging.StreamHandler()
     stream.setLevel((5 - args.verbosity) * 10)
