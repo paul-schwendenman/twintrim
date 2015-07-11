@@ -24,7 +24,8 @@ Usage
 
 usage: twintrimmer.py [-h] [-n] [-r] [--verbosity VERBOSITY]
                       [--log-file LOG_FILE] [--log-level LOG_LEVEL]
-                      [-p PATTERN] [-c]
+                      [-p PATTERN] [-c] [-i]
+                      [--hash-function {sha1,MD5,DSA,DSA-SHA,SHA384,ripemd160,MD4,sha384,dsaWithSHA,sha256,ecdsa-with-SHA1,SHA256,RIPEMD160,SHA,dsaEncryption,SHA224,sha224,whirlpool,md4,sha512,sha,SHA1,md5,SHA512}]
                       path
 
 tool for removing duplicate files
@@ -45,6 +46,8 @@ optional arguments:
                         set filename matching regex
   -c, --only-checksum   toggle searching by checksum rather than name first
   -i, --interactive     ask for file deletion interactively
+  --hash-function {sha1,MD5,DSA,DSA-SHA,SHA384,ripemd160,MD4,sha384,dsaWithSHA,sha256,ecdsa-with-SHA1,SHA256,RIPEMD160,SHA,dsaEncryption,SHA224,sha224,whirlpool,md4,sha512,sha,SHA1,md5,SHA512}
+                        set hash function to use for checksums
 
 examples:
 
@@ -57,7 +60,7 @@ examples:
         $  ls examples/
         Google.html  Google.html~
         $ ./twintrimmer.py -n -p '(^.+?)(?: \(\d\))*\..+' examples/
-        examples/Google.html~ to be deleted
+        examples/Google.html~ would have been deleted
 
     find matches with "__1" added to basename::
 
