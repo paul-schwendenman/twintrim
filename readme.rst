@@ -25,7 +25,7 @@ Usage
 usage: twintrimmer.py [-h] [-n] [-r] [--verbosity VERBOSITY]
                       [--log-file LOG_FILE] [--log-level LOG_LEVEL]
                       [-p PATTERN] [-c] [-i]
-                      [--hash-function {sha1,MD5,DSA,DSA-SHA,SHA384,ripemd160,MD4,sha384,dsaWithSHA,sha256,ecdsa-with-SHA1,SHA256,RIPEMD160,SHA,dsaEncryption,SHA224,sha224,whirlpool,md4,sha512,sha,SHA1,md5,SHA512}]
+                      [--hash-function {'sha224', 'sha384', 'sha1', 'md5', 'sha512', 'sha256'}
                       path
 
 tool for removing duplicate files
@@ -46,7 +46,7 @@ optional arguments:
                         set filename matching regex
   -c, --only-checksum   toggle searching by checksum rather than name first
   -i, --interactive     ask for file deletion interactively
-  --hash-function {sha1,MD5,DSA,DSA-SHA,SHA384,ripemd160,MD4,sha384,dsaWithSHA,sha256,ecdsa-with-SHA1,SHA256,RIPEMD160,SHA,dsaEncryption,SHA224,sha224,whirlpool,md4,sha512,sha,SHA1,md5,SHA512}
+  --hash-function {'sha224', 'sha384', 'sha1', 'md5', 'sha512', 'sha256'}
                         set hash function to use for checksums
 
 examples:
