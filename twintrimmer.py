@@ -177,7 +177,8 @@ def generate_filename_dict(filenames, expr=r'(^.+?)(?: \(\d\))*(\..+)$'):
     return filename_dict
 
 
-def remove_by_checksum(list_of_names, no_action, interactive, hash_name):
+def remove_by_checksum(list_of_names, no_action, interactive, hash_name,
+                       make_link):
     '''
     This function first groups the files by checksum, and then removes all
     but one copy of the file.
@@ -202,6 +203,8 @@ def remove_by_checksum(list_of_names, no_action, interactive, hash_name):
                     LOGGER.info('%s was deleted', bad.path)
                     try:
                         os.remove(bad.path)
+                        if make_link:
+                            os.link(best.path, bad.path)
                     except OSError as err:
                         LOGGER.error('File deletion error: %s', err)
             LOGGER.info('%s was kept as only copy', best.path)
@@ -212,7 +215,7 @@ def remove_by_checksum(list_of_names, no_action, interactive, hash_name):
 
 
 def walk_path(path, no_action, recursive, skip_regex, regex_pattern,
-              interactive, hash_name):
+              interactive, hash_name, make_link):
     '''
     This function steps through the directory structure and identifies
     groups for more in depth investigation.
@@ -233,14 +236,14 @@ def walk_path(path, no_action, recursive, skip_regex, regex_pattern,
                                  ', '.join([item.name
                                             for item in names[name]]))
                     remove_by_checksum(names[name], no_action, interactive,
-                                       hash_name)
+                                       hash_name, make_link)
                 else:
                     LOGGER.debug('Skipping non duplicate name %s for key %s',
                                  name, ', '.join([item.name
                                                   for item in names[name]]))
         else:
             remove_by_checksum(create_filenames(filenames, root), no_action,
-                               interactive, hash_name)
+                               interactive, hash_name, make_link)
 
 
 def main():
@@ -312,6 +315,11 @@ def main():
                         default='md5',
                         choices=hashlib.algorithms_available,
                         help='set hash function to use for checksums')
+    parser.add_argument('--make-link',
+                        default=False,
+                        action='store_true',
+                        help='create hard link rather than remove file')
+
     args = parser.parse_args()
 
     if not os.path.isdir(args.path):
@@ -348,7 +356,8 @@ def main():
     LOGGER.debug("Args: %s", args)
 
     walk_path(args.path, args.no_action, args.recursive, args.skip_regex,
-              args.pattern, args.interactive, args.hash_function)
+              args.pattern, args.interactive, args.hash_function,
+              args.make_link)
 
 
 if __name__ == '__main__':
