@@ -18,6 +18,10 @@ class TestCreateFilenames(unittest.TestCase):
         list_output = list(twintrimmer.create_filenames(filenames, root))
         self.assertEqual(len(list_output), 1)
         self.assertIs(type(list_output[0]), twintrimmer.Filename)
+        self.assertEqual(list_output[0].name, 'test_file.txt')
+        self.assertEqual(list_output[0].base, 'test_file')
+        self.assertEqual(list_output[0].ext, '.txt')
+        self.assertEqual(list_output[0].path, '/test_file.txt')
 
     def test_no_files(self):
         filenames = []
