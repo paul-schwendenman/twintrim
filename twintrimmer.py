@@ -178,7 +178,8 @@ def generate_filename_dict(filenames, expr=r'(^.+?)(?: \(\d\))*(\..+)$'):
 
 
 def remove_by_checksum(list_of_names, no_action, interactive, hash_name,
-                       make_link):
+                       make_link,
+                       remove_links=True):
     '''
     This function first groups the files by checksum, and then removes all
     but one copy of the file.
@@ -202,6 +203,10 @@ def remove_by_checksum(list_of_names, no_action, interactive, hash_name,
                 else:
                     LOGGER.info('%s was deleted', bad.path)
                     try:
+                        if not remove_links and os.path.samefile(best.path,
+                                                                 bad.path):
+                            LOGGER.info('Hard link detected %s', bad.path)
+                            continue
                         os.remove(bad.path)
                         if make_link:
                             os.link(best.path, bad.path)
