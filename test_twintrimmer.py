@@ -44,6 +44,17 @@ class TestGenerateChecksum(unittest.TestCase):
       m.assert_called_once_with('foo')
       self.assertEqual(checksum, 'cb1eda4e6df6ff361f9ed94f91ce5386')
 
+  def test_generate_checksum_skip_calculation(self):
+      mock_mock_open = mock_open(read_data='bibble\n\0')
+      mock_hashlib = unittest.mock.MagicMock()
+
+      with patch('builtins.open', mock_mock_open, create=True):
+          with patch('hashlib.md5',  mock_hashlib):
+              checksum = twintrimmer.generate_checksum('foo')
+
+      m.assert_called_once_with('foo')
+      self.assertEqual(checksum, 'cb1eda4e6df6ff361f9ed94f91ce5386')
+
 
 if __name__ == '__main__':
     unittest.main()
