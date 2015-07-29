@@ -178,7 +178,7 @@ def generate_filename_dict(filenames, expr=r'(^.+?)(?: \(\d\))*(\..+)$'):
 
 
 def remove_by_checksum(list_of_names, no_action=True, interactive=False, hash_name='sha1',
-                       make_link=False, remove_links=False, **options):
+                       make_links=False, remove_links=False, **options):
     '''
     This function first groups the files by checksum, and then removes all
     but one copy of the file.
@@ -197,17 +197,24 @@ def remove_by_checksum(list_of_names, no_action=True, interactive=False, hash_na
 
             for bad in rest:
                 if no_action:
-                    print('{0} would have been deleted'.format(bad.path))
-                    LOGGER.info('%s would have been deleted', bad.path)
+                    if not remove_links and os.path.samefile(best.path,
+                                                             bad.path):
+                        print('{0} hard link would have been skipped'.format(bad.path))
+                        LOGGER.info('Hard link would have been skipped %s', bad.path)
+                    else:
+                        print('{0} would have been deleted'.format(bad.path))
+                        LOGGER.info('%s would have been deleted', bad.path)
                 else:
-                    LOGGER.info('%s was deleted', bad.path)
                     try:
                         if not remove_links and os.path.samefile(best.path,
                                                                  bad.path):
                             LOGGER.info('Hard link detected %s', bad.path)
                             continue
+                        else:
+                            LOGGER.info('%s was deleted', bad.path)
                         os.remove(bad.path)
                         if make_link:
+                            LOGGER.info('Hard link created')
                             os.link(best.path, bad.path)
                     except OSError as err:
                         LOGGER.error('File deletion error: %s', err)
@@ -318,11 +325,11 @@ def main():
                         default='md5',
                         choices=hashlib.algorithms_available,
                         help='set hash function to use for checksums')
-    parser.add_argument('--make-link',
+    parser.add_argument('--make-links',
                         default=False,
                         action='store_true',
                         help='create hard link rather than remove file')
-    parser.add_argument('--remove-link',
+    parser.add_argument('--remove-links',
                         default=False,
                         action='store_true',
                         help='remove hardlinks rather than skipping')
