@@ -61,5 +61,20 @@ class TestIsSubstring(unittest.TestCase):
     def test_this_is_not_substring_of_that(self):
         self.assertFalse(twintrimmer.is_substring('this', 'that'))
 
+class TestPickShorterName(unittest.TestCase):
+    def setUp(self):
+        filenames = ['file.txt', 'file1.txt', 'file2.txt']
+        root = '/'
+        self.file, self.file1, self.file2 = list(twintrimmer.create_filenames(filenames, root))
+
+    def test_file_txt_shorter_than_file_1_txt(self):
+        self.assertEqual(twintrimmer.pick_shorter_name(self.file, self.file1), self.file)
+
+    def test_file_1_txt_shorter_than_file_2_txt(self):
+        self.assertEqual(twintrimmer.pick_shorter_name(self.file1, self.file2), self.file1)
+
+    def test_file_1_txt_not_shorter_than_file_txt(self):
+        self.assertEqual(twintrimmer.pick_shorter_name(self.file1, self.file), self.file)
+
 if __name__ == '__main__':
     unittest.main()
