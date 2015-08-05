@@ -213,7 +213,7 @@ def remove_by_checksum(list_of_names, no_action=True, interactive=False, hash_na
                         else:
                             LOGGER.info('%s was deleted', bad.path)
                         os.remove(bad.path)
-                        if make_link:
+                        if make_links:
                             LOGGER.info('Hard link created')
                             os.link(best.path, bad.path)
                     except OSError as err:
