@@ -51,6 +51,15 @@ class TestGenerateChecksum(fake_filesystem_unittest.TestCase):
             checksum = twintrimmer.generate_checksum('/nonexistentfile.txt')
 
 
+class TestIsSubstring(unittest.TestCase):
+    def test_this_is_substring_of_this1(self):
+        self.assertTrue(twintrimmer.is_substring('this', 'this1'))
+
+    def test_that1_is_substring_of_that(self):
+        self.assertTrue(twintrimmer.is_substring('that1', 'that'))
+
+    def test_this_is_not_substring_of_that(self):
+        self.assertFalse(twintrimmer.is_substring('this', 'that'))
 
 if __name__ == '__main__':
     unittest.main()
