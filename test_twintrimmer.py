@@ -2,6 +2,7 @@ import unittest
 import twintrimmer
 from unittest.mock import patch, mock_open
 import builtins
+import fake_filesystem_unittest
 
 class TestSomeThings(unittest.TestCase):
     def setUp(self):
@@ -31,30 +32,24 @@ class TestCreateFilenames(unittest.TestCase):
         list_output = list(twintrimmer.create_filenames(filenames, root))
         self.assertEqual(len(list_output), 0)
 
-class TestGenerateChecksum(unittest.TestCase):
-  def setUp(self):
-      pass
+class TestGenerateChecksum(fake_filesystem_unittest.TestCase):
+    def setUp(self):
+        self.setUpPyfakefs()
+        self.fs.CreateFile('/test/lots/of/nonexistent/directories/full.txt',
+                           contents='First line\nSecond Line\n')
 
-  @unittest.skip('Skip: bug in python issue23004')
-  def test_generate_checksum(self):
-      m = mock_open(read_data='bibble'.encode('utf-8'))
-      with patch('builtins.open', m, create=True):
-          checksum = twintrimmer.generate_checksum('foo')
+    def test_generate_sha1_checksum_for_file(self):
+        checksum = twintrimmer.generate_checksum('/test/lots/of/nonexistent/directories/full.txt', 'sha1')
+        self.assertEqual(checksum, '5a0cd97a76759aafa9fd5e4c5aa2ffe0e6f1720d')
 
-      m.assert_called_once_with('foo')
-      self.assertEqual(checksum, 'cb1eda4e6df6ff361f9ed94f91ce5386')
+    def test_generate_md5_checksum_for_file(self):
+        checksum = twintrimmer.generate_checksum('/test/lots/of/nonexistent/directories/full.txt')
+        self.assertEqual(checksum, 'af55da6adb51f8dc6b4d3758b5bcf8cc')
 
-  @unittest.skip('Unfinished')
-  def test_generate_checksum_skip_calculation(self):
-      mock_mock_open = mock_open(read_data='bibble\n\0')
-      mock_hashlib = unittest.mock.MagicMock()
+    def test_generate_checksum_raises_OSError_for_missing_file(self):
+        with self.assertRaises(OSError):
+            checksum = twintrimmer.generate_checksum('/nonexistentfile.txt')
 
-      with patch('builtins.open', mock_mock_open, create=True):
-          with patch('hashlib.md5',  mock_hashlib):
-              checksum = twintrimmer.generate_checksum('foo')
-
-      m.assert_called_once_with('foo')
-      self.assertEqual(checksum, 'cb1eda4e6df6ff361f9ed94f91ce5386')
 
 
 if __name__ == '__main__':
