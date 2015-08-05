@@ -76,5 +76,20 @@ class TestPickShorterName(unittest.TestCase):
     def test_file_1_txt_not_shorter_than_file_txt(self):
         self.assertEqual(twintrimmer.pick_shorter_name(self.file1, self.file), self.file)
 
+class TestGenerateFilenameDict(unittest.TestCase):
+    def setUp(self):
+        filenames = ['file.txt', 'file (1).txt', 'file (2).txt']
+        root = '/'
+        self.filenames = list(twintrimmer.create_filenames(filenames, root))
+
+    def test_dictionary_has_one_key(self):
+        filename_dict = twintrimmer.generate_filename_dict(self.filenames)
+        self.assertEqual(len(filename_dict.keys()), 1)
+        self.assertEqual(list(filename_dict.keys())[0], ('file', '.txt'))
+
+    def test_custom_regex(self):
+        filename_dict = twintrimmer.generate_filename_dict(self.filenames, r'(^.+?)(?:\..+)')
+        self.assertEqual(len(filename_dict.keys()), 3)
+
 if __name__ == '__main__':
     unittest.main()
