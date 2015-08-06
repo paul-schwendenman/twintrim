@@ -3,6 +3,7 @@ import twintrimmer
 from unittest.mock import patch, mock_open
 import builtins
 import fake_filesystem_unittest
+import os
 
 class TestSomeThings(unittest.TestCase):
     def setUp(self):
@@ -91,7 +92,7 @@ class TestGenerateFilenameDict(unittest.TestCase):
         filename_dict = twintrimmer.generate_filename_dict(self.filenames, r'(^.+?)(?:\..+)')
         self.assertEqual(len(filename_dict.keys()), 3)
 
-class TestRemoveByChecksum(fake_filesystem_unittest.TestCase):
+class TestWalkPath(fake_filesystem_unittest.TestCase):
     def setUp(self):
         '''
         examples/
@@ -141,8 +142,33 @@ class TestRemoveByChecksum(fake_filesystem_unittest.TestCase):
                            contents='\n')
 
     def test_no_action_does_no_action(self):
-        pass
+        twintrimmer.walk_path('examples/',
+                              no_action=True,
+                              recursive=False,
+                              skip_regex=False,
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)$',
+                              interactive=False,
+                              hash_name='md5',
+                              make_link=False)
+        self.assertTrue(os.path.exists('examples/foo (1).txt'))
 
+    def test_removes_duplicate_file_foo_1(self):
+        self.assertTrue(os.path.exists('examples/foo.txt'))
+        self.assertTrue(os.path.exists('examples/foo (1).txt'))
+        self.assertTrue(os.path.exists('examples/foo (2).txt'))
+        self.assertTrue(os.path.exists('examples/foo (3).txt'))
+        twintrimmer.walk_path('examples/',
+                              no_action=False,
+                              recursive=True,
+                              skip_regex=False,
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)$',
+                              interactive=False,
+                              hash_name='md5',
+                              make_link=False)
+        self.assertTrue(os.path.exists('examples/foo.txt'))
+        self.assertFalse(os.path.exists('examples/foo (1).txt'))
+        self.assertFalse(os.path.exists('examples/foo (2).txt'))
+        self.assertTrue(os.path.exists('examples/foo (3).txt'))
 
 
 if __name__ == '__main__':
