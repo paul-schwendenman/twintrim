@@ -157,7 +157,7 @@ def generate_checksum_dict(filenames, hash_name):
     return checksum_dict
 
 
-def generate_filename_dict(filenames, expr=r'(^.+?)(?: \(\d\))*(\..+)$'):
+def generate_filename_dict(filenames, expr=None):
     '''
     This function will create a dictionary of filename parts mapped to a list
     of the real filenames.
@@ -165,6 +165,8 @@ def generate_filename_dict(filenames, expr=r'(^.+?)(?: \(\d\))*(\..+)$'):
     LOGGER.info("Generating dictionary based on regular expression")
     filename_dict = defaultdict(set)
 
+    if expr is None:
+        expr = r'(^.+?)(?: \(\d\))*(\..+)$'
     regex = re.compile(expr)
 
     for filename in filenames:
@@ -230,9 +232,15 @@ def walk_path(path, **options):
     This function steps through the directory structure and identifies
     groups for more in depth investigation.
     '''
+    if 'recursive' not in options:
+        options['recursive'] = False
+    if 'skip_regex' not in options:
+        options['skip_regex'] = False
+    if not options['skip_regex'] and 'regex_pattern' not in options:
+        options['regex_pattern'] = None
     for root, _, filenames in os.walk(path):
         if not options['recursive'] and root != path:
-            LOGGER.debug("Skipping child directory %s", root)
+            LOGGER.debug("Skipping child directory %s of %s", root, path)
             continue
 
         if not options['skip_regex']:
