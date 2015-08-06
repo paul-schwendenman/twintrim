@@ -48,6 +48,8 @@ optional arguments:
   -i, --interactive     ask for file deletion interactively
   --hash-function {'sha224', 'sha384', 'sha1', 'md5', 'sha512', 'sha256'}
                         set hash function to use for checksums
+  --make-link           create hard link rather than remove file
+
 
 examples:
 
