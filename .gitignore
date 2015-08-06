@@ -4,3 +4,7 @@
 # Distribution / packaging
 dist/
 *.egg-info/
+# Tests
+nosetests.json
+# Virtual Env
+env/
