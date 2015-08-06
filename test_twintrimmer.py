@@ -91,5 +91,59 @@ class TestGenerateFilenameDict(unittest.TestCase):
         filename_dict = twintrimmer.generate_filename_dict(self.filenames, r'(^.+?)(?:\..+)')
         self.assertEqual(len(filename_dict.keys()), 3)
 
+class TestRemoveByChecksum(fake_filesystem_unittest.TestCase):
+    def setUp(self):
+        '''
+        examples/
+        ├── baz (1).txt
+        ├── baz.text
+        ├── baz.txt
+        ├── diff (1).txt
+        ├── diff.txt
+        ├── foo (1).txt
+        ├── foo (2).txt
+        ├── foo (3).txt
+        ├── foo.txt
+        ├── recur
+        │   ├── file (2).txt
+        │   └── file.txt
+        └── underscore
+            ├── file__1.txt
+            └── file.txt
+
+        '''
+        self.setUpPyfakefs()
+        self.fs.CreateFile('examples/baz.txt',
+                           contents='foobar\n')
+        self.fs.CreateFile('examples/baz (1).txt',
+                           contents='foobar\n')
+        self.fs.CreateFile('examples/baz.text',
+                           contents='foobar\n')
+        self.fs.CreateFile('examples/diff.txt',
+                           contents='foo')
+        self.fs.CreateFile('examples/diff (1).txt',
+                           contents='baz')
+        self.fs.CreateFile('examples/foo.txt',
+                           contents='foo\n')
+        self.fs.CreateFile('examples/foo (1).txt',
+                           contents='foo\n')
+        self.fs.CreateFile('examples/foo (2).txt',
+                           contents='foo\n')
+        self.fs.CreateFile('examples/foo (3).txt',
+                           contents='foobaz\n')
+        self.fs.CreateFile('examples/recur/file.txt',
+                           contents='touch\n')
+        self.fs.CreateFile('examples/recur/file (2).txt',
+                           contents='touch\n')
+        self.fs.CreateFile('examples/underscore/file.txt',
+                           contents='\n')
+        self.fs.CreateFile('examples/underscore/file__1.txt',
+                           contents='\n')
+
+    def test_no_action_does_no_action(self):
+        pass
+
+
+
 if __name__ == '__main__':
     unittest.main()
