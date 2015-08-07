@@ -159,6 +159,20 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
         self.assertFalse(os.path.exists('examples/foo (2).txt'))
         self.assertTrue(os.path.exists('examples/foo (3).txt'))
 
+    @unittest.expectedFailure
+    def test_removes_duplicate_file_foo_1_with_trailing_backslash(self):
+        self.assertTrue(os.path.exists('examples/foo.txt'))
+        self.assertTrue(os.path.exists('examples/foo (1).txt'))
+        self.assertTrue(os.path.exists('examples/foo (2).txt'))
+        self.assertTrue(os.path.exists('examples/foo (3).txt'))
+        twintrimmer.walk_path('examples/',
+                              no_action=False,
+                              remove_links=True)
+        self.assertTrue(os.path.exists('examples/foo.txt'))
+        self.assertFalse(os.path.exists('examples/foo (1).txt'))
+        self.assertFalse(os.path.exists('examples/foo (2).txt'))
+        self.assertTrue(os.path.exists('examples/foo (3).txt'))
+
 
 if __name__ == '__main__':
     unittest.main()
