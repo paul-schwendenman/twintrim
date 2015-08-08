@@ -5,16 +5,6 @@ import builtins
 import fake_filesystem_unittest
 import os
 
-class TestSomeThings(unittest.TestCase):
-    def setUp(self):
-        pass
-
-    def test_this_things(self):
-        assert True
-
-    def tearDown(self):
-        pass
-
 class TestCreateFilenames(unittest.TestCase):
     def test_one_file(self):
         filenames = ['test_file.txt']
