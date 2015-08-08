@@ -205,6 +205,14 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
         self.assertTrue(os.path.exists('examples/fizz'))
         self.assertFalse(os.path.exists('examples/foo.txt'))
 
+    def test_logs_to_file_when_option_selected(self):
+        twintrimmer.walk_path('examples',
+                              no_action=True,
+                              remove_links=True,
+                              log_file='log.out')
+        self.assertFalse(os.path.exists('log.out'))
+
+
 
 if __name__ == '__main__':
     unittest.main()
