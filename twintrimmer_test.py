@@ -142,6 +142,7 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
         twintrimmer.walk_path('examples/',
                               make_links=True)
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
+        self.assertTrue(os.path.samefile('examples/foo.txt', 'examples/foo (1).txt'))
 
     def test_removes_duplicate_file_foo_1(self):
         self.assertTrue(os.path.exists('examples/foo.txt'))
