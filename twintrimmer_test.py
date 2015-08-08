@@ -194,6 +194,17 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
         self.assertTrue(os.path.exists('examples/foo.txt'))
         self.assertFalse(os.path.exists('examples/foo.txt~'))
 
+    def test_removes_files_skipping_name_match(self):
+        self.fs.CreateFile('examples/fizz',
+                           contents='foo\n')
+        self.assertTrue(os.path.exists('examples/foo.txt'))
+        twintrimmer.walk_path('examples',
+                              skip_regex=True,
+                              no_action=False,
+                              remove_links=True)
+        self.assertTrue(os.path.exists('examples/fizz'))
+        self.assertFalse(os.path.exists('examples/foo.txt'))
+
 
 if __name__ == '__main__':
     unittest.main()
