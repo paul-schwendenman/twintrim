@@ -173,6 +173,16 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
         self.assertFalse(os.path.exists('examples/foo (2).txt'))
         self.assertTrue(os.path.exists('examples/foo (3).txt'))
 
+    def test_removes_duplicate_file_with_custom_regex(self):
+        self.assertTrue(os.path.exists('examples/underscore/file.txt'))
+        self.assertTrue(os.path.exists('examples/underscore/file__1.txt'))
+        twintrimmer.walk_path('examples/underscore',
+                              regex_pattern='(.+?)(?:__\d)*\..*',
+                              no_action=False,
+                              remove_links=True)
+        self.assertTrue(os.path.exists('examples/underscore/file.txt'))
+        self.assertFalse(os.path.exists('examples/underscore/file__1.txt'))
+
 
 if __name__ == '__main__':
     unittest.main()
