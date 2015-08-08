@@ -207,6 +207,13 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
                               log_file='log.out')
         self.assertFalse(os.path.exists('log.out'))
 
+    def test_traverses_directories_recursively(self):
+        twintrimmer.walk_path('examples',
+                              no_action=False,
+                              recursive=True,
+                              remove_links=True)
+        self.assertTrue(os.path.exists('examples/foo.txt'))
+        self.assertFalse(os.path.exists('examples/foo (1).txt'))
 
 
 if __name__ == '__main__':
