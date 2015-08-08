@@ -85,22 +85,24 @@ class TestGenerateFilenameDict(unittest.TestCase):
 class TestWalkPath(fake_filesystem_unittest.TestCase):
     def setUp(self):
         '''
+        Add a fake filesystem matching the following structure:
+
         examples/
-        ├── baz (1).txt
-        ├── baz.text
-        ├── baz.txt
-        ├── diff (1).txt
-        ├── diff.txt
-        ├── foo (1).txt
-        ├── foo (2).txt
-        ├── foo (3).txt
-        ├── foo.txt
+        ├── baz (1).txt		8843d7f
+        ├── baz.text		8843d7f
+        ├── baz.txt		8843d7f
+        ├── diff (1).txt	bbe960a
+        ├── diff.txt		0beec7b
+        ├── foo (1).txt		f1d2d2f
+        ├── foo (2).txt		f1d2d2f
+        ├── foo (3).txt		21eb653
+        ├── foo.txt		f1d2d2f
         ├── recur
-        │   ├── file (2).txt
-        │   └── file.txt
+        │   ├── file (2).txt	f4d1f01
+        │   └── file.txt	f4d1f01
         └── underscore
-            ├── file__1.txt
-            └── file.txt
+            ├── file__1.txt	da39a3e
+            └── file.txt	da39a3e
 
         '''
         self.setUpPyfakefs()
