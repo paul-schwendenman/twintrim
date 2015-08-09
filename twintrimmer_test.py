@@ -154,8 +154,25 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
                            contents='\n')
 
     def test_no_action_does_no_action(self):
-        twintrimmer.walk_path('examples/',
+        twintrimmer.walk_path('examples',
                               no_action=True)
+        self.assertTrue(os.path.exists('examples/foo (1).txt'))
+
+    def test_no_action_does_no_action_removes_links(self):
+        twintrimmer.walk_path('examples',
+                              no_action=True,
+                              remove_links=True)
+        self.assertTrue(os.path.exists('examples/foo (1).txt'))
+
+    def test_no_action_does_no_action_skips_hardlinks(self):
+        twintrimmer.walk_path('examples',
+                              no_action=True,
+                              remove_links=False)
+        self.assertTrue(os.path.exists('examples/foo (1).txt'))
+
+    def test_skip_links_does_no_action_skips_hardlinks(self):
+        twintrimmer.walk_path('examples',
+                              remove_links=False)
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
 
     def test_makes_links_when_expected(self):
