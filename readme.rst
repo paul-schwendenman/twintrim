@@ -81,3 +81,18 @@ cloning the repository, try running::
 
 	./twintrimmer.py examples/
 
+
+Running the Tests
+------------------
+
+To run tests::
+
+    python twintrimmer_test.py
+
+or using nose::
+
+    python3 -m nose --with-json-extended
+
+:note: the requirements.txt file is required to run tests. one of the
+       dependencies includes a personally patched version of pyfakefs
+       which doesn't seem to work on python3.
