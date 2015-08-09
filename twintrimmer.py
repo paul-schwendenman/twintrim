@@ -157,7 +157,7 @@ def generate_checksum_dict(filenames, hash_name):
     return checksum_dict
 
 
-def generate_filename_dict(filenames, expr=r'(^.+?)(?: \(\d\))*(\..+)$'):
+def generate_filename_dict(filenames, expr=None):
     '''
     This function will create a dictionary of filename parts mapped to a list
     of the real filenames.
@@ -165,6 +165,8 @@ def generate_filename_dict(filenames, expr=r'(^.+?)(?: \(\d\))*(\..+)$'):
     LOGGER.info("Generating dictionary based on regular expression")
     filename_dict = defaultdict(set)
 
+    if expr is None:
+        expr = r'(^.+?)(?: \(\d\))*(\..+)$'
     regex = re.compile(expr)
 
     for filename in filenames:
@@ -177,9 +179,8 @@ def generate_filename_dict(filenames, expr=r'(^.+?)(?: \(\d\))*(\..+)$'):
     return filename_dict
 
 
-def remove_by_checksum(list_of_names, no_action, interactive, hash_name,
-                       make_link,
-                       remove_links=True):
+def remove_by_checksum(list_of_names, no_action=True, interactive=False, hash_name='sha1',
+                       make_links=False, remove_links=False, **options):
     '''
     This function first groups the files by checksum, and then removes all
     but one copy of the file.
@@ -198,17 +199,24 @@ def remove_by_checksum(list_of_names, no_action, interactive, hash_name,
 
             for bad in rest:
                 if no_action:
-                    print('{0} would have been deleted'.format(bad.path))
-                    LOGGER.info('%s would have been deleted', bad.path)
+                    if not remove_links and os.path.samefile(best.path,
+                                                             bad.path):
+                        print('{0} hard link would have been skipped'.format(bad.path))
+                        LOGGER.info('Hard link would have been skipped %s', bad.path)
+                    else:
+                        print('{0} would have been deleted'.format(bad.path))
+                        LOGGER.info('%s would have been deleted', bad.path)
                 else:
-                    LOGGER.info('%s was deleted', bad.path)
                     try:
                         if not remove_links and os.path.samefile(best.path,
                                                                  bad.path):
                             LOGGER.info('Hard link detected %s', bad.path)
                             continue
+                        else:
+                            LOGGER.info('%s was deleted', bad.path)
                         os.remove(bad.path)
-                        if make_link:
+                        if make_links:
+                            LOGGER.info('Hard link created')
                             os.link(best.path, bad.path)
                     except OSError as err:
                         LOGGER.error('File deletion error: %s', err)
@@ -219,20 +227,25 @@ def remove_by_checksum(list_of_names, no_action, interactive, hash_name,
                          ', '.join([item.name for item in files[file]]))
 
 
-def walk_path(path, no_action, recursive, skip_regex, regex_pattern,
-              interactive, hash_name, make_link):
+def walk_path(path, **options):
     '''
     This function steps through the directory structure and identifies
     groups for more in depth investigation.
     '''
+    if 'recursive' not in options:
+        options['recursive'] = False
+    if 'skip_regex' not in options:
+        options['skip_regex'] = False
+    if not options['skip_regex'] and 'regex_pattern' not in options:
+        options['regex_pattern'] = None
     for root, _, filenames in os.walk(path):
-        if not recursive and root != path:
-            LOGGER.debug("Skipping child directory %s", root)
+        if not options['recursive'] and root != path:
+            LOGGER.debug("Skipping child directory %s of %s", root, path)
             continue
 
-        if not skip_regex:
+        if not options['skip_regex']:
             names = generate_filename_dict(create_filenames(filenames, root),
-                                           regex_pattern)
+                                           options['regex_pattern'])
 
             for name in names:
                 if len(names[name]) > 1:
@@ -240,15 +253,14 @@ def walk_path(path, no_action, recursive, skip_regex, regex_pattern,
                     LOGGER.debug("Keys for %s are %s", name,
                                  ', '.join([item.name
                                             for item in names[name]]))
-                    remove_by_checksum(names[name], no_action, interactive,
-                                       hash_name, make_link)
+                    remove_by_checksum(names[name], **options)
                 else:
                     LOGGER.debug('Skipping non duplicate name %s for key %s',
                                  name, ', '.join([item.name
                                                   for item in names[name]]))
         else:
-            remove_by_checksum(create_filenames(filenames, root), no_action,
-                               interactive, hash_name, make_link)
+            remove_by_checksum(create_filenames(filenames, root),
+                               **options)
 
 
 def main():
@@ -300,6 +312,7 @@ def main():
                         default=3,
                         help='set log file debug level')
     parser.add_argument('-p', '--pattern',
+                        dest='regex_pattern',
                         type=str,
                         default=r'(^.+?)(?: \(\d\))*(\..+)$',
                         help='set filename matching regex')
@@ -320,10 +333,14 @@ def main():
                         default='md5',
                         choices=hashlib.algorithms_available,
                         help='set hash function to use for checksums')
-    parser.add_argument('--make-link',
+    parser.add_argument('--make-links',
                         default=False,
                         action='store_true',
                         help='create hard link rather than remove file')
+    parser.add_argument('--remove-links',
+                        default=False,
+                        action='store_true',
+                        help='remove hardlinks rather than skipping')
 
     args = parser.parse_args()
 
@@ -333,11 +350,11 @@ def main():
     if args.log_level != 3 and not args.log_file:
         parser.error('Log level set without log file')
 
-    if args.pattern != r'(^.+?)(?: \(\d\))*(\..+)$' and args.skip_regex:
+    if args.regex_pattern != r'(^.+?)(?: \(\d\))*(\..+)$' and args.skip_regex:
         parser.error('Pattern set while skipping regex checking')
 
     try:
-        re.compile(args.pattern)
+        re.compile(args.regex_pattern)
     except re.error:
         parser.error('Invalid regular expression: "{0}"'.format(args.pattern))
 
@@ -360,9 +377,7 @@ def main():
 
     LOGGER.debug("Args: %s", args)
 
-    walk_path(args.path, args.no_action, args.recursive, args.skip_regex,
-              args.pattern, args.interactive, args.hash_function,
-              args.make_link)
+    walk_path(**vars(args))
 
 
 if __name__ == '__main__':
