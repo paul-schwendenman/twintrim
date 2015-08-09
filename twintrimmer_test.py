@@ -37,6 +37,26 @@ class TestGenerateChecksum(fake_filesystem_unittest.TestCase):
         checksum = twintrimmer.generate_checksum('/test/lots/of/nonexistent/directories/full.txt')
         self.assertEqual(checksum, 'af55da6adb51f8dc6b4d3758b5bcf8cc')
 
+    def test_generate_sha256_checksum_for_file(self):
+        checksum = twintrimmer.generate_checksum('/test/lots/of/nonexistent/directories/full.txt', 'sha256')
+        self.assertEqual(checksum, '2300530cd0164f39302afed1b8dfa54781ad804f1caac7a76ed8c5dd129e7087')
+
+    def test_generate_sha512_checksum_for_file(self):
+        checksum = twintrimmer.generate_checksum('/test/lots/of/nonexistent/directories/full.txt', 'sha512')
+        self.assertEqual(checksum, '2671d9257c1b6c84e8b23bdca07d38cf4ced034b62de1834283bc7bf33968f9361fa01b652c6e363dcdf0361746c40da245a5d9a1d1a78f8de04d93d4d179c59')
+
+    def test_generate_sha224_checksum_for_file(self):
+        checksum = twintrimmer.generate_checksum('/test/lots/of/nonexistent/directories/full.txt', 'sha224')
+        self.assertEqual(checksum, 'd0b3c8046b81a798aa7f7302cf7482ee36f1e14b7139ec0bb7122b99')
+
+    def test_generate_sha384_checksum_for_file(self):
+        checksum = twintrimmer.generate_checksum('/test/lots/of/nonexistent/directories/full.txt', 'sha384')
+        self.assertEqual(checksum, '49dd8afce21b0e0bd363796f754434e4075a22daf110c908380cbfbf0aceb62c08c04e7bbcac84d80628d71e99174ce1')
+
+    def test_generate_whirlpool_checksum_for_file(self):
+        checksum = twintrimmer.generate_checksum('/test/lots/of/nonexistent/directories/full.txt', 'whirlpool')
+        self.assertEqual(checksum, 'b9d619b1860cd603a47a4a367558e0f9e5a4cfde96403c944ddcf9c4e01f9f20207869b34d48d672018efdf394cbac6410e45df044a16fa621dfcec43a67b4bc')
+
     def test_generate_checksum_raises_OSError_for_missing_file(self):
         with self.assertRaises(OSError):
             checksum = twintrimmer.generate_checksum('/nonexistentfile.txt')
