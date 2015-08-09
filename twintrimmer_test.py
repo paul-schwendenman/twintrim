@@ -233,6 +233,13 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
         self.assertFalse(os.path.exists('examples/foo (1).txt'))
         self.assertFalse(os.path.exists('examples/recur/file (2).txt'))
 
+    def test_can_not_sum_hash_due_to_OSError(self):
+        os.chmod('examples/recur/file.txt', 0o000)
+        #with self.assertRaises(OSError):
+        twintrimmer.walk_path('examples/recur',
+                              no_action=False,
+                              remove_links=True)
+        self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
 
 if __name__ == '__main__':
     unittest.main()
