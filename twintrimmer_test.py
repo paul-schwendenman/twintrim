@@ -258,7 +258,7 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
 
-    @unittest.skip("The test framework seems to fail for permissions")
+    @unittest.expectedFailure
     def test_can_not_delete_file_due_to_OSError(self):
         os.chmod('examples/recur/file (2).txt', 0o700)
         os.chown('examples/recur/file (2).txt', 0, 0)
