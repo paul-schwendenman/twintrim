@@ -258,6 +258,17 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
 
+    @unittest.skip("The test framework seems to fail for permissions")
+    def test_can_not_delete_file_due_to_OSError(self):
+        os.chmod('examples/recur/file (2).txt', 0o700)
+        os.chown('examples/recur/file (2).txt', 0, 0)
+        print(os.stat('examples/recur/file (2).txt'))
+
+        #with self.assertRaises(OSError):
+        twintrimmer.walk_path('examples/recur',
+                              no_action=False,
+                              remove_links=True)
+        self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
 
 if __name__ == '__main__':
     unittest.main()
