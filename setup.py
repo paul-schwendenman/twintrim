@@ -4,9 +4,11 @@
 from setuptools import setup
 
 setup(name='twintrimmer',
-      version='0.5',
+      version='0.6',
       description='tool for removing duplicate files',
       author='Paul Schwendenman',
+      author_email='schwendenman.paul+twintrim@gmail.com',
+      license='MIT',
       url='https://github.com/paul-schwendenman/twintrim',
       py_modules=['twintrimmer'],
       classifiers=['Environment :: Console',
