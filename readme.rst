@@ -22,7 +22,7 @@ validating the content with a checksum.
 Usage
 -------
 
-usage: twintrimmer.py [-h] [-n] [-r] [--verbosity VERBOSITY]
+usage: twintrim [-h] [-n] [-r] [--verbosity VERBOSITY]
                       [--log-file LOG_FILE] [--log-level LOG_LEVEL]
                       [-p PATTERN] [-c] [-i]
                       [--hash-function {'sha224', 'sha384', 'sha1', 'md5', 'sha512', 'sha256'}
@@ -57,20 +57,20 @@ examples:
 
     find matches with default regex::
 
-        $ ./twintrimmer.py -n ~/downloads
+        $ twintrim -n ~/downloads
 
     find matches ignoring the extension::
 
         $  ls examples/
         Google.html  Google.html~
-        $ ./twintrimmer.py -n -p '(^.+?)(?: \(\d\))*\..+' examples/
+        $ twintrim -n -p '(^.+?)(?: \(\d\))*\..+' examples/
         examples/Google.html~ would have been deleted
 
     find matches with "__1" added to basename::
 
         $ ls examples/underscore/
         file__1.txt  file.txt
-        $ ./twintrimmer.py -n -p '(.+?)(?:__\d)*\..*' examples/underscore/
+        $ twintrim -n -p '(.+?)(?:__\d)*\..*' examples/underscore/
         examples/underscore/file__1.txt to be deleted
 
 
@@ -81,7 +81,7 @@ Try it out
 If you would like to try it out I have included an example directory. After
 cloning the repository, try running::
 
-	./twintrimmer.py examples/
+	python -m twintrimmer.tool examples/
 
 
 Running the Tests
@@ -89,7 +89,7 @@ Running the Tests
 
 To run tests::
 
-    python twintrimmer_test.py
+    python -m unittest discover -p '*_test.py'
 
 or using nose::
 
