@@ -3,12 +3,18 @@
 
 from setuptools import setup
 
+try:
+    readme = open('readme.rst', 'r').read()
+except:
+    readme = ''
+
 setup(name='twintrimmer',
       version='0.5',
       description='tool for removing duplicate files',
+      long_description=readme,
       author='Paul Schwendenman',
       url='https://github.com/paul-schwendenman/twintrim',
-      py_modules=['twintrimmer'],
+      packages=['twintrimmer'],
       classifiers=['Environment :: Console',
                    'Intended Audience :: Developers',
                    'Intended Audience :: End Users/Desktop',
@@ -17,4 +23,5 @@ setup(name='twintrimmer',
                    'Programming Language :: Python :: 3.4',
                    'Operating System :: POSIX :: Linux',
                    'Topic :: Utilities', ],
-      entry_points={'console_scripts': ['twintrim = twintrimmer:main'], }, )
+      entry_points=
+      {'console_scripts': ['twintrim = twintrimmer:run.terminal'], }, )
