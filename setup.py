@@ -9,7 +9,7 @@ except:
     readme = ''
 
 setup(name='twintrimmer',
-      version='0.6',
+      version='0.7a',
       description='tool for removing duplicate files',
       long_description=readme,
       author='Paul Schwendenman',
