@@ -26,6 +26,7 @@ usage: twintrimmer.py [-h] [-n] [-r] [--verbosity VERBOSITY]
                       [--log-file LOG_FILE] [--log-level LOG_LEVEL]
                       [-p PATTERN] [-c] [-i]
                       [--hash-function {'sha224', 'sha384', 'sha1', 'md5', 'sha512', 'sha256'}
+                      [--make-links] [--remove-links]
                       path
 
 tool for removing duplicate files
@@ -49,6 +50,7 @@ optional arguments:
   --hash-function {'sha224', 'sha384', 'sha1', 'md5', 'sha512', 'sha256'}
                         set hash function to use for checksums
   --make-link           create hard link rather than remove file
+  --remove-links        remove hardlinks rather than skipping
 
 
 examples:
@@ -96,3 +98,31 @@ or using nose::
 :note: the requirements.txt file is required to run tests. one of the
        dependencies includes a personally patched version of pyfakefs
        which doesn't seem to work on python3.
+
+
+Hash algorithm options
+-----------------------
+
+Depending on your installed OpenSSL library your available algorithms might change.
+
+The following are the hash algorithms guaranteed to be supported by this
+module on all platforms.
+
+- sha224
+- sha384
+- sha1
+- md5
+- sha512
+- sha256
+
+Additionally, these algorithms might be available (potentially more)
+
+- ecdsa-with-SHA1
+- whirlpool
+- dsaWithSHA
+- ripemd160
+- md4
+
+For more information on these algorithms please see the hashlib documentation:
+
+	https://docs.python.org/3/library/hashlib.html

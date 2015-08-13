@@ -9,10 +9,12 @@ except:
     readme = ''
 
 setup(name='twintrimmer',
-      version='0.5',
+      version='0.6',
       description='tool for removing duplicate files',
       long_description=readme,
       author='Paul Schwendenman',
+      author_email='schwendenman.paul+twintrim@gmail.com',
+      license='MIT',
       url='https://github.com/paul-schwendenman/twintrim',
       packages=['twintrimmer'],
       classifiers=['Environment :: Console',
