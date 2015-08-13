@@ -27,5 +27,5 @@ IN THE SOFTWARE.
 #from .twintrimmer import (create_filenames, generate_checksum, is_substring,
 #                          walk_path,
 from .twintrimmer import *
-from .run import terminal
+from . import run
 __all__ = ['create_filenames', 'generate_checksum', 'is_substring', 'walk_path']
