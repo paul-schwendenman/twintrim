@@ -26,6 +26,9 @@ IN THE SOFTWARE.
 '''
 #from .twintrimmer import (create_filenames, generate_checksum, is_substring,
 #                          walk_path,
-from .twintrimmer import *
+from .twintrimmer import (generate_checksum_dict, create_filenames,
+                          pick_shorter_name, remove_by_checksum, walk_path,
+                          Filename, ask_for_best, generate_filename_dict,
+                          is_substring, generate_checksum)
 from . import run
-__all__ = ['create_filenames', 'generate_checksum', 'is_substring', 'walk_path']
+__all__ = ['create_filenames', 'generate_checksum', 'walk_path']
