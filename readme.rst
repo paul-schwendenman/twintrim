@@ -95,7 +95,7 @@ or using nose::
 
     python3 -m nose --with-json-extended
 
-:note: the requirements.txt file is required to run tests. one of the
+:note: the requirements-test.txt file is required to run tests. one of the
        dependencies includes a personally patched version of pyfakefs
        which doesn't seem to work on python3.
 
