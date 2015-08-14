@@ -172,6 +172,15 @@ class TestRemoveFilesMarkedForDeletion(TestCaseWithFileSystem):
             no_action=True)
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
 
+    def test_removes_duplicate_file(self):
+        bad = twintrimmer.Filename(None, None, None, 'examples/foo (1).txt')
+        best = twintrimmer.Filename(None, None, None, 'examples/foo.txt')
+        twintrimmer.remove_files_marked_for_deletion(
+            bad, best,
+            remove_links=True,
+            no_action=False)
+        self.assertFalse(os.path.exists('examples/foo (1).txt'))
+
 
 @unittest.skip('Skip these tests')
 class TestWalkPath(TestCaseWithFileSystem):
