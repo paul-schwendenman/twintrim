@@ -153,33 +153,52 @@ class TestCaseWithFileSystem(fake_filesystem_unittest.TestCase):
         self.fs.CreateFile('examples/underscore/file__1.txt',
                            contents='\n')
 
-class TestRemoveFilesMarkedForDeletion(TestCaseWithFileSystem):
-    def test_no_action_does_no_action(self):
+class TestRemoveFilesMarkedForDeletion(unittest.TestCase):
+    @patch('os.remove')
+    def test_no_action_does_no_action(self, mock_remove):
         bad = twintrimmer.Filename(None, None, None, 'examples/foo (1).txt')
         best = twintrimmer.Filename(None, None, None, 'examples/foo.txt')
         twintrimmer.remove_files_marked_for_deletion(
             bad, best,
             remove_links=True,
             no_action=True)
-        self.assertTrue(os.path.exists('examples/foo (1).txt'))
+        self.assertEqual(mock_remove.call_count, 0)
 
-    def test_skips_removal_of_hardlinks(self):
+    @patch('os.remove')
+    def test_skips_removal_of_hardlinks(self, mock_remove):
         bad = twintrimmer.Filename(None, None, None, 'examples/foo (1).txt')
         best = twintrimmer.Filename(None, None, None, 'examples/foo.txt')
-        twintrimmer.remove_files_marked_for_deletion(
-            bad, best,
-            remove_links=False,
-            no_action=True)
-        self.assertTrue(os.path.exists('examples/foo (1).txt'))
+        with patch('os.path.samefile') as mock_samefile:
+            twintrimmer.remove_files_marked_for_deletion(
+                bad, best,
+                remove_links=False,
+                no_action=False)
+        self.assertEqual(mock_remove.call_count, 0)
+        mock_samefile.assert_called_with('examples/foo.txt', 'examples/foo (1).txt')
 
-    def test_removes_duplicate_file(self):
+    @patch('os.remove')
+    def test_removes_duplicate_file(self, mock_remove):
         bad = twintrimmer.Filename(None, None, None, 'examples/foo (1).txt')
         best = twintrimmer.Filename(None, None, None, 'examples/foo.txt')
         twintrimmer.remove_files_marked_for_deletion(
             bad, best,
             remove_links=True,
             no_action=False)
-        self.assertFalse(os.path.exists('examples/foo (1).txt'))
+        self.assertEqual(mock_remove.call_count, 1)
+        mock_remove.assert_called_with('examples/foo (1).txt')
+
+    @patch('os.link')
+    @patch('os.remove')
+    def test_makes_hardlink_after_deletion(self, mock_remove, mock_link):
+        bad = twintrimmer.Filename(None, None, None, 'examples/foo (2).txt')
+        best = twintrimmer.Filename(None, None, None, 'examples/foo.txt')
+        twintrimmer.remove_files_marked_for_deletion(
+            bad, best,
+            remove_links=True,
+            make_links=True,
+            no_action=False)
+        self.assertEqual(mock_remove.call_count, 1)
+        mock_link.assert_called_with('examples/foo.txt', 'examples/foo (2).txt')
 
 
 @unittest.skip('Skip these tests')
