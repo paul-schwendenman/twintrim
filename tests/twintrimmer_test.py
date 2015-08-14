@@ -163,6 +163,15 @@ class TestRemoveFilesMarkedForDeletion(TestCaseWithFileSystem):
             no_action=True)
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
 
+    def test_skips_removal_of_hardlinks(self):
+        bad = twintrimmer.Filename(None, None, None, 'examples/foo (1).txt')
+        best = twintrimmer.Filename(None, None, None, 'examples/foo.txt')
+        twintrimmer.remove_files_marked_for_deletion(
+            bad, best,
+            remove_links=False,
+            no_action=True)
+        self.assertTrue(os.path.exists('examples/foo (1).txt'))
+
 
 @unittest.skip('Skip these tests')
 class TestWalkPath(TestCaseWithFileSystem):
