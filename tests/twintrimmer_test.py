@@ -155,6 +155,7 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
 
     def test_no_action_does_no_action(self):
         twintrimmer.walk_path('examples',
+                              remove_links=True,
                               no_action=True)
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
 

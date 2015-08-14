@@ -176,10 +176,12 @@ def generate_filename_dict(filenames, expr=None):
 
 
 def remove_files_marked_for_deletion(bad, best, **options):
-    if not options.get('remove_links', True) and os.path.samefile(best.path,
-                                             bad.path):
-        LOGGER.info('Hard link detected %s', bad.path)
-        #continue
+    if not options['remove_links'] and os.path.samefile(best.path,
+                                                 bad.path):
+        LOGGER.info('hard link skipped %s', bad.path)
+    elif options['no_action']:
+        print('{0} would have been deleted'.format(bad.path))
+        LOGGER.info('%s would have been deleted', bad.path)
     else:
         os.remove(bad.path)
         LOGGER.info('%s was deleted', bad.path)
@@ -188,8 +190,8 @@ def remove_files_marked_for_deletion(bad, best, **options):
             os.link(best.path, bad.path)
 
 
-def remove_by_checksum(list_of_names, no_action=True, interactive=False, hash_name='sha1',
-                       make_links=False, remove_links=False, **options):
+def remove_by_checksum(list_of_names, interactive=False, hash_name='sha1',
+                       **options):
     '''
     This function first groups the files by checksum, and then removes all
     but one copy of the file.
@@ -207,19 +209,10 @@ def remove_by_checksum(list_of_names, no_action=True, interactive=False, hash_na
                 best, rest = ask_for_best(best, rest)
 
             for bad in rest:
-                if no_action:
-                    if not remove_links and os.path.samefile(best.path,
-                                                             bad.path):
-                        print('{0} hard link would have been skipped'.format(bad.path))
-                        LOGGER.info('Hard link would have been skipped %s', bad.path)
-                    else:
-                        print('{0} would have been deleted'.format(bad.path))
-                        LOGGER.info('%s would have been deleted', bad.path)
-                else:
-                    try:
-                        remove_files_marked_for_deletion(bad, best, **options)
-                    except OSError as err:
-                        LOGGER.error('File deletion error: %s', err)
+                try:
+                    remove_files_marked_for_deletion(bad, best, **options)
+                except OSError as err:
+                    LOGGER.error('File deletion error: %s', err)
             LOGGER.info('%s was kept as only copy', best.path)
 
         else:
