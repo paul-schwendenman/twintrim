@@ -185,7 +185,7 @@ def remove_files_marked_for_deletion(bad, best, **options):
         os.remove(bad.path)
         LOGGER.info('%s was deleted', bad.path)
         if options.get('make_links', False):
-            LOGGER.info('Hard link created')
+            LOGGER.info('hard link created: %s', bad.path)
             os.link(best.path, bad.path)
 
 
