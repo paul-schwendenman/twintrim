@@ -153,6 +153,8 @@ class TestCaseWithFileSystem(fake_filesystem_unittest.TestCase):
         self.fs.CreateFile('examples/underscore/file__1.txt',
                            contents='\n')
 
+
+@unittest.skip('Skip these tests')
 class TestWalkPath(TestCaseWithFileSystem):
     def test_no_action_does_no_action(self):
         twintrimmer.walk_path('examples',
