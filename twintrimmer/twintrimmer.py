@@ -176,8 +176,7 @@ def generate_filename_dict(filenames, expr=None):
 
 
 def remove_files_marked_for_deletion(bad, best, **options):
-    if not options['remove_links'] and os.path.samefile(best.path,
-                                                 bad.path):
+    if not options['remove_links'] and os.path.samefile(best.path, bad.path):
         LOGGER.info('hard link skipped %s', bad.path)
     elif options['no_action']:
         print('{0} would have been deleted'.format(bad.path))
@@ -190,8 +189,9 @@ def remove_files_marked_for_deletion(bad, best, **options):
             os.link(best.path, bad.path)
 
 
-def remove_by_checksum(list_of_names, interactive=False, hash_name='sha1',
-                       **options):
+def remove_by_checksum(list_of_names,
+                       interactive=False,
+                       hash_name='sha1', **options):
     '''
     This function first groups the files by checksum, and then removes all
     but one copy of the file.
@@ -252,5 +252,4 @@ def walk_path(path, **options):
                                  name, ', '.join([item.name
                                                   for item in names[name]]))
         else:
-            remove_by_checksum(create_filenames(filenames, root),
-                               **options)
+            remove_by_checksum(create_filenames(filenames, root), **options)
