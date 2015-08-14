@@ -175,6 +175,19 @@ def generate_filename_dict(filenames, expr=None):
     return filename_dict
 
 
+def remove_files_marked_for_deletion(bad, best, **options):
+    if not options.get('remove_links', True) and os.path.samefile(best.path,
+                                             bad.path):
+        LOGGER.info('Hard link detected %s', bad.path)
+        #continue
+    else:
+        os.remove(bad.path)
+        LOGGER.info('%s was deleted', bad.path)
+        if options.get('make_links', False):
+            LOGGER.info('Hard link created')
+            os.link(best.path, bad.path)
+
+
 def remove_by_checksum(list_of_names, no_action=True, interactive=False, hash_name='sha1',
                        make_links=False, remove_links=False, **options):
     '''
@@ -204,16 +217,7 @@ def remove_by_checksum(list_of_names, no_action=True, interactive=False, hash_na
                         LOGGER.info('%s would have been deleted', bad.path)
                 else:
                     try:
-                        if not remove_links and os.path.samefile(best.path,
-                                                                 bad.path):
-                            LOGGER.info('Hard link detected %s', bad.path)
-                            continue
-                        else:
-                            LOGGER.info('%s was deleted', bad.path)
-                        os.remove(bad.path)
-                        if make_links:
-                            LOGGER.info('Hard link created')
-                            os.link(best.path, bad.path)
+                        remove_files_marked_for_deletion(bad, best, **options)
                     except OSError as err:
                         LOGGER.error('File deletion error: %s', err)
             LOGGER.info('%s was kept as only copy', best.path)
