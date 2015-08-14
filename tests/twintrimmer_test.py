@@ -102,7 +102,7 @@ class TestGenerateFilenameDict(unittest.TestCase):
         filename_dict = twintrimmer.generate_filename_dict(self.filenames, r'(^.+?)(?:\..+)')
         self.assertEqual(len(filename_dict.keys()), 3)
 
-class TestWalkPath(fake_filesystem_unittest.TestCase):
+class TestCaseWithFileSystem(fake_filesystem_unittest.TestCase):
     def setUp(self):
         '''
         Add a fake filesystem matching the following structure:
@@ -153,6 +153,7 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
         self.fs.CreateFile('examples/underscore/file__1.txt',
                            contents='\n')
 
+class TestWalkPath(TestCaseWithFileSystem):
     def test_no_action_does_no_action(self):
         twintrimmer.walk_path('examples',
                               remove_links=True,
