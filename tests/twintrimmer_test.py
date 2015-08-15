@@ -179,6 +179,14 @@ class TestAskForBest(unittest.TestCase):
         self.assertEqual(len(rest), 2)
         self.assertEqual(mock_input.call_count, 1)
 
+    @patch('builtins.input')
+    def test_user_supplies_full_filename(self, mock_input):
+        mock_input.return_value = 'file1.txt'
+        best, rest = twintrimmer.ask_for_best(self.file, {self.file1, self.file2})
+        self.assertEqual(self.file1, best)
+        self.assertEqual(len(rest), 2)
+        self.assertEqual(mock_input.call_count, 1)
+
 
 class TestRemoveFilesMarkedForDeletion(unittest.TestCase):
     @patch('os.remove')
