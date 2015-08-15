@@ -168,6 +168,7 @@ class TestAskForBest(unittest.TestCase):
         mock_input.return_value = '0'
         best, rest = twintrimmer.ask_for_best(self.file, {self.file1, self.file2})
         self.assertEqual(self.file, best)
+        self.assertEqual(len(rest), 2)
         self.assertEqual(mock_input.call_count, 1)
 
 class TestRemoveFilesMarkedForDeletion(unittest.TestCase):
