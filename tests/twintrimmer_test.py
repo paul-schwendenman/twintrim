@@ -187,6 +187,14 @@ class TestAskForBest(unittest.TestCase):
         self.assertEqual(len(rest), 2)
         self.assertEqual(mock_input.call_count, 1)
 
+    @patch('builtins.input')
+    def test_user_presses_keyboard_interrupt(self, mock_input):
+        mock_input.side_effect = KeyboardInterrupt
+        best, rest = twintrimmer.ask_for_best(self.file, {self.file1, self.file2})
+        self.assertEqual(self.file, best)
+        self.assertEqual(len(rest), 0)
+        self.assertEqual(mock_input.call_count, 1)
+
 
 class TestRemoveFilesMarkedForDeletion(unittest.TestCase):
     @patch('os.remove')
