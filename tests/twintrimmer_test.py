@@ -106,6 +106,36 @@ class TestGenerateFilenameDict(unittest.TestCase):
         filename_dict = twintrimmer.generate_filename_dict(self.filenames, r'(^.+?)(?:\..+)')
         self.assertEqual(len(filename_dict.keys()), 3)
 
+class TestGenerateChecksumDict(fake_filesystem_unittest.TestCase):
+    def setUp(self):
+        self.setUpPyfakefs()
+        self.fs.CreateFile('/test.txt',
+                           contents='First line\nSecond Line\n')
+        self.fs.CreateFile('/test2.txt',
+                           contents='First line\nSecond Line\n')
+        self.test = twintrimmer.Filename(None, None, None, '/test.txt')
+        self.test2 = twintrimmer.Filename(None, None, None, '/test2.txt')
+        self.nonexistent = twintrimmer.Filename(None, None, None, '/none.txt')
+
+    def test_generate_checksum_dict_from_list_of_one_file(self):
+        checksum_dict = twintrimmer.generate_checksum_dict([self.test], 'sha1')
+        filenames = checksum_dict['5a0cd97a76759aafa9fd5e4c5aa2ffe0e6f1720d']
+        self.assertEqual(len(filenames), 1)
+        self.assertTrue(self.test in filenames)
+
+    def test_generate_checksum_dict_from_list_of_two_matching_files(self):
+        checksum_dict = twintrimmer.generate_checksum_dict([self.test, self.test2], 'sha1')
+        filenames = checksum_dict['5a0cd97a76759aafa9fd5e4c5aa2ffe0e6f1720d']
+        self.assertEqual(len(filenames), 2)
+        self.assertTrue(self.test in filenames)
+        self.assertTrue(self.test2 in filenames)
+
+    def test_generate_checksum_dict_handles_OSError(self):
+        checksum_dict = twintrimmer.generate_checksum_dict([self.nonexistent], 'sha1')
+        filenames = checksum_dict['5a0cd97a76759aafa9fd5e4c5aa2ffe0e6f1720d']
+        self.assertEqual(len(filenames), 0)
+
+
 class TestCaseWithFileSystem(fake_filesystem_unittest.TestCase):
     def setUp(self):
         '''
