@@ -87,6 +87,10 @@ class TestPickShorterName(unittest.TestCase):
     def test_file_1_txt_not_shorter_than_file_txt(self):
         self.assertEqual(twintrimmer.pick_shorter_name(self.file1, self.file), self.file)
 
+    def test_file_2_txt_not_shorter_than_file_1_txt(self):
+        self.assertEqual(twintrimmer.pick_shorter_name(self.file2, self.file1), self.file1)
+
+
 class TestGenerateFilenameDict(unittest.TestCase):
     def setUp(self):
         filenames = ['file.txt', 'file (1).txt', 'file (2).txt']
