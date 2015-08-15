@@ -157,6 +157,19 @@ class TestCaseWithFileSystem(fake_filesystem_unittest.TestCase):
         self.fs.CreateFile('examples/underscore/file__1.txt',
                            contents='\n')
 
+class TestAskForBest(unittest.TestCase):
+    def setUp(self):
+        filenames = ['file.txt', 'file1.txt', 'file2.txt']
+        root = '/'
+        self.file, self.file1, self.file2 = list(twintrimmer.create_filenames(filenames, root))
+
+    @patch('builtins.input')
+    def test_pick_user_follows_users_choice(self, mock_input):
+        mock_input.return_value = '0'
+        best, rest = twintrimmer.ask_for_best(self.file, {self.file1, self.file2})
+        self.assertEqual(self.file, best)
+        self.assertEqual(mock_input.call_count, 1)
+
 class TestRemoveFilesMarkedForDeletion(unittest.TestCase):
     @patch('os.remove')
     def test_no_action_does_no_action(self, mock_remove):
