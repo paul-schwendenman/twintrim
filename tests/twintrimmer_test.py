@@ -186,6 +186,12 @@ class TestCaseWithFileSystem(fake_filesystem_unittest.TestCase):
                            contents='\n')
         self.fs.CreateFile('examples/underscore/file__1.txt',
                            contents='\n')
+        self.file_names_list = [
+            twintrimmer.Filename(None, None, None, 'examples/foo.txt'),
+            twintrimmer.Filename(None, None, None, 'examples/foo (1).txt'),
+            twintrimmer.Filename(None, None, None, 'examples/foo (2).txt'),
+            twintrimmer.Filename(None, None, None, 'examples/foo (3).txt'),
+        ]
 
 class TestAskForBest(unittest.TestCase):
     def setUp(self):
@@ -402,8 +408,9 @@ class TestWalkPath(TestCaseWithFileSystem):
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
 
-class TestRemoveByChecksum(unittest.TestCase):
+class TestRemoveByChecksum(TestCaseWithFileSystem):
     def setUp(self):
+        super(TestRemoveByChecksum, self).setUp()
         self.filename_set_two = {
             twintrimmer.Filename(name='baz (1).txt', base='baz (1)', ext='.txt', path='examples/baz (1).txt'),
             twintrimmer.Filename(name='baz.txt', base='baz', ext='.txt', path='examples/baz.txt')
@@ -422,6 +429,12 @@ class TestRemoveByChecksum(unittest.TestCase):
         twintrimmer.remove_by_checksum(self.filename_set_one)
         self.assertEqual(mock_remove.call_count, 0)
 
+    @patch('twintrimmer.twintrimmer.ask_for_best')
+    @patch('twintrimmer.twintrimmer.remove_files_marked_for_deletion')
+    def test_remove_by_checksum_runs_interactively(self, mock_remove, mock_ask_for_best):
+        mock_ask_for_best.return_value = (self.file_names_list[0], {})
+        twintrimmer.remove_by_checksum(self.filename_set_two, interactive=True)
+        self.assertEqual(mock_remove.call_count, 0)
 
 
 if __name__ == '__main__':
