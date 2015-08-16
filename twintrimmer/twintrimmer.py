@@ -1,7 +1,5 @@
 '''
-Twin trim
-
-A duplicate file remover
+duplicate file remover
 '''
 import os
 import hashlib
@@ -20,7 +18,13 @@ def create_filenames(filenames, root):
     Makes a generator that yields Filename objects
 
     Filename objects are a helper to allow multiple representations
-    of the same file to be transferred cleanly.
+    of the same file to be transferred cleanly between functions.
+
+    Args:
+        filenames (iterable[str]): list of filenames
+        root (str): the parent directory of the filenames
+    Yields:
+        Filename instance representing each filename
     '''
     LOGGER.info("Creating Filename objects")
     for filename in filenames:
@@ -31,6 +35,13 @@ def create_filenames(filenames, root):
 def generate_checksum(filename, hash_name='md5'):
     '''
     A helper function that will generate the checksum of a file.
+
+    Args:
+        filename (str): path to a file
+    Kwargs:
+        hash_name (str): hash algorithm to use for checksum generation
+    Returns:
+        str: the checksum in a hex form
 
     According to the hashlib documentation:
 
@@ -82,15 +93,21 @@ def is_substring(string1, string2):
     '''
     Returns a match if one string is a substring of the other
 
-    For example::
+    Args:
+        string1 (str): the first string to compare
+        string2 (str): the second string to compare
 
-        is_substring('this', 'this1') -> True
-        is_substring('that1', 'that') -> True
+    Returns:
+        bool: True if either string is substring of the other
 
-    But::
+    For example:
 
-        is_substring('that', 'this')  -> False
-
+    >>> is_substring('this', 'this1')
+    True
+    >>> is_substring('that1', 'that')
+    True
+    >>> is_substring('that', 'this')
+    False
     '''
     return string1 in string2 or string2 in string1
 
@@ -101,10 +118,27 @@ def pick_shorter_name(file1, file2):
     filename.  If the file names are the same length it returns the file
     that is less, hoping for numerically.
 
+    Args:
+        file1 (Filename): first filename to compare
+        file2 (Filename): second filename to compare
+
+    Returns:
+        Filename: the shortest name
+
     It picks "file.txt" over "file (1).txt", but beware it also picks
     "f.txt" over "file.txt".
 
     It also picks "file (1).txt" over "file (2).txt"
+
+    >>> file1 = Filename('file.txt', 'file', '.txt', '/file.txt')
+    >>> file2 = Filename('file (1).txt', 'file (1)', '.txt', '/file (1).txt')
+    >>> file3 = Filename('file (2).txt', 'file (2)', '.txt', '/file (2).txt')
+    >>> pick_shorter_name(file1, file2)
+    Filename(name='file.txt', base='file', ext='.txt', path='/file.txt')
+    >>> pick_shorter_name(file2, file1)
+    Filename(name='file.txt', base='file', ext='.txt', path='/file.txt')
+    >>> pick_shorter_name(file2, file3)
+    Filename(name='file (1).txt', base='file (1)', ext='.txt', path='/file (1).txt')
     '''
     LOGGER.debug("Finding the shortest of %s and %s", file1.name, file2.name)
     if len(file1.name) > len(file2.name):
@@ -119,6 +153,14 @@ def ask_for_best(default, rest):
     '''
     This function allows the user to interactively select which file is
     selected to be preserved.
+
+    Args:
+        default (Filename): Filename object that would normally be kept
+        rest (set): Other matching filenames to offer as options (all to be deleted)
+
+    Returns:
+        (best, rest):
+            best:
     '''
     files = [default] + list(rest)
     for num, file in enumerate(files):
@@ -155,6 +197,13 @@ def generate_checksum_dict(filenames, hash_name):
     '''
     This function will create a dictionary of checksums mapped to
     a list of filenames.
+
+    Args:
+        filenames (iterable[Filename]): list of filenames to clump by checksum
+        hash_name (str): name of hash function used to generate checksum
+
+    Return value:
+        dictionary of sets of Filename objects with their checksum as the key
     '''
     LOGGER.info("Generating dictionary based on checksum")
     checksum_dict = defaultdict(set)
@@ -173,6 +222,13 @@ def generate_filename_dict(filenames, expr=None):
     '''
     This function will create a dictionary of filename parts mapped to a list
     of the real filenames.
+
+    Args:
+        filenames (iterable[Filename]): list of filenames to clump by filename parts
+        expr (str): regex pattern to break and group the filename string
+
+    Return value:
+        dictionary of sets of Filename objects with their regex matches as the key
     '''
     LOGGER.info("Generating dictionary based on regular expression")
     filename_dict = defaultdict(set)
@@ -192,6 +248,19 @@ def generate_filename_dict(filenames, expr=None):
 
 
 def remove_files_marked_for_deletion(bad, best, **options):
+    '''
+    Preform the deletion of file that has been identified as a duplicate
+
+    Args:
+        bad (Filename): the file to be deleted
+        best (Filename): the file that was kept instead of 'bad'
+    Kwargs:
+        remove_links (bool): causes function to check if best and bad are hardlinks before deletion
+        no_action (bool): show what files would have been deleted.
+        make_links (bool): create a hard link to best from path bad. after bad is deleted
+    Raises:
+        OSError
+    '''
     if not options['remove_links'] and os.path.samefile(best.path, bad.path):
         LOGGER.info('hard link skipped %s', bad.path)
     elif options['no_action']:
@@ -211,6 +280,13 @@ def remove_by_checksum(list_of_names,
     '''
     This function first groups the files by checksum, and then removes all
     but one copy of the file.
+
+    Args:
+        list_of_names (iterable[Filename]): list of objects to remove
+    Kwargs:
+        interactive (bool): allow the user to pick which file to keep
+        hash_name (str): the name of the hash function used to compute the checksum
+
     '''
     files = generate_checksum_dict(list_of_names, hash_name)
     for file in files:
@@ -240,13 +316,10 @@ def walk_path(path, **options):
     '''
     This function steps through the directory structure and identifies
     groups for more in depth investigation.
+
+    Args:
+        path (str): the path to search for files and begin processing
     '''
-    #if 'recursive' not in options:
-    #    options['recursive'] = False
-    #if 'skip_regex' not in options:
-    #    options['skip_regex'] = False
-    #if not options['skip_regex'] and 'regex_pattern' not in options:
-    #    options['regex_pattern'] = None
     for root, _, filenames in os.walk(path):
         if not options['recursive'] and root != path:
             LOGGER.debug("Skipping child directory %s of %s", root, path)
