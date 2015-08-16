@@ -402,5 +402,20 @@ class TestWalkPath(TestCaseWithFileSystem):
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
 
+class TestRemoveByChecksum(unittest.TestCase):
+    def setUp(self):
+        self.filename_set_two = {
+            twintrimmer.Filename(name='baz (1).txt', base='baz (1)', ext='.txt', path='examples/baz (1).txt'),
+            twintrimmer.Filename(name='baz.txt', base='baz', ext='.txt', path='examples/baz.txt')
+        }
+        self.filename_set_one = {
+            twintrimmer.Filename(name='baz (3).txt', base='baz (3)', ext='.txt', path='examples/baz (3).txt'),
+        }
+
+    @patch('twintrimmer.twintrimmer.remove_files_marked_for_deletion')
+    def test_remove_by_checksum_picks_best_of_two_files(self, mock_remove):
+        twintrimmer.remove_by_checksum(self.filename_set_two)
+        self.assertEqual(mock_remove.call_count, 1)
+
 if __name__ == '__main__':
     unittest.main()
