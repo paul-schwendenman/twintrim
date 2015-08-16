@@ -30,14 +30,30 @@ def create_filenames(filenames, root):
 
 def generate_checksum(filename, hash_name='md5'):
     '''
-    A helper function that will generate the
-    check sum of a file.
+    A helper function that will generate the checksum of a file.
 
     According to the hashlib documentation:
+
     - hashlib.sha1 should be prefered over hashlib.new('sha1')
     - the list of available function will change depending on the openssl
       library
     - the same function might exist with multiple spellings i.e. SHA1 and sha1
+
+    >>> from timeit import repeat
+    >>> repeat("sha1 = hashlib.sha1(); sha1.update(b'this is a bunch of text'); sha1.hexdigest()",
+               setup="import hashlib;", number=1000000, repeat=3)
+    [1.1151904039998044, 1.107502792001469, 1.1114749459993618]
+    >>> repeat("sha1 = hashlib.new('sha1'); sha1.update(b'this is a bunch of text'); sha1.hexdigest()",
+               setup="import hashlib;", number=1000000, repeat=3)
+    [1.9987542880007823, 1.9930373919996782, 1.9749872180000239]
+    >>> repeat("sha1.update(b'this is a bunch of text'); sha1.hexdigest()",
+               setup="import hashlib; sha1 = hashlib.new('sha1')",
+               number=100000, repeat=3)
+    [0.09824231799939298, 0.09060508599941386, 0.08991972700096085]
+    >>> repeat("sha1.update(b'this is a bunch of text'); sha1.hexdigest()",
+               setup="import hashlib; sha1 = hashlib.sha1()",
+               number=100000, repeat=3)
+    [0.0977191860001767, 0.09078196100017522, 0.09082681499967293]
     '''
     LOGGER.info("Generating checksum with %s for %s", hash_name, filename)
 
