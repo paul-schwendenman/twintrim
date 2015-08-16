@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    twintrimmer readme <readme_link>
+   code
 
 
 Indices and tables
