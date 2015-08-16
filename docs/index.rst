@@ -13,6 +13,7 @@ Contents:
 
    twintrimmer readme <readme_link>
    code
+   coverage
 
 
 Indices and tables
