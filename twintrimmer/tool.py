@@ -9,7 +9,7 @@ import os
 import re
 import sys
 import textwrap
-from twintrimmer import walk_path
+from .twintrimmer import walk_path
 
 def terminal():
     '''

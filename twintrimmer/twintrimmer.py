@@ -254,7 +254,7 @@ def generate_filename_dict(filenames, expr=None):
     return filename_dict
 
 
-def remove_files_marked_for_deletion(bad, best, **options):
+def remove_files_for_deletion(bad, best, **options):
     '''
     Preform the deletion of file that has been identified as a duplicate
 
@@ -312,7 +312,7 @@ def remove_by_checksum(list_of_names,
 
             for bad in rest:
                 try:
-                    remove_files_marked_for_deletion(bad, best, **options)
+                    remove_files_for_deletion(bad, best, **options)
                 except OSError as err:
                     LOGGER.error('File deletion error: %s', err)
             LOGGER.info('%s was kept as only copy', best.path)
