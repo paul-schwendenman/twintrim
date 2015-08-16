@@ -51,10 +51,14 @@ def generate_checksum(filename, hash_name='md5'):
     - the same function might exist with multiple spellings i.e. SHA1 and sha1
 
     >>> from timeit import repeat
-    >>> repeat("sha1 = hashlib.sha1(); sha1.update(b'this is a bunch of text'); sha1.hexdigest()",
+    >>> repeat("sha1 = hashlib.sha1();"
+               "sha1.update(b'this is a bunch of text');"
+               "sha1.hexdigest()",
                setup="import hashlib;", number=1000000, repeat=3)
     [1.1151904039998044, 1.107502792001469, 1.1114749459993618]
-    >>> repeat("sha1 = hashlib.new('sha1'); sha1.update(b'this is a bunch of text'); sha1.hexdigest()",
+    >>> repeat("sha1 = hashlib.new('sha1');"
+               "sha1.update(b'this is a bunch of text');"
+               "sha1.hexdigest()",
                setup="import hashlib;", number=1000000, repeat=3)
     [1.9987542880007823, 1.9930373919996782, 1.9749872180000239]
     >>> repeat("sha1.update(b'this is a bunch of text'); sha1.hexdigest()",
@@ -156,7 +160,8 @@ def ask_for_best(default, rest):
 
     Args:
         default (Filename): Filename object that would normally be kept
-        rest (set): Other matching filenames to offer as options (all to be deleted)
+        rest (set): Other matching filenames to offer as options to be kept,
+                    they are all going to be deleted
 
     Returns:
         (best, rest):
@@ -224,11 +229,13 @@ def generate_filename_dict(filenames, expr=None):
     of the real filenames.
 
     Args:
-        filenames (iterable[Filename]): list of filenames to clump by filename parts
+        filenames (iterable[Filename]): list of filenames to clump by filename
+                                        parts
         expr (str): regex pattern to break and group the filename string
 
     Return value:
-        dictionary of sets of Filename objects with their regex matches as the key
+        dictionary of sets of Filename objects with their regex matches as the
+        key
     '''
     LOGGER.info("Generating dictionary based on regular expression")
     filename_dict = defaultdict(set)
@@ -255,9 +262,11 @@ def remove_files_marked_for_deletion(bad, best, **options):
         bad (Filename): the file to be deleted
         best (Filename): the file that was kept instead of 'bad'
     Kwargs:
-        remove_links (bool): causes function to check if best and bad are hardlinks before deletion
+        remove_links (bool): causes function to check if best and bad
+                             are hardlinks before deletion
         no_action (bool): show what files would have been deleted.
-        make_links (bool): create a hard link to best from path bad. after bad is deleted
+        make_links (bool): create a hard link to best from path bad,
+                           after bad is deleted
     Raises:
         OSError
     '''
@@ -285,7 +294,8 @@ def remove_by_checksum(list_of_names,
         list_of_names (iterable[Filename]): list of objects to remove
     Kwargs:
         interactive (bool): allow the user to pick which file to keep
-        hash_name (str): the name of the hash function used to compute the checksum
+        hash_name (str): the name of the hash function used to compute the
+                         checksum
 
     '''
     files = generate_checksum_dict(list_of_names, hash_name)
