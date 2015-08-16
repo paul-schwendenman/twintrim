@@ -87,6 +87,10 @@ class TestPickShorterName(unittest.TestCase):
     def test_file_1_txt_not_shorter_than_file_txt(self):
         self.assertEqual(twintrimmer.pick_shorter_name(self.file1, self.file), self.file)
 
+    def test_file_2_txt_not_shorter_than_file_1_txt(self):
+        self.assertEqual(twintrimmer.pick_shorter_name(self.file2, self.file1), self.file1)
+
+
 class TestGenerateFilenameDict(unittest.TestCase):
     def setUp(self):
         filenames = ['file.txt', 'file (1).txt', 'file (2).txt']
@@ -102,7 +106,37 @@ class TestGenerateFilenameDict(unittest.TestCase):
         filename_dict = twintrimmer.generate_filename_dict(self.filenames, r'(^.+?)(?:\..+)')
         self.assertEqual(len(filename_dict.keys()), 3)
 
-class TestWalkPath(fake_filesystem_unittest.TestCase):
+class TestGenerateChecksumDict(fake_filesystem_unittest.TestCase):
+    def setUp(self):
+        self.setUpPyfakefs()
+        self.fs.CreateFile('/test.txt',
+                           contents='First line\nSecond Line\n')
+        self.fs.CreateFile('/test2.txt',
+                           contents='First line\nSecond Line\n')
+        self.test = twintrimmer.Filename(None, None, None, '/test.txt')
+        self.test2 = twintrimmer.Filename(None, None, None, '/test2.txt')
+        self.nonexistent = twintrimmer.Filename(None, None, None, '/none.txt')
+
+    def test_generate_checksum_dict_from_list_of_one_file(self):
+        checksum_dict = twintrimmer.generate_checksum_dict([self.test], 'sha1')
+        filenames = checksum_dict['5a0cd97a76759aafa9fd5e4c5aa2ffe0e6f1720d']
+        self.assertEqual(len(filenames), 1)
+        self.assertTrue(self.test in filenames)
+
+    def test_generate_checksum_dict_from_list_of_two_matching_files(self):
+        checksum_dict = twintrimmer.generate_checksum_dict([self.test, self.test2], 'sha1')
+        filenames = checksum_dict['5a0cd97a76759aafa9fd5e4c5aa2ffe0e6f1720d']
+        self.assertEqual(len(filenames), 2)
+        self.assertTrue(self.test in filenames)
+        self.assertTrue(self.test2 in filenames)
+
+    def test_generate_checksum_dict_handles_OSError(self):
+        checksum_dict = twintrimmer.generate_checksum_dict([self.nonexistent], 'sha1')
+        filenames = checksum_dict['5a0cd97a76759aafa9fd5e4c5aa2ffe0e6f1720d']
+        self.assertEqual(len(filenames), 0)
+
+
+class TestCaseWithFileSystem(fake_filesystem_unittest.TestCase):
     def setUp(self):
         '''
         Add a fake filesystem matching the following structure:
@@ -152,31 +186,222 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
                            contents='\n')
         self.fs.CreateFile('examples/underscore/file__1.txt',
                            contents='\n')
+        self.file_names_list = [
+            twintrimmer.Filename('foo.txt', None, None, 'examples/foo.txt'),
+            twintrimmer.Filename('foo (1).txt', None, None, 'examples/foo (1).txt'),
+            twintrimmer.Filename('foo (2).txt', None, None, 'examples/foo (2).txt'),
+            twintrimmer.Filename('foo (3).txt', None, None, 'examples/foo (3).txt'),
+        ]
 
+class TestAskForBest(unittest.TestCase):
+    def setUp(self):
+        filenames = ['file.txt', 'file1.txt', 'file2.txt']
+        root = '/'
+        self.file, self.file1, self.file2 = list(twintrimmer.create_filenames(filenames, root))
+
+    @patch('builtins.input')
+    def test_pick_user_follows_users_choice(self, mock_input):
+        mock_input.return_value = '0'
+        best, rest = twintrimmer.ask_for_best(self.file, {self.file1, self.file2})
+        self.assertEqual(self.file, best)
+        self.assertEqual(len(rest), 2)
+        self.assertEqual(mock_input.call_count, 1)
+
+    @patch('builtins.input')
+    def test_uses_default_for_no_input(self, mock_input):
+        mock_input.return_value = ''
+        best, rest = twintrimmer.ask_for_best(self.file, {self.file1, self.file2})
+        self.assertEqual(self.file, best)
+        self.assertEqual(len(rest), 2)
+        self.assertEqual(mock_input.call_count, 1)
+
+    @patch('builtins.input')
+    def test_user_supplies_full_filename(self, mock_input):
+        mock_input.return_value = 'file1.txt'
+        best, rest = twintrimmer.ask_for_best(self.file, {self.file1, self.file2})
+        self.assertEqual(self.file1, best)
+        self.assertEqual(len(rest), 2)
+        self.assertEqual(mock_input.call_count, 1)
+
+    @patch('builtins.input')
+    def test_user_typos_filename_on_input(self, mock_input):
+        mock_input.side_effect = ['file3.txt', '5', 'file1.txt']
+        best, rest = twintrimmer.ask_for_best(self.file, {self.file1, self.file2})
+        self.assertEqual(self.file1, best)
+        self.assertEqual(len(rest), 2)
+        self.assertEqual(mock_input.call_count, 3)
+
+    @patch('builtins.input')
+    def test_user_presses_keyboard_interrupt(self, mock_input):
+        mock_input.side_effect = KeyboardInterrupt
+        best, rest = twintrimmer.ask_for_best(self.file, {self.file1, self.file2})
+        self.assertEqual(self.file, best)
+        self.assertEqual(len(rest), 0)
+        self.assertEqual(mock_input.call_count, 1)
+
+
+class TestRemoveFilesMarkedForDeletion(unittest.TestCase):
+    @patch('os.remove')
+    def test_no_action_does_no_action(self, mock_remove):
+        bad = twintrimmer.Filename(None, None, None, 'examples/foo (1).txt')
+        best = twintrimmer.Filename(None, None, None, 'examples/foo.txt')
+        twintrimmer.remove_files_marked_for_deletion(
+            bad, best,
+            remove_links=True,
+            no_action=True)
+        self.assertEqual(mock_remove.call_count, 0)
+
+    @patch('os.remove')
+    def test_skips_removal_of_hardlinks(self, mock_remove):
+        bad = twintrimmer.Filename(None, None, None, 'examples/foo (1).txt')
+        best = twintrimmer.Filename(None, None, None, 'examples/foo.txt')
+        with patch('os.path.samefile') as mock_samefile:
+            twintrimmer.remove_files_marked_for_deletion(
+                bad, best,
+                remove_links=False,
+                no_action=False)
+        self.assertEqual(mock_remove.call_count, 0)
+        mock_samefile.assert_called_with('examples/foo.txt', 'examples/foo (1).txt')
+
+    @patch('os.remove')
+    def test_removes_duplicate_file(self, mock_remove):
+        bad = twintrimmer.Filename(None, None, None, 'examples/foo (1).txt')
+        best = twintrimmer.Filename(None, None, None, 'examples/foo.txt')
+        twintrimmer.remove_files_marked_for_deletion(
+            bad, best,
+            remove_links=True,
+            no_action=False)
+        self.assertEqual(mock_remove.call_count, 1)
+        mock_remove.assert_called_with('examples/foo (1).txt')
+
+    @patch('os.link')
+    @patch('os.remove')
+    def test_makes_hardlink_after_deletion(self, mock_remove, mock_link):
+        bad = twintrimmer.Filename(None, None, None, 'examples/foo (2).txt')
+        best = twintrimmer.Filename(None, None, None, 'examples/foo.txt')
+        twintrimmer.remove_files_marked_for_deletion(
+            bad, best,
+            remove_links=True,
+            make_links=True,
+            no_action=False)
+        self.assertEqual(mock_remove.call_count, 1)
+        mock_link.assert_called_with('examples/foo.txt', 'examples/foo (2).txt')
+
+
+class TestWalkPath(TestCaseWithFileSystem):
+    @patch('twintrimmer.twintrimmer.remove_by_checksum')
+    def test_walk_path_skips_child_directories_and_regex_matching(self, mock_remove):
+        twintrimmer.walk_path('examples',
+                              recursive=False,
+                              skip_regex=True)
+        self.assertEqual(mock_remove.call_count, 1)
+
+    @patch('twintrimmer.twintrimmer.remove_by_checksum')
+    def test_walk_path_includes_child_directories_and_regex_matching(self, mock_remove):
+        twintrimmer.walk_path('examples',
+                              recursive=True,
+                              skip_regex=True)
+        self.assertEqual(mock_remove.call_count, 3)
+
+    @patch('twintrimmer.twintrimmer.remove_by_checksum')
+    def test_walk_path_skips_child_directories_but_not_regex_matching(self, mock_remove):
+        twintrimmer.walk_path('examples',
+                              recursive=False,
+                              skip_regex=False,
+                              regex_pattern=None)
+        self.assertEqual(mock_remove.call_count, 3)
+
+    @patch('twintrimmer.twintrimmer.remove_by_checksum')
+    def test_walk_path_includes_child_directories_but_not_regex_matching(self, mock_remove):
+        twintrimmer.walk_path('examples',
+                              recursive=True,
+                              skip_regex=False,
+                              regex_pattern=None)
+        self.assertEqual(mock_remove.call_count, 4)
+
+
+class TestRemoveByChecksum(TestCaseWithFileSystem):
+    def setUp(self):
+        super(TestRemoveByChecksum, self).setUp()
+        self.filename_set_two = {
+            twintrimmer.Filename(name='baz (1).txt', base='baz (1)', ext='.txt', path='examples/baz (1).txt'),
+            twintrimmer.Filename(name='baz.txt', base='baz', ext='.txt', path='examples/baz.txt')
+        }
+        self.filename_set_one = {
+            twintrimmer.Filename(name='baz (3).txt', base='baz (3)', ext='.txt', path='examples/baz (3).txt'),
+        }
+
+    @patch('twintrimmer.twintrimmer.remove_files_marked_for_deletion')
+    def test_remove_by_checksum_picks_best_of_two_files(self, mock_remove):
+        twintrimmer.remove_by_checksum(self.filename_set_two)
+        self.assertEqual(mock_remove.call_count, 1)
+
+    @patch('twintrimmer.twintrimmer.remove_files_marked_for_deletion')
+    def test_remove_by_checksum_catches_OSError(self, mock_remove):
+        mock_remove.side_effect = PermissionError
+        twintrimmer.remove_by_checksum(self.filename_set_two)
+        self.assertEqual(mock_remove.call_count, 1)
+
+
+    @patch('twintrimmer.twintrimmer.remove_files_marked_for_deletion')
+    def test_remove_by_checksum_picks_best_of_four_mismatched_files(self, mock_remove):
+        twintrimmer.remove_by_checksum(set(self.file_names_list))
+        self.assertEqual(mock_remove.call_count, 2)
+
+    @patch('twintrimmer.twintrimmer.remove_files_marked_for_deletion')
+    def test_remove_by_checksum_skips_single_file(self, mock_remove):
+        twintrimmer.remove_by_checksum(self.filename_set_one)
+        self.assertEqual(mock_remove.call_count, 0)
+
+    @patch('twintrimmer.twintrimmer.ask_for_best')
+    @patch('twintrimmer.twintrimmer.remove_files_marked_for_deletion')
+    def test_remove_by_checksum_runs_interactively(self, mock_remove, mock_ask_for_best):
+        mock_ask_for_best.return_value = (self.file_names_list[0], {})
+        twintrimmer.remove_by_checksum(self.filename_set_two, interactive=True)
+        self.assertEqual(mock_remove.call_count, 0)
+
+
+class TestWalkPathIntegration(TestCaseWithFileSystem):
     def test_no_action_does_no_action(self):
         twintrimmer.walk_path('examples',
+                              remove_links=True,
+                              skip_regex=False,
+                              regex_pattern=None,
+                              recursive=False,
                               no_action=True)
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
 
     def test_no_action_does_nothing_warns_removes_links(self):
         twintrimmer.walk_path('examples',
                               no_action=True,
+                              skip_regex=False,
+                              regex_pattern=None,
+                              recursive=False,
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
 
     def test_no_action_does_no_action_skips_hardlinks(self):
         twintrimmer.walk_path('examples',
                               no_action=True,
+                              skip_regex=False,
+                              regex_pattern=None,
+                              recursive=False,
                               remove_links=False)
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
 
     def test_skip_links_does_no_action_skips_hardlinks(self):
         twintrimmer.walk_path('examples',
+                              skip_regex=False,
+                              regex_pattern=None,
+                              recursive=False,
                               remove_links=False)
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
 
     def test_makes_links_when_expected(self):
         twintrimmer.walk_path('examples/',
+                              skip_regex=False,
+                              regex_pattern=None,
+                              recursive=False,
                               make_links=True)
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
         self.assertTrue(os.path.samefile('examples/foo.txt', 'examples/foo (1).txt'))
@@ -187,6 +412,9 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
         self.assertTrue(os.path.exists('examples/foo (2).txt'))
         self.assertTrue(os.path.exists('examples/foo (3).txt'))
         twintrimmer.walk_path('examples',
+                              regex_pattern=None,
+                              skip_regex=False,
+                              recursive=False,
                               no_action=False,
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/foo.txt'))
@@ -202,6 +430,9 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
         self.assertTrue(os.path.exists('examples/foo (3).txt'))
         twintrimmer.walk_path('examples/',
                               no_action=False,
+                              skip_regex=False,
+                              recursive=False,
+                              regex_pattern=None,
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/foo.txt'))
         self.assertFalse(os.path.exists('examples/foo (1).txt'))
@@ -213,6 +444,8 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
         self.assertTrue(os.path.exists('examples/underscore/file__1.txt'))
         twintrimmer.walk_path('examples/underscore',
                               regex_pattern='(.+?)(?:__\d)*\..*',
+                              recursive=False,
+                              skip_regex=False,
                               no_action=False,
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/underscore/file.txt'))
@@ -225,6 +458,8 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
         twintrimmer.walk_path('examples',
                               regex_pattern='(^.+?)(?: \(\d\))*\..+',
                               no_action=False,
+                              skip_regex=False,
+                              recursive=False,
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/foo.txt'))
         self.assertFalse(os.path.exists('examples/foo.txt~'))
@@ -236,6 +471,8 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
         twintrimmer.walk_path('examples',
                               skip_regex=True,
                               no_action=False,
+                              recursive=False,
+                              regex_pattern=None,
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/fizz'))
         self.assertFalse(os.path.exists('examples/foo.txt'))
@@ -244,7 +481,9 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
         self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
         twintrimmer.walk_path('examples',
                               no_action=False,
+                              skip_regex=False,
                               recursive=True,
+                              regex_pattern=None,
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/foo.txt'))
         self.assertFalse(os.path.exists('examples/foo (1).txt'))
@@ -255,6 +494,9 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
         #with self.assertRaises(OSError):
         twintrimmer.walk_path('examples/recur',
                               no_action=False,
+                              skip_regex=False,
+                              recursive=False,
+                              regex_pattern=None,
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
 
@@ -267,8 +509,11 @@ class TestWalkPath(fake_filesystem_unittest.TestCase):
         #with self.assertRaises(OSError):
         twintrimmer.walk_path('examples/recur',
                               no_action=False,
+                              recursive=False,
+                              skip_regex=False,
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
+
 
 if __name__ == '__main__':
     unittest.main()
