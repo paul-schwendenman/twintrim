@@ -175,8 +175,23 @@ def generate_filename_dict(filenames, expr=None):
     return filename_dict
 
 
-def remove_by_checksum(list_of_names, no_action=True, interactive=False, hash_name='sha1',
-                       make_links=False, remove_links=False, **options):
+def remove_files_marked_for_deletion(bad, best, **options):
+    if not options['remove_links'] and os.path.samefile(best.path, bad.path):
+        LOGGER.info('hard link skipped %s', bad.path)
+    elif options['no_action']:
+        print('{0} would have been deleted'.format(bad.path))
+        LOGGER.info('%s would have been deleted', bad.path)
+    else:
+        os.remove(bad.path)
+        LOGGER.info('%s was deleted', bad.path)
+        if options.get('make_links', False):
+            LOGGER.info('hard link created: %s', bad.path)
+            os.link(best.path, bad.path)
+
+
+def remove_by_checksum(list_of_names,
+                       interactive=False,
+                       hash_name='sha1', **options):
     '''
     This function first groups the files by checksum, and then removes all
     but one copy of the file.
@@ -194,28 +209,10 @@ def remove_by_checksum(list_of_names, no_action=True, interactive=False, hash_na
                 best, rest = ask_for_best(best, rest)
 
             for bad in rest:
-                if no_action:
-                    if not remove_links and os.path.samefile(best.path,
-                                                             bad.path):
-                        print('{0} hard link would have been skipped'.format(bad.path))
-                        LOGGER.info('Hard link would have been skipped %s', bad.path)
-                    else:
-                        print('{0} would have been deleted'.format(bad.path))
-                        LOGGER.info('%s would have been deleted', bad.path)
-                else:
-                    try:
-                        if not remove_links and os.path.samefile(best.path,
-                                                                 bad.path):
-                            LOGGER.info('Hard link detected %s', bad.path)
-                            continue
-                        else:
-                            LOGGER.info('%s was deleted', bad.path)
-                        os.remove(bad.path)
-                        if make_links:
-                            LOGGER.info('Hard link created')
-                            os.link(best.path, bad.path)
-                    except OSError as err:
-                        LOGGER.error('File deletion error: %s', err)
+                try:
+                    remove_files_marked_for_deletion(bad, best, **options)
+                except OSError as err:
+                    LOGGER.error('File deletion error: %s', err)
             LOGGER.info('%s was kept as only copy', best.path)
 
         else:
@@ -228,12 +225,12 @@ def walk_path(path, **options):
     This function steps through the directory structure and identifies
     groups for more in depth investigation.
     '''
-    if 'recursive' not in options:
-        options['recursive'] = False
-    if 'skip_regex' not in options:
-        options['skip_regex'] = False
-    if not options['skip_regex'] and 'regex_pattern' not in options:
-        options['regex_pattern'] = None
+    #if 'recursive' not in options:
+    #    options['recursive'] = False
+    #if 'skip_regex' not in options:
+    #    options['skip_regex'] = False
+    #if not options['skip_regex'] and 'regex_pattern' not in options:
+    #    options['regex_pattern'] = None
     for root, _, filenames in os.walk(path):
         if not options['recursive'] and root != path:
             LOGGER.debug("Skipping child directory %s of %s", root, path)
@@ -255,5 +252,4 @@ def walk_path(path, **options):
                                  name, ', '.join([item.name
                                                   for item in names[name]]))
         else:
-            remove_by_checksum(create_filenames(filenames, root),
-                               **options)
+            remove_by_checksum(create_filenames(filenames, root), **options)
