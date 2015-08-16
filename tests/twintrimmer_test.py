@@ -417,5 +417,12 @@ class TestRemoveByChecksum(unittest.TestCase):
         twintrimmer.remove_by_checksum(self.filename_set_two)
         self.assertEqual(mock_remove.call_count, 1)
 
+    @patch('twintrimmer.twintrimmer.remove_files_marked_for_deletion')
+    def test_remove_by_checksum_skips_single_file(self, mock_remove):
+        twintrimmer.remove_by_checksum(self.filename_set_one)
+        self.assertEqual(mock_remove.call_count, 0)
+
+
+
 if __name__ == '__main__':
     unittest.main()
