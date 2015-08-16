@@ -289,125 +289,6 @@ class TestRemoveFilesMarkedForDeletion(unittest.TestCase):
 
 
 class TestWalkPath(TestCaseWithFileSystem):
-    def test_no_action_does_no_action(self):
-        twintrimmer.walk_path('examples',
-                              remove_links=True,
-                              no_action=True)
-        self.assertTrue(os.path.exists('examples/foo (1).txt'))
-
-    def test_no_action_does_nothing_warns_removes_links(self):
-        twintrimmer.walk_path('examples',
-                              no_action=True,
-                              remove_links=True)
-        self.assertTrue(os.path.exists('examples/foo (1).txt'))
-
-    def test_no_action_does_no_action_skips_hardlinks(self):
-        twintrimmer.walk_path('examples',
-                              no_action=True,
-                              remove_links=False)
-        self.assertTrue(os.path.exists('examples/foo (1).txt'))
-
-    def test_skip_links_does_no_action_skips_hardlinks(self):
-        twintrimmer.walk_path('examples',
-                              remove_links=False)
-        self.assertTrue(os.path.exists('examples/foo (1).txt'))
-
-    def test_makes_links_when_expected(self):
-        twintrimmer.walk_path('examples/',
-                              make_links=True)
-        self.assertTrue(os.path.exists('examples/foo (1).txt'))
-        self.assertTrue(os.path.samefile('examples/foo.txt', 'examples/foo (1).txt'))
-
-    def test_removes_duplicate_file_foo_1(self):
-        self.assertTrue(os.path.exists('examples/foo.txt'))
-        self.assertTrue(os.path.exists('examples/foo (1).txt'))
-        self.assertTrue(os.path.exists('examples/foo (2).txt'))
-        self.assertTrue(os.path.exists('examples/foo (3).txt'))
-        twintrimmer.walk_path('examples',
-                              no_action=False,
-                              remove_links=True)
-        self.assertTrue(os.path.exists('examples/foo.txt'))
-        self.assertFalse(os.path.exists('examples/foo (1).txt'))
-        self.assertFalse(os.path.exists('examples/foo (2).txt'))
-        self.assertTrue(os.path.exists('examples/foo (3).txt'))
-
-    @unittest.expectedFailure
-    def test_removes_duplicate_file_foo_1_with_trailing_backslash(self):
-        self.assertTrue(os.path.exists('examples/foo.txt'))
-        self.assertTrue(os.path.exists('examples/foo (1).txt'))
-        self.assertTrue(os.path.exists('examples/foo (2).txt'))
-        self.assertTrue(os.path.exists('examples/foo (3).txt'))
-        twintrimmer.walk_path('examples/',
-                              no_action=False,
-                              remove_links=True)
-        self.assertTrue(os.path.exists('examples/foo.txt'))
-        self.assertFalse(os.path.exists('examples/foo (1).txt'))
-        self.assertFalse(os.path.exists('examples/foo (2).txt'))
-        self.assertTrue(os.path.exists('examples/foo (3).txt'))
-
-    def test_removes_duplicate_file_with_custom_regex_double_underscore(self):
-        self.assertTrue(os.path.exists('examples/underscore/file.txt'))
-        self.assertTrue(os.path.exists('examples/underscore/file__1.txt'))
-        twintrimmer.walk_path('examples/underscore',
-                              regex_pattern='(.+?)(?:__\d)*\..*',
-                              no_action=False,
-                              remove_links=True)
-        self.assertTrue(os.path.exists('examples/underscore/file.txt'))
-        self.assertFalse(os.path.exists('examples/underscore/file__1.txt'))
-
-    def test_removes_duplicate_file_with_custom_regex_trailing_tilde(self):
-        self.fs.CreateFile('examples/foo.txt~',
-                           contents='foo\n')
-        self.assertTrue(os.path.exists('examples/foo.txt'))
-        twintrimmer.walk_path('examples',
-                              regex_pattern='(^.+?)(?: \(\d\))*\..+',
-                              no_action=False,
-                              remove_links=True)
-        self.assertTrue(os.path.exists('examples/foo.txt'))
-        self.assertFalse(os.path.exists('examples/foo.txt~'))
-
-    def test_removes_files_skipping_name_match(self):
-        self.fs.CreateFile('examples/fizz',
-                           contents='foo\n')
-        self.assertTrue(os.path.exists('examples/foo.txt'))
-        twintrimmer.walk_path('examples',
-                              skip_regex=True,
-                              no_action=False,
-                              remove_links=True)
-        self.assertTrue(os.path.exists('examples/fizz'))
-        self.assertFalse(os.path.exists('examples/foo.txt'))
-
-    def test_traverses_directories_recursively(self):
-        self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
-        twintrimmer.walk_path('examples',
-                              no_action=False,
-                              recursive=True,
-                              remove_links=True)
-        self.assertTrue(os.path.exists('examples/foo.txt'))
-        self.assertFalse(os.path.exists('examples/foo (1).txt'))
-        self.assertFalse(os.path.exists('examples/recur/file (2).txt'))
-
-    def test_can_not_sum_hash_due_to_OSError(self):
-        os.chmod('examples/recur/file.txt', 0o000)
-        #with self.assertRaises(OSError):
-        twintrimmer.walk_path('examples/recur',
-                              no_action=False,
-                              remove_links=True)
-        self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
-
-    @unittest.expectedFailure
-    def test_can_not_delete_file_due_to_OSError(self):
-        os.chmod('examples/recur/file (2).txt', 0o700)
-        os.chown('examples/recur/file (2).txt', 0, 0)
-        print(os.stat('examples/recur/file (2).txt'))
-
-        #with self.assertRaises(OSError):
-        twintrimmer.walk_path('examples/recur',
-                              no_action=False,
-                              remove_links=True)
-        self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
-
-class TestWalkPath(TestCaseWithFileSystem):
     @patch('twintrimmer.twintrimmer.remove_by_checksum')
     def test_walk_path_skips_child_directories_and_regex_matching(self, mock_remove):
         twintrimmer.walk_path('examples',
@@ -423,17 +304,19 @@ class TestWalkPath(TestCaseWithFileSystem):
         self.assertEqual(mock_remove.call_count, 3)
 
     @patch('twintrimmer.twintrimmer.remove_by_checksum')
-    def test_walk_path_skips_child_directories_not_regex_matching(self, mock_remove):
+    def test_walk_path_skips_child_directories_but_not_regex_matching(self, mock_remove):
         twintrimmer.walk_path('examples',
                               recursive=False,
-                              skip_regex=False)
+                              skip_regex=False,
+                              regex_pattern=None)
         self.assertEqual(mock_remove.call_count, 3)
 
     @patch('twintrimmer.twintrimmer.remove_by_checksum')
-    def test_walk_path_includes_child_directories_not_regex_matching(self, mock_remove):
+    def test_walk_path_includes_child_directories_but_not_regex_matching(self, mock_remove):
         twintrimmer.walk_path('examples',
                               recursive=True,
-                              skip_regex=False)
+                              skip_regex=False,
+                              regex_pattern=None)
         self.assertEqual(mock_remove.call_count, 4)
 
 
@@ -476,6 +359,160 @@ class TestRemoveByChecksum(TestCaseWithFileSystem):
         mock_ask_for_best.return_value = (self.file_names_list[0], {})
         twintrimmer.remove_by_checksum(self.filename_set_two, interactive=True)
         self.assertEqual(mock_remove.call_count, 0)
+
+
+class TestWalkPathIntegration(TestCaseWithFileSystem):
+    def test_no_action_does_no_action(self):
+        twintrimmer.walk_path('examples',
+                              remove_links=True,
+                              skip_regex=False,
+                              regex_pattern=None,
+                              recursive=False,
+                              no_action=True)
+        self.assertTrue(os.path.exists('examples/foo (1).txt'))
+
+    def test_no_action_does_nothing_warns_removes_links(self):
+        twintrimmer.walk_path('examples',
+                              no_action=True,
+                              skip_regex=False,
+                              regex_pattern=None,
+                              recursive=False,
+                              remove_links=True)
+        self.assertTrue(os.path.exists('examples/foo (1).txt'))
+
+    def test_no_action_does_no_action_skips_hardlinks(self):
+        twintrimmer.walk_path('examples',
+                              no_action=True,
+                              skip_regex=False,
+                              regex_pattern=None,
+                              recursive=False,
+                              remove_links=False)
+        self.assertTrue(os.path.exists('examples/foo (1).txt'))
+
+    def test_skip_links_does_no_action_skips_hardlinks(self):
+        twintrimmer.walk_path('examples',
+                              skip_regex=False,
+                              regex_pattern=None,
+                              recursive=False,
+                              remove_links=False)
+        self.assertTrue(os.path.exists('examples/foo (1).txt'))
+
+    def test_makes_links_when_expected(self):
+        twintrimmer.walk_path('examples/',
+                              skip_regex=False,
+                              regex_pattern=None,
+                              recursive=False,
+                              make_links=True)
+        self.assertTrue(os.path.exists('examples/foo (1).txt'))
+        self.assertTrue(os.path.samefile('examples/foo.txt', 'examples/foo (1).txt'))
+
+    def test_removes_duplicate_file_foo_1(self):
+        self.assertTrue(os.path.exists('examples/foo.txt'))
+        self.assertTrue(os.path.exists('examples/foo (1).txt'))
+        self.assertTrue(os.path.exists('examples/foo (2).txt'))
+        self.assertTrue(os.path.exists('examples/foo (3).txt'))
+        twintrimmer.walk_path('examples',
+                              regex_pattern=None,
+                              skip_regex=False,
+                              recursive=False,
+                              no_action=False,
+                              remove_links=True)
+        self.assertTrue(os.path.exists('examples/foo.txt'))
+        self.assertFalse(os.path.exists('examples/foo (1).txt'))
+        self.assertFalse(os.path.exists('examples/foo (2).txt'))
+        self.assertTrue(os.path.exists('examples/foo (3).txt'))
+
+    @unittest.expectedFailure
+    def test_removes_duplicate_file_foo_1_with_trailing_backslash(self):
+        self.assertTrue(os.path.exists('examples/foo.txt'))
+        self.assertTrue(os.path.exists('examples/foo (1).txt'))
+        self.assertTrue(os.path.exists('examples/foo (2).txt'))
+        self.assertTrue(os.path.exists('examples/foo (3).txt'))
+        twintrimmer.walk_path('examples/',
+                              no_action=False,
+                              skip_regex=False,
+                              recursive=False,
+                              regex_pattern=None,
+                              remove_links=True)
+        self.assertTrue(os.path.exists('examples/foo.txt'))
+        self.assertFalse(os.path.exists('examples/foo (1).txt'))
+        self.assertFalse(os.path.exists('examples/foo (2).txt'))
+        self.assertTrue(os.path.exists('examples/foo (3).txt'))
+
+    def test_removes_duplicate_file_with_custom_regex_double_underscore(self):
+        self.assertTrue(os.path.exists('examples/underscore/file.txt'))
+        self.assertTrue(os.path.exists('examples/underscore/file__1.txt'))
+        twintrimmer.walk_path('examples/underscore',
+                              regex_pattern='(.+?)(?:__\d)*\..*',
+                              recursive=False,
+                              skip_regex=False,
+                              no_action=False,
+                              remove_links=True)
+        self.assertTrue(os.path.exists('examples/underscore/file.txt'))
+        self.assertFalse(os.path.exists('examples/underscore/file__1.txt'))
+
+    def test_removes_duplicate_file_with_custom_regex_trailing_tilde(self):
+        self.fs.CreateFile('examples/foo.txt~',
+                           contents='foo\n')
+        self.assertTrue(os.path.exists('examples/foo.txt'))
+        twintrimmer.walk_path('examples',
+                              regex_pattern='(^.+?)(?: \(\d\))*\..+',
+                              no_action=False,
+                              skip_regex=False,
+                              recursive=False,
+                              remove_links=True)
+        self.assertTrue(os.path.exists('examples/foo.txt'))
+        self.assertFalse(os.path.exists('examples/foo.txt~'))
+
+    def test_removes_files_skipping_name_match(self):
+        self.fs.CreateFile('examples/fizz',
+                           contents='foo\n')
+        self.assertTrue(os.path.exists('examples/foo.txt'))
+        twintrimmer.walk_path('examples',
+                              skip_regex=True,
+                              no_action=False,
+                              recursive=False,
+                              regex_pattern=None,
+                              remove_links=True)
+        self.assertTrue(os.path.exists('examples/fizz'))
+        self.assertFalse(os.path.exists('examples/foo.txt'))
+
+    def test_traverses_directories_recursively(self):
+        self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
+        twintrimmer.walk_path('examples',
+                              no_action=False,
+                              skip_regex=False,
+                              recursive=True,
+                              regex_pattern=None,
+                              remove_links=True)
+        self.assertTrue(os.path.exists('examples/foo.txt'))
+        self.assertFalse(os.path.exists('examples/foo (1).txt'))
+        self.assertFalse(os.path.exists('examples/recur/file (2).txt'))
+
+    def test_can_not_sum_hash_due_to_OSError(self):
+        os.chmod('examples/recur/file.txt', 0o000)
+        #with self.assertRaises(OSError):
+        twintrimmer.walk_path('examples/recur',
+                              no_action=False,
+                              skip_regex=False,
+                              recursive=False,
+                              regex_pattern=None,
+                              remove_links=True)
+        self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
+
+    @unittest.expectedFailure
+    def test_can_not_delete_file_due_to_OSError(self):
+        os.chmod('examples/recur/file (2).txt', 0o700)
+        os.chown('examples/recur/file (2).txt', 0, 0)
+        print(os.stat('examples/recur/file (2).txt'))
+
+        #with self.assertRaises(OSError):
+        twintrimmer.walk_path('examples/recur',
+                              no_action=False,
+                              recursive=False,
+                              skip_regex=False,
+                              remove_links=True)
+        self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
 
 
 if __name__ == '__main__':

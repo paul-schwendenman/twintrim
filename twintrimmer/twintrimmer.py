@@ -225,12 +225,12 @@ def walk_path(path, **options):
     This function steps through the directory structure and identifies
     groups for more in depth investigation.
     '''
-    if 'recursive' not in options:
-        options['recursive'] = False
-    if 'skip_regex' not in options:
-        options['skip_regex'] = False
-    if not options['skip_regex'] and 'regex_pattern' not in options:
-        options['regex_pattern'] = None
+    #if 'recursive' not in options:
+    #    options['recursive'] = False
+    #if 'skip_regex' not in options:
+    #    options['skip_regex'] = False
+    #if not options['skip_regex'] and 'regex_pattern' not in options:
+    #    options['regex_pattern'] = None
     for root, _, filenames in os.walk(path):
         if not options['recursive'] and root != path:
             LOGGER.debug("Skipping child directory %s of %s", root, path)
