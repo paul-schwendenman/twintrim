@@ -288,7 +288,6 @@ class TestRemoveFilesMarkedForDeletion(unittest.TestCase):
         mock_link.assert_called_with('examples/foo.txt', 'examples/foo (2).txt')
 
 
-@unittest.skip('Skip these tests')
 class TestWalkPath(TestCaseWithFileSystem):
     def test_no_action_does_no_action(self):
         twintrimmer.walk_path('examples',
