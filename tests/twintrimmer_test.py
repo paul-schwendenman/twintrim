@@ -407,6 +407,36 @@ class TestWalkPath(TestCaseWithFileSystem):
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
 
+class TestWalkPath(TestCaseWithFileSystem):
+    @patch('twintrimmer.twintrimmer.remove_by_checksum')
+    def test_walk_path_skips_child_directories_and_regex_matching(self, mock_remove):
+        twintrimmer.walk_path('examples',
+                              recursive=False,
+                              skip_regex=True)
+        self.assertEqual(mock_remove.call_count, 1)
+
+    @patch('twintrimmer.twintrimmer.remove_by_checksum')
+    def test_walk_path_includes_child_directories_and_regex_matching(self, mock_remove):
+        twintrimmer.walk_path('examples',
+                              recursive=True,
+                              skip_regex=True)
+        self.assertEqual(mock_remove.call_count, 3)
+
+    @patch('twintrimmer.twintrimmer.remove_by_checksum')
+    def test_walk_path_skips_child_directories_not_regex_matching(self, mock_remove):
+        twintrimmer.walk_path('examples',
+                              recursive=False,
+                              skip_regex=False)
+        self.assertEqual(mock_remove.call_count, 3)
+
+    @patch('twintrimmer.twintrimmer.remove_by_checksum')
+    def test_walk_path_includes_child_directories_not_regex_matching(self, mock_remove):
+        twintrimmer.walk_path('examples',
+                              recursive=True,
+                              skip_regex=False)
+        self.assertEqual(mock_remove.call_count, 4)
+
+
 class TestRemoveByChecksum(TestCaseWithFileSystem):
     def setUp(self):
         super(TestRemoveByChecksum, self).setUp()
