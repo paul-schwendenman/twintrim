@@ -187,10 +187,10 @@ class TestCaseWithFileSystem(fake_filesystem_unittest.TestCase):
         self.fs.CreateFile('examples/underscore/file__1.txt',
                            contents='\n')
         self.file_names_list = [
-            twintrimmer.Filename(None, None, None, 'examples/foo.txt'),
-            twintrimmer.Filename(None, None, None, 'examples/foo (1).txt'),
-            twintrimmer.Filename(None, None, None, 'examples/foo (2).txt'),
-            twintrimmer.Filename(None, None, None, 'examples/foo (3).txt'),
+            twintrimmer.Filename('foo.txt', None, None, 'examples/foo.txt'),
+            twintrimmer.Filename('foo (1).txt', None, None, 'examples/foo (1).txt'),
+            twintrimmer.Filename('foo (2).txt', None, None, 'examples/foo (2).txt'),
+            twintrimmer.Filename('foo (3).txt', None, None, 'examples/foo (3).txt'),
         ]
 
 class TestAskForBest(unittest.TestCase):
@@ -429,6 +429,12 @@ class TestRemoveByChecksum(TestCaseWithFileSystem):
         mock_remove.side_effect = PermissionError
         twintrimmer.remove_by_checksum(self.filename_set_two)
         self.assertEqual(mock_remove.call_count, 1)
+
+
+    @patch('twintrimmer.twintrimmer.remove_files_marked_for_deletion')
+    def test_remove_by_checksum_picks_best_of_four_mismatched_files(self, mock_remove):
+        twintrimmer.remove_by_checksum(set(self.file_names_list))
+        self.assertEqual(mock_remove.call_count, 2)
 
     @patch('twintrimmer.twintrimmer.remove_files_marked_for_deletion')
     def test_remove_by_checksum_skips_single_file(self, mock_remove):
