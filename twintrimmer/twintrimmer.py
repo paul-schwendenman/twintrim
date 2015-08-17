@@ -12,6 +12,44 @@ LOGGER = logging.getLogger(__name__)
 
 Filename = namedtuple('Filename', ['name', 'base', 'ext', 'path'])
 
+class Clumper():
+    '''
+    general purpose class for grouping
+    '''
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def make_clump(self, item):
+        '''
+        make a clump of the item
+        '''
+        raise NotImplementedError
+
+    def dump_clumps(self, list_of_items):
+        '''
+        group list into clumps
+        '''
+        raise NotImplementedError
+
+class Sifter():
+    '''
+    general purpose class for dividing groups
+    '''
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def sift(self, clump, best=None):
+        '''
+        divide the clumps returning the best and the rest
+        '''
+        raise NotImplementedError
+
+    def filter(self, dictionary_of_groups):
+        '''
+        helper function for filtering clumps
+        '''
+        raise NotImplementedError
+
 
 def create_filenames(filenames, root):
     '''
