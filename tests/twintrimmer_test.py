@@ -188,6 +188,7 @@ class TestCaseWithFileSystem(fake_filesystem_unittest.TestCase):
             twintrimmer.Filename('foo (2).txt', None, None, 'examples/foo (2).txt'),
             twintrimmer.Filename('foo (3).txt', None, None, 'examples/foo (3).txt'),
         ]
+        self.sifter = twintrimmer.twintrimmer.ShortestSifter()
 
 class TestInteractiveSifter(unittest.TestCase):
     def setUp(self):
@@ -339,31 +340,24 @@ class TestRemoveByChecksum(TestCaseWithFileSystem):
 
     @patch('twintrimmer.twintrimmer.remove_files_for_deletion')
     def test_remove_by_checksum_picks_best_of_two_files(self, mock_remove):
-        twintrimmer.remove_by_checksum(self.filename_set_two)
+        twintrimmer.remove_by_checksum(self.filename_set_two, self.sifter)
         self.assertEqual(mock_remove.call_count, 1)
 
     @patch('twintrimmer.twintrimmer.remove_files_for_deletion')
     def test_remove_by_checksum_catches_OSError(self, mock_remove):
         mock_remove.side_effect = PermissionError
-        twintrimmer.remove_by_checksum(self.filename_set_two)
+        twintrimmer.remove_by_checksum(self.filename_set_two, self.sifter)
         self.assertEqual(mock_remove.call_count, 1)
 
 
     @patch('twintrimmer.twintrimmer.remove_files_for_deletion')
     def test_remove_by_checksum_picks_best_of_four_mismatched_files(self, mock_remove):
-        twintrimmer.remove_by_checksum(set(self.file_names_list))
+        twintrimmer.remove_by_checksum(set(self.file_names_list), self.sifter)
         self.assertEqual(mock_remove.call_count, 2)
 
     @patch('twintrimmer.twintrimmer.remove_files_for_deletion')
     def test_remove_by_checksum_skips_single_file(self, mock_remove):
-        twintrimmer.remove_by_checksum(self.filename_set_one)
-        self.assertEqual(mock_remove.call_count, 0)
-
-    @patch('twintrimmer.twintrimmer.ask_for_best')
-    @patch('twintrimmer.twintrimmer.remove_files_for_deletion')
-    def test_remove_by_checksum_runs_interactively(self, mock_remove, mock_ask_for_best):
-        mock_ask_for_best.return_value = (self.file_names_list[0], {})
-        twintrimmer.remove_by_checksum(self.filename_set_two, interactive=True)
+        twintrimmer.remove_by_checksum(self.filename_set_one, self.sifter)
         self.assertEqual(mock_remove.call_count, 0)
 
 

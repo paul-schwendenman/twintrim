@@ -26,7 +26,7 @@ IN THE SOFTWARE.
 '''
 from .twintrimmer import (generate_checksum_dict, create_filenames,
                           remove_by_checksum, walk_path,
-                          Filename, ask_for_best, generate_filename_dict,
+                          Filename, generate_filename_dict,
                           generate_checksum, remove_files_for_deletion)
 from . import tool
 __all__ = ['create_filenames', 'generate_checksum', 'walk_path']

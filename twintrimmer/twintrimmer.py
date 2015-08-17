@@ -353,8 +353,7 @@ def remove_files_for_deletion(bad, best, **options):
             os.link(best.path, bad.path)
 
 
-def remove_by_checksum(list_of_names,
-                       interactive=False,
+def remove_by_checksum(list_of_names, sifter,
                        hash_name='sha1', **options):
     '''
     This function first groups the files by checksum, and then removes all
@@ -368,7 +367,6 @@ def remove_by_checksum(list_of_names,
 
     '''
     files = generate_checksum_dict(list_of_names, hash_name)
-    sifter = ShortestSifter()
 
     for file in files:
         if len(files[file]) > 1:
@@ -376,9 +374,6 @@ def remove_by_checksum(list_of_names,
             LOGGER.debug("Keys for %s are %s", file,
                          ', '.join([item.name for item in files[file]]))
             best, rest = sifter.sift(files[file])
-
-            if interactive:
-                best, rest = ask_for_best(best, rest)
 
             for bad in rest:
                 try:
@@ -399,6 +394,11 @@ def walk_path(path, **options):
 
     :param str path: the path to search for files and begin processing
     '''
+    if options.get('interactive', False):
+        sifter = InteractiveSifter()
+    else:
+        sifter = ShortestSifter()
+
     for root, _, filenames in os.walk(path):
         if not options['recursive'] and root != path:
             LOGGER.debug("Skipping child directory %s of %s", root, path)
@@ -414,10 +414,10 @@ def walk_path(path, **options):
                     LOGGER.debug("Keys for %s are %s", name,
                                  ', '.join([item.name
                                             for item in names[name]]))
-                    remove_by_checksum(names[name], **options)
+                    remove_by_checksum(names[name], sifter, **options)
                 else:
                     LOGGER.debug('Skipping non duplicate name %s for key %s',
                                  name, ', '.join([item.name
                                                   for item in names[name]]))
         else:
-            remove_by_checksum(create_filenames(filenames, root), **options)
+            remove_by_checksum(create_filenames(filenames, root), sifter, **options)
