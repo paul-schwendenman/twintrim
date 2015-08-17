@@ -147,6 +147,49 @@ class ShortestSifter(Sifter):
         else:
             return file2
 
+class InteractiveSifter(ShortestSifter):
+    '''
+    This class allows the user to interactively select which file is
+    selected to be preserved.
+    '''
+    def __init__(self, *args, **kwargs):
+        super(InteractiveSifter, self).__init__(*args, **kwargs)
+
+    def sift(self, clump):
+        '''
+        Asks user for best after giving recommendation
+        '''
+        default, rest = super(InteractiveSifter, self).sift(clump)
+        files = [default] + list(rest)
+        for num, file in enumerate(files):
+            if file == default:
+                print("{0}. {1} (default)".format(num, file.name))
+            else:
+                print("{0}. {1}".format(num, file.name))
+
+        try:
+            while True:
+                result = input('Pick which file to keep (^C to skip): ')
+                if result == '':
+                    best = default
+                    break
+                elif result.isdigit() and int(result) in range(len(files)):
+                    best = files[int(result)]
+                    break
+                elif result in [file.name for file in files]:
+                    best = [file for file in files if file.name == result][0]
+                    break
+            rest = set(files) - {best}
+            LOGGER.warning('User picked %s over %s', best, default)
+
+        except KeyboardInterrupt:
+            print('\nSkipped')
+            LOGGER.warning('User skipped in interactive mode')
+            best = default
+            rest = {}
+
+        return best, rest
+
 
 def create_filenames(filenames, root):
     '''
@@ -227,51 +270,6 @@ def generate_checksum(filename, hash_name='md5'):
         for chunk in iter(lambda: file.read(128 * hash_func.block_size), b''):
             hash_func.update(chunk)
     return hash_func.hexdigest()
-
-
-def ask_for_best(default, rest):
-    '''
-    This function allows the user to interactively select which file is
-    selected to be preserved.
-
-    :param default: Filename object that would normally be kept
-    :type default: Filename
-    :param rest: Other matching filenames to offer as options to be kept,
-                    they are all going to be deleted
-    :type rest: set(Filename)
-
-    :returns: (best, rest):
-    :rtype: (Filename, set(Filename))
-    '''
-    files = [default] + list(rest)
-    for num, file in enumerate(files):
-        if file == default:
-            print("{0}. {1} (default)".format(num, file.name))
-        else:
-            print("{0}. {1}".format(num, file.name))
-
-    try:
-        while True:
-            result = input('Pick which file to keep (^C to skip): ')
-            if result == '':
-                best = default
-                break
-            elif result.isdigit() and int(result) in range(len(files)):
-                best = files[int(result)]
-                break
-            elif result in [file.name for file in files]:
-                best = [file for file in files if file.name == result][0]
-                break
-        rest = set(files) - {best}
-        LOGGER.warning('User picked %s over %s', best, default)
-
-    except KeyboardInterrupt:
-        print('\nSkipped')
-        LOGGER.warning('User skipped in interactive mode')
-        best = default
-        rest = {}
-
-    return best, rest
 
 
 def generate_checksum_dict(filenames, hash_name):

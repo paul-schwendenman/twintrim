@@ -189,24 +189,34 @@ class TestCaseWithFileSystem(fake_filesystem_unittest.TestCase):
             twintrimmer.Filename('foo (3).txt', None, None, 'examples/foo (3).txt'),
         ]
 
-class TestAskForBest(unittest.TestCase):
+class TestInteractiveSifter(unittest.TestCase):
     def setUp(self):
         filenames = ['file.txt', 'file1.txt', 'file2.txt']
         root = '/'
         self.file, self.file1, self.file2 = list(twintrimmer.create_filenames(filenames, root))
+        self.filenames = {self.file, self.file1, self.file2}
+        self.sifter = twintrimmer.twintrimmer.InteractiveSifter()
+
+    @patch('builtins.input')
+    def test_pick_user_by_index(self, mock_input):
+        mock_input.return_value = '0'
+        best, rest = self.sifter.sift(self.filenames)
+        self.assertEqual(self.file, best)
+        self.assertEqual(len(rest), 2)
+        self.assertEqual(mock_input.call_count, 1)
 
     @patch('builtins.input')
     def test_pick_user_follows_users_choice(self, mock_input):
-        mock_input.return_value = '0'
-        best, rest = twintrimmer.ask_for_best(self.file, {self.file1, self.file2})
-        self.assertEqual(self.file, best)
+        mock_input.return_value = 'file1.txt'
+        best, rest = self.sifter.sift(self.filenames)
+        self.assertEqual(self.file1, best)
         self.assertEqual(len(rest), 2)
         self.assertEqual(mock_input.call_count, 1)
 
     @patch('builtins.input')
     def test_uses_default_for_no_input(self, mock_input):
         mock_input.return_value = ''
-        best, rest = twintrimmer.ask_for_best(self.file, {self.file1, self.file2})
+        best, rest = self.sifter.sift(self.filenames)
         self.assertEqual(self.file, best)
         self.assertEqual(len(rest), 2)
         self.assertEqual(mock_input.call_count, 1)
@@ -214,7 +224,7 @@ class TestAskForBest(unittest.TestCase):
     @patch('builtins.input')
     def test_user_supplies_full_filename(self, mock_input):
         mock_input.return_value = 'file1.txt'
-        best, rest = twintrimmer.ask_for_best(self.file, {self.file1, self.file2})
+        best, rest = self.sifter.sift(self.filenames)
         self.assertEqual(self.file1, best)
         self.assertEqual(len(rest), 2)
         self.assertEqual(mock_input.call_count, 1)
@@ -222,7 +232,7 @@ class TestAskForBest(unittest.TestCase):
     @patch('builtins.input')
     def test_user_typos_filename_on_input(self, mock_input):
         mock_input.side_effect = ['file3.txt', '5', 'file1.txt']
-        best, rest = twintrimmer.ask_for_best(self.file, {self.file1, self.file2})
+        best, rest = self.sifter.sift(self.filenames)
         self.assertEqual(self.file1, best)
         self.assertEqual(len(rest), 2)
         self.assertEqual(mock_input.call_count, 3)
@@ -230,7 +240,7 @@ class TestAskForBest(unittest.TestCase):
     @patch('builtins.input')
     def test_user_presses_keyboard_interrupt(self, mock_input):
         mock_input.side_effect = KeyboardInterrupt
-        best, rest = twintrimmer.ask_for_best(self.file, {self.file1, self.file2})
+        best, rest = self.sifter.sift(self.filenames)
         self.assertEqual(self.file, best)
         self.assertEqual(len(rest), 0)
         self.assertEqual(mock_input.call_count, 1)
