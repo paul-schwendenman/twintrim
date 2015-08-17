@@ -245,7 +245,7 @@ class TestRemoveFilesMarkedForDeletion(unittest.TestCase):
     def test_no_action_does_no_action(self, mock_remove):
         bad = twintrimmer.Filename(None, None, None, 'examples/foo (1).txt')
         best = twintrimmer.Filename(None, None, None, 'examples/foo.txt')
-        twintrimmer.remove_files_marked_for_deletion(
+        twintrimmer.remove_files_for_deletion(
             bad, best,
             remove_links=True,
             no_action=True)
@@ -256,7 +256,7 @@ class TestRemoveFilesMarkedForDeletion(unittest.TestCase):
         bad = twintrimmer.Filename(None, None, None, 'examples/foo (1).txt')
         best = twintrimmer.Filename(None, None, None, 'examples/foo.txt')
         with patch('os.path.samefile') as mock_samefile:
-            twintrimmer.remove_files_marked_for_deletion(
+            twintrimmer.remove_files_for_deletion(
                 bad, best,
                 remove_links=False,
                 no_action=False)
@@ -267,7 +267,7 @@ class TestRemoveFilesMarkedForDeletion(unittest.TestCase):
     def test_removes_duplicate_file(self, mock_remove):
         bad = twintrimmer.Filename(None, None, None, 'examples/foo (1).txt')
         best = twintrimmer.Filename(None, None, None, 'examples/foo.txt')
-        twintrimmer.remove_files_marked_for_deletion(
+        twintrimmer.remove_files_for_deletion(
             bad, best,
             remove_links=True,
             no_action=False)
@@ -279,7 +279,7 @@ class TestRemoveFilesMarkedForDeletion(unittest.TestCase):
     def test_makes_hardlink_after_deletion(self, mock_remove, mock_link):
         bad = twintrimmer.Filename(None, None, None, 'examples/foo (2).txt')
         best = twintrimmer.Filename(None, None, None, 'examples/foo.txt')
-        twintrimmer.remove_files_marked_for_deletion(
+        twintrimmer.remove_files_for_deletion(
             bad, best,
             remove_links=True,
             make_links=True,
@@ -331,30 +331,30 @@ class TestRemoveByChecksum(TestCaseWithFileSystem):
             twintrimmer.Filename(name='baz (3).txt', base='baz (3)', ext='.txt', path='examples/baz (3).txt'),
         }
 
-    @patch('twintrimmer.twintrimmer.remove_files_marked_for_deletion')
+    @patch('twintrimmer.twintrimmer.remove_files_for_deletion')
     def test_remove_by_checksum_picks_best_of_two_files(self, mock_remove):
         twintrimmer.remove_by_checksum(self.filename_set_two)
         self.assertEqual(mock_remove.call_count, 1)
 
-    @patch('twintrimmer.twintrimmer.remove_files_marked_for_deletion')
+    @patch('twintrimmer.twintrimmer.remove_files_for_deletion')
     def test_remove_by_checksum_catches_OSError(self, mock_remove):
         mock_remove.side_effect = PermissionError
         twintrimmer.remove_by_checksum(self.filename_set_two)
         self.assertEqual(mock_remove.call_count, 1)
 
 
-    @patch('twintrimmer.twintrimmer.remove_files_marked_for_deletion')
+    @patch('twintrimmer.twintrimmer.remove_files_for_deletion')
     def test_remove_by_checksum_picks_best_of_four_mismatched_files(self, mock_remove):
         twintrimmer.remove_by_checksum(set(self.file_names_list))
         self.assertEqual(mock_remove.call_count, 2)
 
-    @patch('twintrimmer.twintrimmer.remove_files_marked_for_deletion')
+    @patch('twintrimmer.twintrimmer.remove_files_for_deletion')
     def test_remove_by_checksum_skips_single_file(self, mock_remove):
         twintrimmer.remove_by_checksum(self.filename_set_one)
         self.assertEqual(mock_remove.call_count, 0)
 
     @patch('twintrimmer.twintrimmer.ask_for_best')
-    @patch('twintrimmer.twintrimmer.remove_files_marked_for_deletion')
+    @patch('twintrimmer.twintrimmer.remove_files_for_deletion')
     def test_remove_by_checksum_runs_interactively(self, mock_remove, mock_ask_for_best):
         mock_ask_for_best.return_value = (self.file_names_list[0], {})
         twintrimmer.remove_by_checksum(self.filename_set_two, interactive=True)

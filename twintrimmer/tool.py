@@ -1,8 +1,6 @@
 #! /usr/bin/env python3
 '''
-Twin trim
-
-A duplicate file remover
+commandline interface for the twintrimmer module
 '''
 import argparse
 import hashlib
@@ -11,11 +9,35 @@ import os
 import re
 import sys
 import textwrap
-from twintrimmer import walk_path
+from .twintrimmer import walk_path
 
 def terminal():
     '''
-        The main function handles all the parsing of arguments.
+        The main function handles the parsing of arguments as well as the
+        initiation of the logging handlers.
+
+        positional arguments:
+          path                  path to check
+
+        optional arguments:
+          -h, --help            show this help message and exit
+          -n, --no-action       show what files would have been deleted
+          -r, --recursive       search directories recursively
+          --verbosity VERBOSITY
+                                set print debug level
+          --log-file LOG_FILE   write to log file.
+          --log-level LOG_LEVEL
+                                set log file debug level
+          -p PATTERN, --pattern PATTERN
+                                set filename matching regex
+          -c, --only-checksum   toggle searching by checksum rather than name first
+          -i, --interactive     ask for file deletion interactively
+          --hash-function
+                                {'sha224', 'sha384', 'sha1', 'md5', 'sha512', 'sha256'}
+                                set hash function to use for checksums
+          --make-link           create hard link rather than remove file
+          --remove-links        remove hardlinks rather than skipping
+
     '''
     epilog = r'''
     examples:
