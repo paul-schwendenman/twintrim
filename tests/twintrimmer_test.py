@@ -229,7 +229,7 @@ class TestInteractiveSifter(unittest.TestCase):
         self.assertEqual(mock_input.call_count, 1)
 
 
-class TestRemoveFilesMarkedForDeletion(unittest.TestCase):
+class TestRemoveFilesForDeletion(unittest.TestCase):
     @patch('os.remove')
     def test_no_action_does_no_action(self, mock_remove):
         bad = twintrimmer.Filename(None, None, None, 'examples/foo (1).txt')
@@ -313,9 +313,9 @@ class TestWalkPath(TestCaseWithFileSystem):
         self.assertEqual(mock_remove.call_count, 4)
 
 
-class TestRemoveByChecksum(TestCaseWithFileSystem):
+class TestRemoveByClump(TestCaseWithFileSystem):
     def setUp(self):
-        super(TestRemoveByChecksum, self).setUp()
+        super(TestRemoveByClump, self).setUp()
         self.filename_set_two = {
             twintrimmer.Filename(name='baz (1).txt', base='baz (1)', ext='.txt', path='examples/baz (1).txt'),
             twintrimmer.Filename(name='baz.txt', base='baz', ext='.txt', path='examples/baz.txt')
