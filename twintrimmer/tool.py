@@ -9,7 +9,7 @@ import os
 import re
 import sys
 import textwrap
-from .twintrimmer import walk_path
+from .twintrimmer import main
 
 def terminal():
     '''
@@ -150,7 +150,7 @@ def terminal():
 
     root_logger.debug("Args: %s", args)
 
-    walk_path(**vars(args))
+    main(**vars(args))
 
 if __name__ == '__main__':
     terminal()
