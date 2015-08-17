@@ -229,7 +229,7 @@ def create_filenames(filenames, root):
                        path=os.path.join(root, filename))
 
 
-def remove_files_for_deletion(bad, best, **options):
+def remove_file(bad, best, **options):
     '''
     Preform the deletion of file that has been identified as a duplicate
 
@@ -276,7 +276,7 @@ def remove_by_clump(dict_of_names, sifter, **options):
 
             for bad in rest:
                 try:
-                    remove_files_for_deletion(bad, best, **options)
+                    remove_file(bad, best, **options)
                 except OSError as err:
                     LOGGER.error('File deletion error: %s', err)
             LOGGER.info('%s was kept as only copy', best.path)

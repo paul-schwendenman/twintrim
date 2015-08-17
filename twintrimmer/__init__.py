@@ -25,6 +25,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 '''
 from .twintrimmer import (create_filenames, walk_path, Filename,
-                          remove_files_for_deletion)
+                          remove_file)
 from . import tool
 __all__ = ['create_filenames', 'walk_path']
