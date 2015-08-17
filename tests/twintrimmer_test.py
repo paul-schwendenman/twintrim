@@ -62,24 +62,30 @@ class TestGenerateChecksum(fake_filesystem_unittest.TestCase):
             checksum = twintrimmer.generate_checksum('/nonexistentfile.txt')
 
 
-class TestPickShorterName(unittest.TestCase):
+class TestShortestSifter(unittest.TestCase):
     def setUp(self):
         filenames = ['file.txt', 'file1.txt', 'file2.txt']
         root = '/'
         self.file, self.file1, self.file2 = list(twintrimmer.create_filenames(filenames, root))
+        self.filenames = {self.file, self.file1, self.file2}
+        self.sifter = twintrimmer.twintrimmer.ShortestSifter()
 
     def test_file_txt_shorter_than_file_1_txt(self):
-        self.assertEqual(twintrimmer.pick_shorter_name(self.file, self.file1), self.file)
+        self.assertEqual(self.sifter.pick_shorter_name(self.file, self.file1), self.file)
 
     def test_file_1_txt_shorter_than_file_2_txt(self):
-        self.assertEqual(twintrimmer.pick_shorter_name(self.file1, self.file2), self.file1)
+        self.assertEqual(self.sifter.pick_shorter_name(self.file1, self.file2), self.file1)
 
     def test_file_1_txt_not_shorter_than_file_txt(self):
-        self.assertEqual(twintrimmer.pick_shorter_name(self.file1, self.file), self.file)
+        self.assertEqual(self.sifter.pick_shorter_name(self.file1, self.file), self.file)
 
     def test_file_2_txt_not_shorter_than_file_1_txt(self):
-        self.assertEqual(twintrimmer.pick_shorter_name(self.file2, self.file1), self.file1)
+        self.assertEqual(self.sifter.pick_shorter_name(self.file2, self.file1), self.file1)
 
+    def test_sift_finds_shortest_name(self):
+        best, rest = self.sifter.sift(self.filenames)
+        self.assertEqual(best, self.file)
+        self.assertEqual(rest, {self.file1, self.file2})
 
 class TestGenerateFilenameDict(unittest.TestCase):
     def setUp(self):

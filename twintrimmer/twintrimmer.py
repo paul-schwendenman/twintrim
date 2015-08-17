@@ -105,7 +105,7 @@ class ShortestSifter(Sifter):
     def __init__(self, *args, **kwargs):
         super(ShortestSifter, self).__init__(*args, **kwargs)
 
-    def sift(self, clump, best=None):
+    def sift(self, clump):
         best = functools.reduce(self.pick_shorter_name, clump)
         rest = clump - {best}
         return best, rest
@@ -370,13 +370,14 @@ def remove_by_checksum(list_of_names,
 
     '''
     files = generate_checksum_dict(list_of_names, hash_name)
+    sifter = ShortestSifter()
+
     for file in files:
         if len(files[file]) > 1:
             LOGGER.info("Investigating duplicate checksum %s", file)
             LOGGER.debug("Keys for %s are %s", file,
                          ', '.join([item.name for item in files[file]]))
-            best = functools.reduce(pick_shorter_name, files[file])
-            rest = files[file] - {best}
+            best, rest = sifter.sift(files[file])
 
             if interactive:
                 best, rest = ask_for_best(best, rest)

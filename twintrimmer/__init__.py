@@ -25,7 +25,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 '''
 from .twintrimmer import (generate_checksum_dict, create_filenames,
-                          pick_shorter_name, remove_by_checksum, walk_path,
+                          remove_by_checksum, walk_path,
                           Filename, ask_for_best, generate_filename_dict,
                           generate_checksum, remove_files_for_deletion)
 from . import tool
