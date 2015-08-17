@@ -281,7 +281,7 @@ class TestWalkPath(TestCaseWithFileSystem):
     @patch('twintrimmer.twintrimmer.remove_by_clump')
     def test_walk_path_skips_child_directories_and_regex_matching(self, mock_remove):
         twintrimmer.walk_path('examples',
-                              hash_name='md5',
+                              hash_function='md5',
                               recursive=False,
                               skip_regex=True)
         self.assertEqual(mock_remove.call_count, 1)
@@ -289,7 +289,7 @@ class TestWalkPath(TestCaseWithFileSystem):
     @patch('twintrimmer.twintrimmer.remove_by_clump')
     def test_walk_path_includes_child_directories_and_regex_matching(self, mock_remove):
         twintrimmer.walk_path('examples',
-                              hash_name='md5',
+                              hash_function='md5',
                               recursive=True,
                               skip_regex=True)
         self.assertEqual(mock_remove.call_count, 3)
@@ -297,7 +297,7 @@ class TestWalkPath(TestCaseWithFileSystem):
     @patch('twintrimmer.twintrimmer.remove_by_clump')
     def test_walk_path_skips_child_directories_but_not_regex_matching(self, mock_remove):
         twintrimmer.walk_path('examples',
-                              hash_name='md5',
+                              hash_function='md5',
                               recursive=False,
                               skip_regex=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)')
@@ -306,7 +306,7 @@ class TestWalkPath(TestCaseWithFileSystem):
     @patch('twintrimmer.twintrimmer.remove_by_clump')
     def test_walk_path_includes_child_directories_but_not_regex_matching(self, mock_remove):
         twintrimmer.walk_path('examples',
-                              hash_name='md5',
+                              hash_function='md5',
                               recursive=True,
                               skip_regex=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)')
@@ -344,7 +344,7 @@ class TestRemoveByClump(TestCaseWithFileSystem):
 class TestWalkPathIntegration(TestCaseWithFileSystem):
     def test_no_action_does_no_action(self):
         twintrimmer.walk_path('examples',
-                              hash_name='md5',
+                              hash_function='md5',
                               remove_links=True,
                               skip_regex=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
@@ -354,7 +354,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
 
     def test_no_action_does_nothing_warns_removes_links(self):
         twintrimmer.walk_path('examples',
-                              hash_name='md5',
+                              hash_function='md5',
                               no_action=True,
                               skip_regex=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
@@ -364,7 +364,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
 
     def test_no_action_does_no_action_skips_hardlinks(self):
         twintrimmer.walk_path('examples',
-                              hash_name='md5',
+                              hash_function='md5',
                               no_action=True,
                               skip_regex=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
@@ -374,7 +374,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
 
     def test_skip_links_does_no_action_skips_hardlinks(self):
         twintrimmer.walk_path('examples',
-                              hash_name='md5',
+                              hash_function='md5',
                               skip_regex=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
                               recursive=False,
@@ -383,7 +383,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
 
     def test_makes_links_when_expected(self):
         twintrimmer.walk_path('examples/',
-                              hash_name='md5',
+                              hash_function='md5',
                               skip_regex=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
                               recursive=False,
@@ -397,7 +397,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
         self.assertTrue(os.path.exists('examples/foo (2).txt'))
         self.assertTrue(os.path.exists('examples/foo (3).txt'))
         twintrimmer.walk_path('examples',
-                              hash_name='md5',
+                              hash_function='md5',
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
                               skip_regex=False,
                               recursive=False,
@@ -415,7 +415,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
         self.assertTrue(os.path.exists('examples/foo (2).txt'))
         self.assertTrue(os.path.exists('examples/foo (3).txt'))
         twintrimmer.walk_path('examples/',
-                              hash_name='md5',
+                              hash_function='md5',
                               no_action=False,
                               skip_regex=False,
                               recursive=False,
@@ -430,7 +430,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
         self.assertTrue(os.path.exists('examples/underscore/file.txt'))
         self.assertTrue(os.path.exists('examples/underscore/file__1.txt'))
         twintrimmer.walk_path('examples/underscore',
-                              hash_name='md5',
+                              hash_function='md5',
                               regex_pattern='(.+?)(?:__\d)*\..*',
                               recursive=False,
                               skip_regex=False,
@@ -444,7 +444,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
                            contents='foo\n')
         self.assertTrue(os.path.exists('examples/foo.txt'))
         twintrimmer.walk_path('examples',
-                              hash_name='md5',
+                              hash_function='md5',
                               no_action=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*\..+',
                               skip_regex=False,
@@ -458,7 +458,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
                            contents='foo\n')
         self.assertTrue(os.path.exists('examples/foo.txt'))
         twintrimmer.walk_path('examples',
-                              hash_name='md5',
+                              hash_function='md5',
                               no_action=False,
                               recursive=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
@@ -470,7 +470,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
     def test_traverses_directories_recursively(self):
         self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
         twintrimmer.walk_path('examples',
-                              hash_name='md5',
+                              hash_function='md5',
                               no_action=False,
                               skip_regex=False,
                               recursive=True,
@@ -483,7 +483,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
     def test_can_not_sum_hash_due_to_OSError(self):
         os.chmod('examples/recur/file.txt', 0o000)
         twintrimmer.walk_path('examples/recur',
-                              hash_name='md5',
+                              hash_function='md5',
                               no_action=False,
                               skip_regex=False,
                               recursive=False,
@@ -499,7 +499,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
 
         #with self.assertRaises(OSError):
         twintrimmer.walk_path('examples/recur',
-                              hash_name='md5',
+                              hash_function='md5',
                               no_action=False,
                               recursive=False,
                               skip_regex=False,

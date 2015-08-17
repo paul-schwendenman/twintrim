@@ -283,7 +283,7 @@ def walk_path(path, **options):
     else:
         sifter = ShortestSifter()
 
-    checksum_clumper = HashClumper(options['hash_name'])
+    checksum_clumper = HashClumper(options['hash_function'])
 
     for root, _, filenames in os.walk(path):
         if not options['recursive'] and root != path:
