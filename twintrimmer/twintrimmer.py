@@ -101,6 +101,53 @@ class RegexClumper(Clumper):
         return match.groups()
 
 
+class ShortestSifter(Sifter):
+    def __init__(self, *args, **kwargs):
+        super(ShortestSifter, self).__init__(*args, **kwargs)
+
+    def sift(self, clump, best=None):
+        best = functools.reduce(self.pick_shorter_name, clump)
+        rest = clump - {best}
+        return best, rest
+
+    @staticmethod
+    def pick_shorter_name(file1, file2):
+        '''
+        This convenience function will help to find the shorter (often better)
+        filename.  If the file names are the same length it returns the file
+        that is less, hoping for numerically.
+
+        :param file1: first filename to compare
+        :type file1: Filename
+        :param file2: second filename to compare
+        :type file2: Filename
+        :returns: the shortest name
+        :rtype: Filename
+
+        It picks "file.txt" over "file (1).txt", but beware it also picks
+        "f.txt" over "file.txt".
+
+        It also picks "file (1).txt" over "file (2).txt"
+
+        >>> file1 = Filename('file.txt', 'file', '.txt', '/file.txt')
+        >>> file2 = Filename('file (1).txt', 'file (1)', '.txt', '/file (1).txt')
+        >>> file3 = Filename('file (2).txt', 'file (2)', '.txt', '/file (2).txt')
+        >>> pick_shorter_name(file1, file2)
+        Filename(name='file.txt', base='file', ext='.txt', path='/file.txt')
+        >>> pick_shorter_name(file2, file1)
+        Filename(name='file.txt', base='file', ext='.txt', path='/file.txt')
+        >>> pick_shorter_name(file2, file3)
+        Filename(name='file (1).txt', base='file (1)', ext='.txt', path='/file (1).txt')
+        '''
+        LOGGER.debug("Finding the shortest of %s and %s", file1.name, file2.name)
+        if len(file1.name) > len(file2.name):
+            return file2
+        elif len(file1.name) < len(file2.name) or file1.name < file2.name:
+            return file1
+        else:
+            return file2
+
+
 def create_filenames(filenames, root):
     '''
     Makes a generator that yields Filename objects
@@ -180,43 +227,6 @@ def generate_checksum(filename, hash_name='md5'):
         for chunk in iter(lambda: file.read(128 * hash_func.block_size), b''):
             hash_func.update(chunk)
     return hash_func.hexdigest()
-
-
-def pick_shorter_name(file1, file2):
-    '''
-    This convenience function will help to find the shorter (often better)
-    filename.  If the file names are the same length it returns the file
-    that is less, hoping for numerically.
-
-    :param file1: first filename to compare
-    :type file1: Filename
-    :param file2: second filename to compare
-    :type file2: Filename
-    :returns: the shortest name
-    :rtype: Filename
-
-    It picks "file.txt" over "file (1).txt", but beware it also picks
-    "f.txt" over "file.txt".
-
-    It also picks "file (1).txt" over "file (2).txt"
-
-    >>> file1 = Filename('file.txt', 'file', '.txt', '/file.txt')
-    >>> file2 = Filename('file (1).txt', 'file (1)', '.txt', '/file (1).txt')
-    >>> file3 = Filename('file (2).txt', 'file (2)', '.txt', '/file (2).txt')
-    >>> pick_shorter_name(file1, file2)
-    Filename(name='file.txt', base='file', ext='.txt', path='/file.txt')
-    >>> pick_shorter_name(file2, file1)
-    Filename(name='file.txt', base='file', ext='.txt', path='/file.txt')
-    >>> pick_shorter_name(file2, file3)
-    Filename(name='file (1).txt', base='file (1)', ext='.txt', path='/file (1).txt')
-    '''
-    LOGGER.debug("Finding the shortest of %s and %s", file1.name, file2.name)
-    if len(file1.name) > len(file2.name):
-        return file2
-    elif len(file1.name) < len(file2.name) or file1.name < file2.name:
-        return file1
-    else:
-        return file2
 
 
 def ask_for_best(default, rest):
