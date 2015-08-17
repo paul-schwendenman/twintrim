@@ -104,6 +104,27 @@ class RegexClumper(Clumper):
 
         return match.groups()
 
+class PathClumper(Clumper):
+    def __init__(self, root_path, recursive=False):
+        super(PathClumper, self).__init__()
+        self.root_path = root_path
+        self.recursive = recursive
+
+    def make_clump(self, path):
+        return (path,)
+
+    def dump_clumps(self, clumper=None):
+        if clumper is not None:
+            raise NotImplementedError
+        clumps = {}
+
+        for path, _, filenames in os.walk(self.root_path):
+            if not self.recursive and path != self.root_path:
+                LOGGER.debug("Skipping child directory %s of %s", path, self.root_path)
+                continue
+            clumps[self.make_clump(path)] = create_filenames(filenames, path)
+        return clumps
+
 
 class ShortestSifter(Sifter):
     '''
@@ -300,14 +321,9 @@ def main(path, **options):
         sifter = ShortestSifter()
 
     checksum_clumper = HashClumper(options['hash_function'])
+    filepath_clumper = PathClumper(path, options['recursive'])
 
-    clumps = {}
-
-    for root, _, filenames in os.walk(path):
-        if not options['recursive'] and root != path:
-            LOGGER.debug("Skipping child directory %s of %s", root, path)
-            continue
-        clumps[(root,)] = create_filenames(filenames, root)
+    clumps = filepath_clumper.dump_clumps()
 
     if not options['skip_regex']:
         regex_clumper = RegexClumper(options['regex_pattern'])

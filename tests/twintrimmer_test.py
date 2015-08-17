@@ -5,11 +5,13 @@ import builtins
 import fake_filesystem_unittest
 import os
 
-class TestCreateFilenames(unittest.TestCase):
+class TestPathClumper(unittest.TestCase):
+    def setUp(self):
+        self.clumper = twintrimmer.twintrimmer.PathClumper('/')
     def test_one_file(self):
         filenames = ['test_file.txt']
         root = '/'
-        list_output = list(twintrimmer.create_filenames(filenames, root))
+        list_output = list(twintrimmer.twintrimmer.create_filenames(filenames, root))
         self.assertEqual(len(list_output), 1)
         self.assertIs(type(list_output[0]), twintrimmer.Filename)
         self.assertEqual(list_output[0].name, 'test_file.txt')
@@ -20,7 +22,7 @@ class TestCreateFilenames(unittest.TestCase):
     def test_no_files(self):
         filenames = []
         root = '/'
-        list_output = list(twintrimmer.create_filenames(filenames, root))
+        list_output = list(twintrimmer.twintrimmer.create_filenames(filenames, root))
         self.assertEqual(len(list_output), 0)
 
 class TestHashClumper(fake_filesystem_unittest.TestCase):
@@ -82,7 +84,7 @@ class TestShortestSifter(unittest.TestCase):
     def setUp(self):
         filenames = ['file.txt', 'file1.txt', 'file2.txt']
         root = '/'
-        self.file, self.file1, self.file2 = list(twintrimmer.create_filenames(filenames, root))
+        self.file, self.file1, self.file2 = list(twintrimmer.twintrimmer.create_filenames(filenames, root))
         self.filenames = {self.file, self.file1, self.file2}
         self.sifter = twintrimmer.twintrimmer.ShortestSifter()
 
@@ -107,7 +109,7 @@ class TestRegexClumper(unittest.TestCase):
     def setUp(self):
         filenames = ['file.txt', 'file (1).txt', 'file (2).txt']
         root = '/'
-        self.filenames = list(twintrimmer.create_filenames(filenames, root))
+        self.filenames = list(twintrimmer.twintrimmer.create_filenames(filenames, root))
 
     def test_custom_regex(self):
         clumper = twintrimmer.twintrimmer.RegexClumper(r'(^.+?)(?:\..+)')
@@ -177,9 +179,9 @@ class TestInteractiveSifter(unittest.TestCase):
     def setUp(self):
         filenames = ['file.txt', 'file1.txt', 'file2.txt']
         root = '/'
-        self.file, self.file1, self.file2 = list(twintrimmer.create_filenames(filenames, root))
-        self.filenames = {self.file, self.file1, self.file2}
         self.sifter = twintrimmer.twintrimmer.InteractiveSifter()
+        self.file, self.file1, self.file2 = list(twintrimmer.twintrimmer.create_filenames(filenames, root))
+        self.filenames = {self.file, self.file1, self.file2}
 
     @patch('builtins.input')
     def test_pick_user_by_index(self, mock_input):
@@ -278,10 +280,10 @@ class TestRemoveFilesForDeletion(unittest.TestCase):
         mock_link.assert_called_with('examples/foo.txt', 'examples/foo (2).txt')
 
 
-class TestWalkPath(TestCaseWithFileSystem):
+class TestMain(TestCaseWithFileSystem):
     @patch('twintrimmer.twintrimmer.remove_by_clump')
     def test_walk_path_skips_child_directories_and_regex_matching(self, mock_remove):
-        twintrimmer.walk_path('examples',
+        twintrimmer.main('examples',
                               hash_function='md5',
                               recursive=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
@@ -290,7 +292,7 @@ class TestWalkPath(TestCaseWithFileSystem):
 
     @patch('twintrimmer.twintrimmer.remove_by_clump')
     def test_walk_path_includes_child_directories_and_regex_matching(self, mock_remove):
-        twintrimmer.walk_path('examples',
+        twintrimmer.main('examples',
                               hash_function='md5',
                               recursive=True,
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
@@ -299,7 +301,7 @@ class TestWalkPath(TestCaseWithFileSystem):
 
     @patch('twintrimmer.twintrimmer.remove_by_clump')
     def test_walk_path_skips_child_directories_but_not_regex_matching(self, mock_remove):
-        twintrimmer.walk_path('examples',
+        twintrimmer.main('examples',
                               hash_function='md5',
                               recursive=False,
                               skip_regex=False,
@@ -308,7 +310,7 @@ class TestWalkPath(TestCaseWithFileSystem):
 
     @patch('twintrimmer.twintrimmer.remove_by_clump')
     def test_walk_path_includes_child_directories_but_not_regex_matching(self, mock_remove):
-        twintrimmer.walk_path('examples',
+        twintrimmer.main('examples',
                               hash_function='md5',
                               recursive=True,
                               skip_regex=False,
@@ -344,9 +346,9 @@ class TestRemoveByClump(TestCaseWithFileSystem):
         self.assertEqual(mock_remove.call_count, 0)
 
 
-class TestWalkPathIntegration(TestCaseWithFileSystem):
+class TestMainIntegration(TestCaseWithFileSystem):
     def test_no_action_does_no_action(self):
-        twintrimmer.walk_path('examples',
+        twintrimmer.main('examples',
                               hash_function='md5',
                               remove_links=True,
                               skip_regex=False,
@@ -356,7 +358,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
 
     def test_no_action_does_nothing_warns_removes_links(self):
-        twintrimmer.walk_path('examples',
+        twintrimmer.main('examples',
                               hash_function='md5',
                               no_action=True,
                               skip_regex=False,
@@ -366,7 +368,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
 
     def test_no_action_does_no_action_skips_hardlinks(self):
-        twintrimmer.walk_path('examples',
+        twintrimmer.main('examples',
                               hash_function='md5',
                               no_action=True,
                               skip_regex=False,
@@ -376,7 +378,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
 
     def test_skip_links_does_no_action_skips_hardlinks(self):
-        twintrimmer.walk_path('examples',
+        twintrimmer.main('examples',
                               hash_function='md5',
                               skip_regex=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
@@ -385,7 +387,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
 
     def test_makes_links_when_expected(self):
-        twintrimmer.walk_path('examples/',
+        twintrimmer.main('examples/',
                               hash_function='md5',
                               skip_regex=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
@@ -399,7 +401,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
         self.assertTrue(os.path.exists('examples/foo (2).txt'))
         self.assertTrue(os.path.exists('examples/foo (3).txt'))
-        twintrimmer.walk_path('examples',
+        twintrimmer.main('examples',
                               hash_function='md5',
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
                               skip_regex=False,
@@ -417,7 +419,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
         self.assertTrue(os.path.exists('examples/foo (2).txt'))
         self.assertTrue(os.path.exists('examples/foo (3).txt'))
-        twintrimmer.walk_path('examples/',
+        twintrimmer.main('examples/',
                               hash_function='md5',
                               no_action=False,
                               skip_regex=False,
@@ -432,7 +434,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
     def test_removes_duplicate_file_with_custom_regex_double_underscore(self):
         self.assertTrue(os.path.exists('examples/underscore/file.txt'))
         self.assertTrue(os.path.exists('examples/underscore/file__1.txt'))
-        twintrimmer.walk_path('examples/underscore',
+        twintrimmer.main('examples/underscore',
                               hash_function='md5',
                               regex_pattern='(.+?)(?:__\d)*\..*',
                               recursive=False,
@@ -446,7 +448,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
         self.fs.CreateFile('examples/foo.txt~',
                            contents='foo\n')
         self.assertTrue(os.path.exists('examples/foo.txt'))
-        twintrimmer.walk_path('examples',
+        twintrimmer.main('examples',
                               hash_function='md5',
                               no_action=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*\..+',
@@ -460,7 +462,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
         self.fs.CreateFile('examples/fizz',
                            contents='foo\n')
         self.assertTrue(os.path.exists('examples/foo.txt'))
-        twintrimmer.walk_path('examples',
+        twintrimmer.main('examples',
                               hash_function='md5',
                               no_action=False,
                               recursive=False,
@@ -472,7 +474,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
 
     def test_traverses_directories_recursively(self):
         self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
-        twintrimmer.walk_path('examples',
+        twintrimmer.main('examples',
                               hash_function='md5',
                               no_action=False,
                               skip_regex=False,
@@ -485,7 +487,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
 
     def test_can_not_sum_hash_due_to_OSError(self):
         os.chmod('examples/recur/file.txt', 0o000)
-        twintrimmer.walk_path('examples/recur',
+        twintrimmer.main('examples/recur',
                               hash_function='md5',
                               no_action=False,
                               skip_regex=False,
@@ -501,7 +503,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
         print(os.stat('examples/recur/file (2).txt'))
 
         #with self.assertRaises(OSError):
-        twintrimmer.walk_path('examples/recur',
+        twintrimmer.main('examples/recur',
                               hash_function='md5',
                               no_action=False,
                               recursive=False,
