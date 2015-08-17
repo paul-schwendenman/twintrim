@@ -52,7 +52,7 @@ class Sifter():
     def __init__(self, *args, **kwargs):
         pass
 
-    def sift(self, clump, best=None):
+    def sift(self, clump):
         '''
         divide the clumps returning the best and the rest
         '''
@@ -105,6 +105,9 @@ class RegexClumper(Clumper):
 
 
 class ShortestSifter(Sifter):
+    '''
+    Used to separate the shortest name from the rest
+    '''
     def __init__(self, *args, **kwargs):
         super(ShortestSifter, self).__init__(*args, **kwargs)
 
@@ -112,6 +115,12 @@ class ShortestSifter(Sifter):
         best = functools.reduce(self.pick_shorter_name, clump)
         rest = clump - {best}
         return best, rest
+
+    def filter(self, dictionary_of_groups):
+        '''
+        helper function for filtering clumps
+        '''
+        raise NotImplementedError
 
     @staticmethod
     def pick_shorter_name(file1, file2):
@@ -157,6 +166,12 @@ class InteractiveSifter(ShortestSifter):
     '''
     def __init__(self, *args, **kwargs):
         super(InteractiveSifter, self).__init__(*args, **kwargs)
+
+    def filter(self, dictionary_of_groups):
+        '''
+        helper function for filtering clumps
+        '''
+        raise NotImplementedError
 
     def sift(self, clump):
         '''
