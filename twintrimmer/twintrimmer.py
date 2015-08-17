@@ -12,6 +12,12 @@ LOGGER = logging.getLogger(__name__)
 
 Filename = namedtuple('Filename', ['name', 'base', 'ext', 'path'])
 
+class ClumperError(Exception):
+    '''
+    Base Exception for Clumper errors
+    '''
+    pass
+
 class Clumper():
     '''
     general purpose class for grouping
@@ -29,7 +35,15 @@ class Clumper():
         '''
         group list into clumps
         '''
-        raise NotImplementedError
+        clumps = defaultdict(set)
+
+        for item in list_of_items:
+            try:
+                clumps[self.make_clump(item)].add(item)
+            except ClumperError as err:
+                LOGGER.error(str(err))
+
+        return clumps
 
 class Sifter():
     '''
