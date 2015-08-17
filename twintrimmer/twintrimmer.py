@@ -65,6 +65,27 @@ class Sifter():
         raise NotImplementedError
 
 
+class HashClumper(Clumper):
+    '''
+    Subclass of Clumper for using checksums
+    '''
+    def __init__(self, hash_name):
+        super(HashClumper, self).__init__()
+        self.hash_func = hashlib.new(hash_name)
+
+
+    def make_clump(self, filename):
+        hash_func = self.hash_func.copy()
+
+        try:
+            with open(filename, 'rb') as file:
+                for chunk in iter(lambda: file.read(128 * hash_func.block_size), b''):
+                    hash_func.update(chunk)
+            return hash_func.hexdigest()
+        except OSError as err:
+            raise ClumperError('Checksum generation error: %s', err)
+
+
 def create_filenames(filenames, root):
     '''
     Makes a generator that yields Filename objects
