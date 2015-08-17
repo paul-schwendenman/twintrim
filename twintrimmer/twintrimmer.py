@@ -31,17 +31,18 @@ class Clumper():
         '''
         raise NotImplementedError
 
-    def dump_clumps(self, list_of_items):
+    def dump_clumps(self, clumper):
         '''
         group list into clumps
         '''
         clumps = defaultdict(set)
 
-        for item in list_of_items:
-            try:
-                clumps[self.make_clump(item)].add(item)
-            except ClumperError as err:
-                LOGGER.error(str(err))
+        for key, value in clumper.items():
+            for item in value:
+                try:
+                    clumps[(key,) + self.make_clump(item)].add(item)
+                except ClumperError as err:
+                    LOGGER.error(str(err))
 
         return clumps
 
@@ -81,7 +82,7 @@ class HashClumper(Clumper):
             with open(filename.path, 'rb') as file:
                 for chunk in iter(lambda: file.read(128 * hash_func.block_size), b''):
                     hash_func.update(chunk)
-            return hash_func.hexdigest()
+            return (hash_func.hexdigest(),)
         except OSError as err:
             raise ClumperError('Checksum generation error: %s', err)
 
@@ -305,24 +306,14 @@ def walk_path(path, **options):
             LOGGER.debug("Skipping child directory %s of %s", root, path)
             continue
 
-        list_of_filenames = create_filenames(filenames, root)
+        list_of_filenames = {root: create_filenames(filenames, root)}
 
         if not options['skip_regex']:
             regex_clumper = RegexClumper(options['regex_pattern'])
             names = regex_clumper.dump_clumps(list_of_filenames)
+            clumps = checksum_clumper.dump_clumps(names)
+            remove_by_clump(clumps, sifter, **options)
 
-            for name in names:
-                if len(names[name]) > 1:
-                    LOGGER.info("Investigating duplicate name %s", name)
-                    LOGGER.debug("Keys for %s are %s", name,
-                                 ', '.join([item.name
-                                            for item in names[name]]))
-                    clumps = checksum_clumper.dump_clumps(names[name])
-                    remove_by_clump(clumps, sifter, **options)
-                else:
-                    LOGGER.debug('Skipping non duplicate name %s for key %s',
-                                 name, ', '.join([item.name
-                                                  for item in names[name]]))
         else:
             clumps = checksum_clumper.dump_clumps(list_of_filenames)
             remove_by_clump(clumps, sifter, **options)
