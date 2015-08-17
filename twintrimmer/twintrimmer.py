@@ -122,8 +122,33 @@ class PathClumper(Clumper):
             if not self.recursive and path != self.root_path:
                 LOGGER.debug("Skipping child directory %s of %s", path, self.root_path)
                 continue
-            clumps[self.make_clump(path)] = create_filenames(filenames, path)
+            clumps[self.make_clump(path)] = self.create_filenames(filenames, path)
         return clumps
+
+    @staticmethod
+    def create_filename(filename, root):
+        return Filename(filename, *os.path.splitext(filename),
+                       path=os.path.join(root, filename))
+
+    @classmethod
+    def create_filenames(cls, filenames, root):
+        '''
+        Makes a generator that yields Filename objects
+
+        Filename objects are a helper to allow multiple representations
+        of the same file to be transferred cleanly between functions.
+
+        :param filenames: list of filenames
+        :type filenames: iterable[str]
+        :param root: the parent directory of the filenames
+        :type root: str
+        :returns: Filename instance representing each filename
+        :rtype: Filename
+        '''
+        LOGGER.info("Creating Filename objects")
+        for filename in filenames:
+            yield cls.create_filename(filename, root)
+
 
 
 class ShortestSifter(Sifter):
@@ -229,26 +254,6 @@ class InteractiveSifter(ShortestSifter):
             rest = {}
 
         return best, rest
-
-
-def create_filenames(filenames, root):
-    '''
-    Makes a generator that yields Filename objects
-
-    Filename objects are a helper to allow multiple representations
-    of the same file to be transferred cleanly between functions.
-
-    :param filenames: list of filenames
-    :type filenames: iterable[str]
-    :param root: the parent directory of the filenames
-    :type root: str
-    :returns: Filename instance representing each filename
-    :rtype: Filename
-    '''
-    LOGGER.info("Creating Filename objects")
-    for filename in filenames:
-        yield Filename(filename, *os.path.splitext(filename),
-                       path=os.path.join(root, filename))
 
 
 def remove_file(bad, best, **options):

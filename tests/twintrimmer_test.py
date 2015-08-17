@@ -5,6 +5,7 @@ import builtins
 import fake_filesystem_unittest
 import os
 
+
 class TestClumper(unittest.TestCase):
     def setUp(self):
         self.clumper = twintrimmer.twintrimmer.Clumper()
@@ -41,7 +42,7 @@ class TestPathClumper(unittest.TestCase):
     def test_one_file(self):
         filenames = ['test_file.txt']
         root = '/'
-        list_output = list(twintrimmer.twintrimmer.create_filenames(filenames, root))
+        list_output = list(twintrimmer.twintrimmer.PathClumper.create_filenames(filenames, root))
         self.assertEqual(len(list_output), 1)
         self.assertIs(type(list_output[0]), twintrimmer.Filename)
         self.assertEqual(list_output[0].name, 'test_file.txt')
@@ -56,7 +57,7 @@ class TestPathClumper(unittest.TestCase):
     def test_no_files(self):
         filenames = []
         root = '/'
-        list_output = list(twintrimmer.twintrimmer.create_filenames(filenames, root))
+        list_output = list(twintrimmer.twintrimmer.PathClumper.create_filenames(filenames, root))
         self.assertEqual(len(list_output), 0)
 
 class TestHashClumper(fake_filesystem_unittest.TestCase):
@@ -118,7 +119,7 @@ class TestShortestSifter(unittest.TestCase):
     def setUp(self):
         filenames = ['file.txt', 'file1.txt', 'file2.txt']
         root = '/'
-        self.file, self.file1, self.file2 = list(twintrimmer.twintrimmer.create_filenames(filenames, root))
+        self.file, self.file1, self.file2 = list(twintrimmer.twintrimmer.PathClumper.create_filenames(filenames, root))
         self.filenames = {self.file, self.file1, self.file2}
         self.sifter = twintrimmer.twintrimmer.ShortestSifter()
 
@@ -148,8 +149,8 @@ class TestRegexClumper(unittest.TestCase):
         filenames = ['file.txt', 'file (1).txt', 'file (2).txt']
         root = '/'
         bad = ['file']
-        self.filenames = list(twintrimmer.twintrimmer.create_filenames(filenames, root))
-        self.bad = list(twintrimmer.twintrimmer.create_filenames(bad, root))[0]
+        self.filenames = list(twintrimmer.twintrimmer.PathClumper.create_filenames(filenames, root))
+        self.bad = list(twintrimmer.twintrimmer.PathClumper.create_filenames(bad, root))[0]
 
     def test_custom_regex(self):
         clumper = twintrimmer.twintrimmer.RegexClumper(r'(^.+?)(?:\..+)')
@@ -225,7 +226,7 @@ class TestInteractiveSifter(unittest.TestCase):
         filenames = ['file.txt', 'file1.txt', 'file2.txt']
         root = '/'
         self.sifter = twintrimmer.twintrimmer.InteractiveSifter()
-        self.file, self.file1, self.file2 = list(twintrimmer.twintrimmer.create_filenames(filenames, root))
+        self.file, self.file1, self.file2 = list(twintrimmer.twintrimmer.PathClumper.create_filenames(filenames, root))
         self.filenames = {self.file, self.file1, self.file2}
 
     def test_filter_raises_not_implemented(self):
