@@ -78,7 +78,7 @@ class HashClumper(Clumper):
         hash_func = self.hash_func.copy()
 
         try:
-            with open(filename, 'rb') as file:
+            with open(filename.path, 'rb') as file:
                 for chunk in iter(lambda: file.read(128 * hash_func.block_size), b''):
                     hash_func.update(chunk)
             return hash_func.hexdigest()
@@ -214,92 +214,6 @@ def create_filenames(filenames, root):
                        path=os.path.join(root, filename))
 
 
-def generate_checksum(filename, hash_name='md5'):
-    '''
-    A helper function that will generate the checksum of a file.
-
-    :param filename: path to a file
-    :type filename: str
-    :param hash_name: hash algorithm to use for checksum generation
-    :type hash_name: str
-    :returns: the checksum in a hex form
-    :rtype: str
-
-    According to the hashlib documentation:
-
-    - hashlib.sha1 should be prefered over hashlib.new('sha1')
-    - the list of available function will change depending on the openssl
-      library
-    - the same function might exist with multiple spellings i.e. SHA1 and sha1
-
-    >>> from timeit import repeat
-    >>> repeat("sha1 = hashlib.sha1();"
-               "sha1.update(b'this is a bunch of text');"
-               "sha1.hexdigest()",
-               setup="import hashlib;", number=1000000, repeat=3)
-    [1.1151904039998044, 1.107502792001469, 1.1114749459993618]
-    >>> repeat("sha1 = hashlib.new('sha1');"
-               "sha1.update(b'this is a bunch of text');"
-               "sha1.hexdigest()",
-               setup="import hashlib;", number=1000000, repeat=3)
-    [1.9987542880007823, 1.9930373919996782, 1.9749872180000239]
-    >>> repeat("sha1.update(b'this is a bunch of text'); sha1.hexdigest()",
-               setup="import hashlib; sha1 = hashlib.new('sha1')",
-               number=100000, repeat=3)
-    [0.09824231799939298, 0.09060508599941386, 0.08991972700096085]
-    >>> repeat("sha1.update(b'this is a bunch of text'); sha1.hexdigest()",
-               setup="import hashlib; sha1 = hashlib.sha1()",
-               number=100000, repeat=3)
-    [0.0977191860001767, 0.09078196100017522, 0.09082681499967293]
-    '''
-    LOGGER.info("Generating checksum with %s for %s", hash_name, filename)
-
-    if hash_name.lower() in ('md5', 'MD5'):
-        hash_func = hashlib.md5()
-    elif hash_name.lower() in ('sha1', 'SHA1'):
-        hash_func = hashlib.sha1()
-    elif hash_name.lower() in ('sha256', 'SHA256'):
-        hash_func = hashlib.sha256()
-    elif hash_name.lower() in ('sha512', 'SHA512'):
-        hash_func = hashlib.sha512()
-    elif hash_name.lower() in ('sha224', 'SHA224'):
-        hash_func = hashlib.sha224()
-    elif hash_name.lower() in ('sha384', 'SHA384'):
-        hash_func = hashlib.sha384()
-    else:
-        hash_func = hashlib.new(hash_name)
-
-    with open(filename, 'rb') as file:
-        for chunk in iter(lambda: file.read(128 * hash_func.block_size), b''):
-            hash_func.update(chunk)
-    return hash_func.hexdigest()
-
-
-def generate_checksum_dict(filenames, hash_name):
-    '''
-    This function will create a dictionary of checksums mapped to
-    a list of filenames.
-
-    :param filenames: list of filenames to clump by checksum
-    :type filenames: iterable[Filename]
-    :param str hash_name: name of hash function used to generate checksum
-
-    :returns: dictionary of sets of Filename objects with their checksum as
-              the key
-    '''
-    LOGGER.info("Generating dictionary based on checksum")
-    checksum_dict = defaultdict(set)
-
-    for filename in filenames:
-        try:
-            checksum_dict[generate_checksum(filename.path,
-                                            hash_name)].add(filename)
-        except OSError as err:
-            LOGGER.error('Checksum generation error: %s', err)
-
-    return checksum_dict
-
-
 def remove_files_for_deletion(bad, best, **options):
     '''
     Preform the deletion of file that has been identified as a duplicate
@@ -326,8 +240,7 @@ def remove_files_for_deletion(bad, best, **options):
             os.link(best.path, bad.path)
 
 
-def remove_by_checksum(list_of_names, sifter,
-                       hash_name='sha1', **options):
+def remove_by_clump(dict_of_names, sifter, **options):
     '''
     This function first groups the files by checksum, and then removes all
     but one copy of the file.
@@ -339,14 +252,12 @@ def remove_by_checksum(list_of_names, sifter,
                          checksum
 
     '''
-    files = generate_checksum_dict(list_of_names, hash_name)
-
-    for file in files:
-        if len(files[file]) > 1:
-            LOGGER.info("Investigating duplicate checksum %s", file)
-            LOGGER.debug("Keys for %s are %s", file,
-                         ', '.join([item.name for item in files[file]]))
-            best, rest = sifter.sift(files[file])
+    for file in dict_of_names:
+        if len(dict_of_names[file]) > 1:
+            LOGGER.info("Investigating duplicate key %s", file)
+            LOGGER.debug("Values for key %s are %s", file,
+                         ', '.join([item.name for item in dict_of_names[file]]))
+            best, rest = sifter.sift(dict_of_names[file])
 
             for bad in rest:
                 try:
@@ -357,7 +268,7 @@ def remove_by_checksum(list_of_names, sifter,
 
         else:
             LOGGER.debug('Skipping non duplicate checksum %s for key %s', file,
-                         ', '.join([item.name for item in files[file]]))
+                         ', '.join([item.name for item in dict_of_names[file]]))
 
 
 def walk_path(path, **options):
@@ -372,6 +283,8 @@ def walk_path(path, **options):
     else:
         sifter = ShortestSifter()
 
+    checksum_clumper = HashClumper(options['hash_name'])
+
     for root, _, filenames in os.walk(path):
         if not options['recursive'] and root != path:
             LOGGER.debug("Skipping child directory %s of %s", root, path)
@@ -380,8 +293,8 @@ def walk_path(path, **options):
         list_of_filenames = create_filenames(filenames, root)
 
         if not options['skip_regex']:
-            clumper = RegexClumper(options['regex_pattern'])
-            names = clumper.dump_clumps(list_of_filenames)
+            regex_clumper = RegexClumper(options['regex_pattern'])
+            names = regex_clumper.dump_clumps(list_of_filenames)
 
             for name in names:
                 if len(names[name]) > 1:
@@ -389,10 +302,12 @@ def walk_path(path, **options):
                     LOGGER.debug("Keys for %s are %s", name,
                                  ', '.join([item.name
                                             for item in names[name]]))
-                    remove_by_checksum(names[name], sifter, **options)
+                    clumps = checksum_clumper.dump_clumps(names[name])
+                    remove_by_clump(clumps, sifter, **options)
                 else:
                     LOGGER.debug('Skipping non duplicate name %s for key %s',
                                  name, ', '.join([item.name
                                                   for item in names[name]]))
         else:
-            remove_by_checksum(create_filenames(filenames, root), sifter, **options)
+            clumps = checksum_clumper.dump_clumps(list_of_filenames)
+            remove_by_clump(clumps, sifter, **options)

@@ -24,9 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 '''
-from .twintrimmer import (generate_checksum_dict, create_filenames,
-                          remove_by_checksum, walk_path,
-                          Filename,
-                          generate_checksum, remove_files_for_deletion)
+from .twintrimmer import (create_filenames,
+                          walk_path, Filename, remove_files_for_deletion)
 from . import tool
 __all__ = ['create_filenames', 'generate_checksum', 'walk_path']
