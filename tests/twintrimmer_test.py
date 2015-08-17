@@ -284,6 +284,7 @@ class TestWalkPath(TestCaseWithFileSystem):
         twintrimmer.walk_path('examples',
                               hash_function='md5',
                               recursive=False,
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
                               skip_regex=True)
         self.assertEqual(mock_remove.call_count, 1)
 
@@ -292,8 +293,9 @@ class TestWalkPath(TestCaseWithFileSystem):
         twintrimmer.walk_path('examples',
                               hash_function='md5',
                               recursive=True,
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
                               skip_regex=True)
-        self.assertEqual(mock_remove.call_count, 3)
+        self.assertEqual(mock_remove.call_count, 1)
 
     @patch('twintrimmer.twintrimmer.remove_by_clump')
     def test_walk_path_skips_child_directories_but_not_regex_matching(self, mock_remove):
@@ -311,7 +313,7 @@ class TestWalkPath(TestCaseWithFileSystem):
                               recursive=True,
                               skip_regex=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)')
-        self.assertEqual(mock_remove.call_count, 3)
+        self.assertEqual(mock_remove.call_count, 1)
 
 
 class TestRemoveByClump(TestCaseWithFileSystem):

@@ -301,19 +301,17 @@ def walk_path(path, **options):
 
     checksum_clumper = HashClumper(options['hash_function'])
 
+    clumps = {}
+
     for root, _, filenames in os.walk(path):
         if not options['recursive'] and root != path:
             LOGGER.debug("Skipping child directory %s of %s", root, path)
             continue
+        clumps[(root,)] = create_filenames(filenames, root)
 
-        list_of_filenames = {(root,): create_filenames(filenames, root)}
+    if not options['skip_regex']:
+        regex_clumper = RegexClumper(options['regex_pattern'])
+        clumps = regex_clumper.dump_clumps(clumps)
 
-        if not options['skip_regex']:
-            regex_clumper = RegexClumper(options['regex_pattern'])
-            names = regex_clumper.dump_clumps(list_of_filenames)
-            clumps = checksum_clumper.dump_clumps(names)
-            remove_by_clump(clumps, sifter, **options)
-
-        else:
-            clumps = checksum_clumper.dump_clumps(list_of_filenames)
-            remove_by_clump(clumps, sifter, **options)
+    clumps = checksum_clumper.dump_clumps(clumps)
+    remove_by_clump(clumps, sifter, **options)
