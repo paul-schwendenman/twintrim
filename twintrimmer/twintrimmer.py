@@ -40,7 +40,7 @@ class Clumper():
         for key, value in clumper.items():
             for item in value:
                 try:
-                    clumps[(key,) + self.make_clump(item)].add(item)
+                    clumps[key + self.make_clump(item)].add(item)
                 except ClumperError as err:
                     LOGGER.error(str(err))
 
@@ -306,7 +306,7 @@ def walk_path(path, **options):
             LOGGER.debug("Skipping child directory %s of %s", root, path)
             continue
 
-        list_of_filenames = {root: create_filenames(filenames, root)}
+        list_of_filenames = {(root,): create_filenames(filenames, root)}
 
         if not options['skip_regex']:
             regex_clumper = RegexClumper(options['regex_pattern'])

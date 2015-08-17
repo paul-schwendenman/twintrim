@@ -42,13 +42,13 @@ class TestHashClumper(fake_filesystem_unittest.TestCase):
         clumper = twintrimmer.twintrimmer.HashClumper('sha1')
 
         checksum = clumper.make_clump(self.full)
-        self.assertEqual(checksum, '5a0cd97a76759aafa9fd5e4c5aa2ffe0e6f1720d')
+        self.assertEqual(checksum, ('5a0cd97a76759aafa9fd5e4c5aa2ffe0e6f1720d',))
 
     def test_generate_md5_checksum_for_file(self):
         clumper = twintrimmer.twintrimmer.HashClumper('md5')
 
         checksum = clumper.make_clump(self.full)
-        self.assertEqual(checksum, 'af55da6adb51f8dc6b4d3758b5bcf8cc')
+        self.assertEqual(checksum, ('af55da6adb51f8dc6b4d3758b5bcf8cc',))
 
     def test_generate_checksum_raises_OSError_for_missing_file(self):
         clumper = twintrimmer.twintrimmer.HashClumper('sha1')
@@ -57,23 +57,24 @@ class TestHashClumper(fake_filesystem_unittest.TestCase):
 
     def test_generate_checksum_dict_from_list_of_one_file(self):
         clumper = twintrimmer.twintrimmer.HashClumper('sha1')
-        checksum_dict = clumper.dump_clumps([self.test])
-        filenames = checksum_dict['5a0cd97a76759aafa9fd5e4c5aa2ffe0e6f1720d']
+        checksum_dict = clumper.dump_clumps({(None,): [self.test]})
+        print(checksum_dict)
+        filenames = checksum_dict[(None, '5a0cd97a76759aafa9fd5e4c5aa2ffe0e6f1720d')]
         self.assertEqual(len(filenames), 1)
         self.assertTrue(self.test in filenames)
 
     def test_generate_checksum_dict_from_list_of_two_matching_files(self):
         clumper = twintrimmer.twintrimmer.HashClumper('sha1')
-        checksum_dict = clumper.dump_clumps([self.test, self.test2])
-        filenames = checksum_dict['5a0cd97a76759aafa9fd5e4c5aa2ffe0e6f1720d']
+        checksum_dict = clumper.dump_clumps({(None,): [self.test, self.test2]})
+        filenames = checksum_dict[(None, '5a0cd97a76759aafa9fd5e4c5aa2ffe0e6f1720d')]
         self.assertEqual(len(filenames), 2)
         self.assertTrue(self.test in filenames)
         self.assertTrue(self.test2 in filenames)
 
     def test_generate_checksum_dict_handles_OSError(self):
         clumper = twintrimmer.twintrimmer.HashClumper('sha1')
-        checksum_dict = clumper.dump_clumps([self.nonexistent])
-        filenames = checksum_dict['5a0cd97a76759aafa9fd5e4c5aa2ffe0e6f1720d']
+        checksum_dict = clumper.dump_clumps({(None,): [self.nonexistent]})
+        filenames = checksum_dict[(None, '5a0cd97a76759aafa9fd5e4c5aa2ffe0e6f1720d')]
         self.assertEqual(len(filenames), 0)
 
 
@@ -110,7 +111,7 @@ class TestRegexClumper(unittest.TestCase):
 
     def test_custom_regex(self):
         clumper = twintrimmer.twintrimmer.RegexClumper(r'(^.+?)(?:\..+)')
-        filename_dict = clumper.dump_clumps(self.filenames)
+        filename_dict = clumper.dump_clumps({(None,): self.filenames})
         self.assertEqual(len(filename_dict.keys()), 3)
 
 
@@ -301,7 +302,7 @@ class TestWalkPath(TestCaseWithFileSystem):
                               recursive=False,
                               skip_regex=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)')
-        self.assertEqual(mock_remove.call_count, 3)
+        self.assertEqual(mock_remove.call_count, 1)
 
     @patch('twintrimmer.twintrimmer.remove_by_clump')
     def test_walk_path_includes_child_directories_but_not_regex_matching(self, mock_remove):
@@ -310,7 +311,7 @@ class TestWalkPath(TestCaseWithFileSystem):
                               recursive=True,
                               skip_regex=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)')
-        self.assertEqual(mock_remove.call_count, 4)
+        self.assertEqual(mock_remove.call_count, 3)
 
 
 class TestRemoveByClump(TestCaseWithFileSystem):
