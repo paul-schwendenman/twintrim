@@ -287,7 +287,7 @@ def remove_by_clump(dict_of_names, sifter, **options):
                          ', '.join([item.name for item in dict_of_names[file]]))
 
 
-def walk_path(path, **options):
+def main(path, **options):
     '''
     This function steps through the directory structure and identifies
     groups for more in depth investigation.
