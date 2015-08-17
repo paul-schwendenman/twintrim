@@ -85,6 +85,21 @@ class HashClumper(Clumper):
         except OSError as err:
             raise ClumperError('Checksum generation error: %s', err)
 
+class RegexClumper(Clumper):
+    '''
+    Subclass of Clumper using regular expressions
+    '''
+    def __init__(self, expr):
+        super(RegexClumper, self).__init__()
+        self.regex = re.compile(expr)
+
+    def make_clump(self, filename):
+        match = regex.match(filename.name)
+        if not match:
+            raise ClumperError('No regex match found for %s' % (filename.path))
+
+        return match.groups()
+
 
 def create_filenames(filenames, root):
     '''
