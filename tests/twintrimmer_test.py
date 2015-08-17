@@ -5,6 +5,36 @@ import builtins
 import fake_filesystem_unittest
 import os
 
+class TestClumper(unittest.TestCase):
+    def setUp(self):
+        self.clumper = twintrimmer.twintrimmer.Clumper()
+
+    def test_make_clump_is_not_implemented(self):
+        with self.assertRaises(NotImplementedError):
+            self.clumper.make_clump('test')
+
+    def test_dump_clumps_raises_not_implemented(self):
+        with self.assertRaises(NotImplementedError):
+            self.clumper.dump_clumps({('this'): {'one', 'two'}})
+
+    def test_dump_clumps_raises_CClumpError(self):
+        out = self.clumper.dump_clumps({(): {}})
+        self.assertEqual(out, {})
+
+
+class TestSifter(unittest.TestCase):
+    def setUp(self):
+        self.sifter = twintrimmer.twintrimmer.Sifter()
+
+    def test_sift_is_not_implemented(self):
+        with self.assertRaises(NotImplementedError):
+            self.sifter.sift(None)
+
+    def test_filter_raises_not_implemented(self):
+        with self.assertRaises(NotImplementedError):
+            self.sifter.filter({('this'): {'one', 'two'}})
+
+
 class TestPathClumper(unittest.TestCase):
     def setUp(self):
         self.clumper = twintrimmer.twintrimmer.PathClumper('/')
@@ -18,6 +48,10 @@ class TestPathClumper(unittest.TestCase):
         self.assertEqual(list_output[0].base, 'test_file')
         self.assertEqual(list_output[0].ext, '.txt')
         self.assertEqual(list_output[0].path, '/test_file.txt')
+
+    def test_dump_clumps_raises_not_implemented(self):
+        with self.assertRaises(NotImplementedError):
+            self.clumper.dump_clumps({('this'): {'one', 'two'}})
 
     def test_no_files(self):
         filenames = []
@@ -88,6 +122,10 @@ class TestShortestSifter(unittest.TestCase):
         self.filenames = {self.file, self.file1, self.file2}
         self.sifter = twintrimmer.twintrimmer.ShortestSifter()
 
+    def test_filter_raises_not_implemented(self):
+        with self.assertRaises(NotImplementedError):
+            self.sifter.filter({('this'): {'one', 'two'}})
+
     def test_file_txt_shorter_than_file_1_txt(self):
         self.assertEqual(self.sifter.pick_shorter_name(self.file, self.file1), self.file)
 
@@ -109,12 +147,19 @@ class TestRegexClumper(unittest.TestCase):
     def setUp(self):
         filenames = ['file.txt', 'file (1).txt', 'file (2).txt']
         root = '/'
+        bad = ['file']
         self.filenames = list(twintrimmer.twintrimmer.create_filenames(filenames, root))
+        self.bad = list(twintrimmer.twintrimmer.create_filenames(bad, root))[0]
 
     def test_custom_regex(self):
         clumper = twintrimmer.twintrimmer.RegexClumper(r'(^.+?)(?:\..+)')
         filename_dict = clumper.dump_clumps({(None,): self.filenames})
         self.assertEqual(len(filename_dict.keys()), 3)
+
+    def test_no_matches_found_raises_error(self):
+        clumper = twintrimmer.twintrimmer.RegexClumper(r'(^.+?)(?:\..+)')
+        with self.assertRaises(twintrimmer.twintrimmer.ClumperError):
+            filename_dict = clumper.make_clump(self.bad)
 
 
 class TestCaseWithFileSystem(fake_filesystem_unittest.TestCase):
@@ -182,6 +227,10 @@ class TestInteractiveSifter(unittest.TestCase):
         self.sifter = twintrimmer.twintrimmer.InteractiveSifter()
         self.file, self.file1, self.file2 = list(twintrimmer.twintrimmer.create_filenames(filenames, root))
         self.filenames = {self.file, self.file1, self.file2}
+
+    def test_filter_raises_not_implemented(self):
+        with self.assertRaises(NotImplementedError):
+            self.sifter.filter({('this'): {'one', 'two'}})
 
     @patch('builtins.input')
     def test_pick_user_by_index(self, mock_input):
@@ -312,6 +361,17 @@ class TestMain(TestCaseWithFileSystem):
     def test_walk_path_includes_child_directories_but_not_regex_matching(self, mock_remove):
         twintrimmer.main('examples',
                               hash_function='md5',
+                              recursive=True,
+                              skip_regex=False,
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)')
+        self.assertEqual(mock_remove.call_count, 1)
+
+    @patch('twintrimmer.twintrimmer.InteractiveSifter')
+    @patch('twintrimmer.twintrimmer.remove_by_clump')
+    def test_walk_path_includes_child_directories_but_not_regex_matching(self, mock_interactive, mock_remove):
+        twintrimmer.main('examples',
+                              hash_function='md5',
+                              interactive=True,
                               recursive=True,
                               skip_regex=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)')
