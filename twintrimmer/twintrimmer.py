@@ -67,7 +67,7 @@ class Sifter():
 
 class HashClumper(Clumper):
     '''
-    Subclass of Clumper for using checksums
+    Subclass of Clumper using hash algorithms
     '''
     def __init__(self, hash_name):
         super(HashClumper, self).__init__()
