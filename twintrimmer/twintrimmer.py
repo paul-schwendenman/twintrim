@@ -94,9 +94,12 @@ class RegexClumper(Clumper):
         self.regex = re.compile(expr)
 
     def make_clump(self, filename):
-        match = regex.match(filename.name)
+        match = self.regex.match(filename.name)
         if not match:
             raise ClumperError('No regex match found for %s' % (filename.path))
+        else:
+            LOGGER.debug('Regex groups for %s: %s', filename.name,
+                         str(match.groups()))
 
         return match.groups()
 
@@ -297,36 +300,6 @@ def generate_checksum_dict(filenames, hash_name):
     return checksum_dict
 
 
-def generate_filename_dict(filenames, expr=None):
-    '''
-    This function will create a dictionary of filename parts mapped to a list
-    of the real filenames.
-
-    :param filenames: list of filenames to clump by filename
-                      parts
-    :type filenames: iterable[Filename]
-    :param str expr: regex pattern to break and group the filename string
-
-    :returns: dictionary of sets of Filename objects with their regex matches
-              as the key
-    '''
-    LOGGER.info("Generating dictionary based on regular expression")
-    filename_dict = defaultdict(set)
-
-    if expr is None:
-        expr = r'(^.+?)(?: \(\d\))*(\..+)$'
-    regex = re.compile(expr)
-
-    for filename in filenames:
-        match = regex.match(filename.name)
-        if match:
-            LOGGER.debug('Regex groups for %s: %s', filename.name,
-                         str(match.groups()))
-            filename_dict[match.groups()].add(filename)
-
-    return filename_dict
-
-
 def remove_files_for_deletion(bad, best, **options):
     '''
     Preform the deletion of file that has been identified as a duplicate
@@ -404,9 +377,11 @@ def walk_path(path, **options):
             LOGGER.debug("Skipping child directory %s of %s", root, path)
             continue
 
+        list_of_filenames = create_filenames(filenames, root)
+
         if not options['skip_regex']:
-            names = generate_filename_dict(create_filenames(filenames, root),
-                                           options['regex_pattern'])
+            clumper = RegexClumper(options['regex_pattern'])
+            names = clumper.dump_clumps(list_of_filenames)
 
             for name in names:
                 if len(names[name]) > 1:

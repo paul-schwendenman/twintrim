@@ -87,19 +87,15 @@ class TestShortestSifter(unittest.TestCase):
         self.assertEqual(best, self.file)
         self.assertEqual(rest, {self.file1, self.file2})
 
-class TestGenerateFilenameDict(unittest.TestCase):
+class TestRegexClumper(unittest.TestCase):
     def setUp(self):
         filenames = ['file.txt', 'file (1).txt', 'file (2).txt']
         root = '/'
         self.filenames = list(twintrimmer.create_filenames(filenames, root))
 
-    def test_dictionary_has_one_key(self):
-        filename_dict = twintrimmer.generate_filename_dict(self.filenames)
-        self.assertEqual(len(filename_dict.keys()), 1)
-        self.assertEqual(list(filename_dict.keys())[0], ('file', '.txt'))
-
     def test_custom_regex(self):
-        filename_dict = twintrimmer.generate_filename_dict(self.filenames, r'(^.+?)(?:\..+)')
+        clumper = twintrimmer.twintrimmer.RegexClumper(r'(^.+?)(?:\..+)')
+        filename_dict = clumper.dump_clumps(self.filenames)
         self.assertEqual(len(filename_dict.keys()), 3)
 
 class TestGenerateChecksumDict(fake_filesystem_unittest.TestCase):
@@ -315,7 +311,7 @@ class TestWalkPath(TestCaseWithFileSystem):
         twintrimmer.walk_path('examples',
                               recursive=False,
                               skip_regex=False,
-                              regex_pattern=None)
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)')
         self.assertEqual(mock_remove.call_count, 3)
 
     @patch('twintrimmer.twintrimmer.remove_by_checksum')
@@ -323,7 +319,7 @@ class TestWalkPath(TestCaseWithFileSystem):
         twintrimmer.walk_path('examples',
                               recursive=True,
                               skip_regex=False,
-                              regex_pattern=None)
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)')
         self.assertEqual(mock_remove.call_count, 4)
 
 
@@ -366,7 +362,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
         twintrimmer.walk_path('examples',
                               remove_links=True,
                               skip_regex=False,
-                              regex_pattern=None,
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
                               recursive=False,
                               no_action=True)
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
@@ -375,7 +371,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
         twintrimmer.walk_path('examples',
                               no_action=True,
                               skip_regex=False,
-                              regex_pattern=None,
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
                               recursive=False,
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
@@ -384,7 +380,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
         twintrimmer.walk_path('examples',
                               no_action=True,
                               skip_regex=False,
-                              regex_pattern=None,
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
                               recursive=False,
                               remove_links=False)
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
@@ -392,7 +388,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
     def test_skip_links_does_no_action_skips_hardlinks(self):
         twintrimmer.walk_path('examples',
                               skip_regex=False,
-                              regex_pattern=None,
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
                               recursive=False,
                               remove_links=False)
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
@@ -400,7 +396,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
     def test_makes_links_when_expected(self):
         twintrimmer.walk_path('examples/',
                               skip_regex=False,
-                              regex_pattern=None,
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
                               recursive=False,
                               make_links=True)
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
@@ -412,7 +408,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
         self.assertTrue(os.path.exists('examples/foo (2).txt'))
         self.assertTrue(os.path.exists('examples/foo (3).txt'))
         twintrimmer.walk_path('examples',
-                              regex_pattern=None,
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
                               skip_regex=False,
                               recursive=False,
                               no_action=False,
@@ -432,7 +428,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
                               no_action=False,
                               skip_regex=False,
                               recursive=False,
-                              regex_pattern=None,
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/foo.txt'))
         self.assertFalse(os.path.exists('examples/foo (1).txt'))
@@ -456,7 +452,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
                            contents='foo\n')
         self.assertTrue(os.path.exists('examples/foo.txt'))
         twintrimmer.walk_path('examples',
-                              regex_pattern='(^.+?)(?: \(\d\))*\..+',
+                              regex_pattern=r'(^.+?)(?: \(\d\))*\..+',
                               no_action=False,
                               skip_regex=False,
                               recursive=False,
@@ -472,7 +468,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
                               skip_regex=True,
                               no_action=False,
                               recursive=False,
-                              regex_pattern=None,
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/fizz'))
         self.assertFalse(os.path.exists('examples/foo.txt'))
@@ -483,7 +479,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
                               no_action=False,
                               skip_regex=False,
                               recursive=True,
-                              regex_pattern=None,
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/foo.txt'))
         self.assertFalse(os.path.exists('examples/foo (1).txt'))
@@ -496,7 +492,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
                               no_action=False,
                               skip_regex=False,
                               recursive=False,
-                              regex_pattern=None,
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
 
