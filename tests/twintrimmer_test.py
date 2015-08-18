@@ -1,7 +1,6 @@
 import unittest
 import twintrimmer
-from unittest.mock import patch, mock_open
-import builtins
+from unittest.mock import patch
 import fake_filesystem_unittest
 import os
 
