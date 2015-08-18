@@ -93,7 +93,7 @@ class TestHashClumper(fake_filesystem_unittest.TestCase):
     def test_generate_checksum_raises_OSError_for_missing_file(self):
         clumper = twintrimmer.twintrimmer.HashClumper('sha1')
         with self.assertRaises(twintrimmer.twintrimmer.ClumperError):
-            checksum = clumper.make_clump(self.nonexistent)
+            clumper.make_clump(self.nonexistent)
 
     def test_generate_checksum_dict_from_list_of_one_file(self):
         clumper = twintrimmer.twintrimmer.HashClumper('sha1')
@@ -177,7 +177,7 @@ class TestRegexClumper(unittest.TestCase):
     def test_no_matches_found_raises_error(self):
         clumper = twintrimmer.twintrimmer.RegexClumper(r'(^.+?)(?:\..+)')
         with self.assertRaises(twintrimmer.twintrimmer.ClumperError):
-            filename_dict = clumper.make_clump(self.bad)
+            clumper.make_clump(self.bad)
 
 
 class TestCaseWithFileSystem(fake_filesystem_unittest.TestCase):
@@ -379,7 +379,7 @@ class TestMain(TestCaseWithFileSystem):
 
     @patch('twintrimmer.twintrimmer.InteractiveSifter')
     @patch('twintrimmer.twintrimmer.remove_by_clump')
-    def test_walk_path_includes_child_directories_but_not_regex_matching(
+    def test_walk_path_includes_child_directories_interactive(
         self, mock_interactive, mock_remove):
         twintrimmer.main('examples',
                          hash_function='md5',
@@ -388,6 +388,7 @@ class TestMain(TestCaseWithFileSystem):
                          skip_regex=False,
                          regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)')
         self.assertEqual(mock_remove.call_count, 1)
+        self.assertEqual(mock_interactive.call_count, 1)
 
 
 class TestRemoveByClump(TestCaseWithFileSystem):
@@ -521,7 +522,7 @@ class TestMainIntegration(TestCaseWithFileSystem):
         self.assertTrue(os.path.exists('examples/underscore/file__1.txt'))
         twintrimmer.main('examples/underscore',
                          hash_function='md5',
-                         regex_pattern='(.+?)(?:__\d)*\..*',
+                         regex_pattern=r'(.+?)(?:__\d)*\..*',
                          recursive=False,
                          skip_regex=False,
                          no_action=False,
