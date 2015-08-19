@@ -9,7 +9,7 @@ except:
     readme = ''
 
 setup(name='twintrimmer',
-      version='0.9',
+      version='0.9.1',
       description='tool for removing duplicate files',
       long_description=readme,
       author='Paul Schwendenman',
@@ -26,4 +26,4 @@ setup(name='twintrimmer',
                    'Operating System :: POSIX :: Linux',
                    'Topic :: Utilities', ],
       entry_points=
-      {'console_scripts': ['twintrim = twintrimmer:run.terminal'], }, )
+      {'console_scripts': ['twintrim = twintrimmer:tool.terminal'], }, )
