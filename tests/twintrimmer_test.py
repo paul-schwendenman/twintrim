@@ -1,3 +1,7 @@
+'''
+Tests for the twintrimmer module
+'''
+#pylint: disable=missing-docstring, invalid-name
 import unittest
 import twintrimmer
 from unittest.mock import patch
@@ -338,8 +342,7 @@ class TestRemoveFilesForDeletion(unittest.TestCase):
 
 class TestMain(TestCaseWithFileSystem):
     @patch('twintrimmer.twintrimmer.remove_by_clump')
-    def test_walk_path_skips_child_directories_and_regex_matching(self,
-                                                                  mock_remove):
+    def test_walk_path_skips_child_directories_and_regex_matching(self, mock_remove):
         twintrimmer.main('examples',
                          hash_function='md5',
                          recursive=False,
@@ -348,8 +351,7 @@ class TestMain(TestCaseWithFileSystem):
         self.assertEqual(mock_remove.call_count, 1)
 
     @patch('twintrimmer.twintrimmer.remove_by_clump')
-    def test_walk_path_includes_child_directories_and_regex_matching(
-        self, mock_remove):
+    def test_walk_path_includes_child_directories_and_regex_matching(self, mock_remove):
         twintrimmer.main('examples',
                          hash_function='md5',
                          recursive=True,
@@ -358,8 +360,7 @@ class TestMain(TestCaseWithFileSystem):
         self.assertEqual(mock_remove.call_count, 1)
 
     @patch('twintrimmer.twintrimmer.remove_by_clump')
-    def test_walk_path_skips_child_directories_but_not_regex_matching(
-        self, mock_remove):
+    def test_walk_path_skips_child_directories_but_not_regex_matching(self, mock_remove):
         twintrimmer.main('examples',
                          hash_function='md5',
                          recursive=False,
@@ -368,8 +369,7 @@ class TestMain(TestCaseWithFileSystem):
         self.assertEqual(mock_remove.call_count, 1)
 
     @patch('twintrimmer.twintrimmer.remove_by_clump')
-    def test_walk_path_includes_child_directories_but_not_regex_matching(
-        self, mock_remove):
+    def test_walk_path_includes_child_directories_but_not_regex_matching(self, mock_remove):
         twintrimmer.main('examples',
                          hash_function='md5',
                          recursive=True,
@@ -379,8 +379,7 @@ class TestMain(TestCaseWithFileSystem):
 
     @patch('twintrimmer.twintrimmer.InteractiveSifter')
     @patch('twintrimmer.twintrimmer.remove_by_clump')
-    def test_walk_path_includes_child_directories_interactive(
-        self, mock_interactive, mock_remove):
+    def test_walk_path_includes_child_directories_interactive(self, mock_interactive, mock_remove):
         twintrimmer.main('examples',
                          hash_function='md5',
                          interactive=True,
