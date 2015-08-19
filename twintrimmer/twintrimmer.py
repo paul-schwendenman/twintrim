@@ -105,6 +105,9 @@ class RegexClumper(Clumper):
         return match.groups()
 
 class PathClumper(Clumper):
+    '''
+    Clumper for grouping by path
+    '''
     def __init__(self, root_path, recursive=False):
         super(PathClumper, self).__init__()
         self.root_path = root_path
@@ -127,8 +130,11 @@ class PathClumper(Clumper):
 
     @staticmethod
     def create_filename(filename, root):
+        '''
+        Create a Filename object from a filename
+        '''
         return Filename(filename, *os.path.splitext(filename),
-                       path=os.path.join(root, filename))
+                        path=os.path.join(root, filename))
 
     @classmethod
     def create_filenames(cls, filenames, root):
