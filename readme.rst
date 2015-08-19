@@ -100,6 +100,12 @@ or using nose::
        dependencies includes a personally patched version of pyfakefs
        which doesn't seem to work on python3.
 
+coverage
+----------
+
+To show the test coverage::
+
+    python -m nose --with-coverage --cover-package twintrimmer.twintrimmer
 
 Hash algorithm options
 -----------------------
