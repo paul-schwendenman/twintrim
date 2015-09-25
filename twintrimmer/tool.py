@@ -1,8 +1,11 @@
 #! /usr/bin/env python3
+# PYTHON_ARGCOMPLETE_OK
 '''
 commandline interface for the twintrimmer module
 '''
+from __future__ import absolute_import
 import argparse
+import argcomplete
 import hashlib
 import logging
 import os
@@ -114,6 +117,7 @@ def terminal():
                         action='store_true',
                         help='remove hardlinks rather than skipping')
 
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
     if not os.path.isdir(args.path):
