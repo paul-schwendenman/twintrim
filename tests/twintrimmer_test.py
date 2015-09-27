@@ -4,7 +4,7 @@ Tests for the twintrimmer module
 #pylint: disable=missing-docstring, invalid-name
 import unittest
 import twintrimmer
-from unittest.mock import patch
+from mock import patch
 import fake_filesystem_unittest
 import os
 
