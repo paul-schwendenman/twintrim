@@ -46,25 +46,6 @@ class Clumper():
 
         return clumps
 
-class Sifter():
-    '''
-    general purpose class for dividing groups
-    '''
-    def __init__(self, *args, **kwargs):
-        pass
-
-    def sift(self, clump):
-        '''
-        divide the clumps returning the best and the rest
-        '''
-        raise NotImplementedError
-
-    def filter(self, dictionary_of_groups):
-        '''
-        helper function for filtering clumps
-        '''
-        raise NotImplementedError
-
 
 class HashClumper(Clumper):
     '''
@@ -155,6 +136,25 @@ class PathClumper(Clumper):
         for filename in filenames:
             yield cls.create_filename(filename, root)
 
+
+class Sifter():
+    '''
+    general purpose class for dividing groups
+    '''
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def sift(self, clump):
+        '''
+        divide the clumps returning the best and the rest
+        '''
+        raise NotImplementedError
+
+    def filter(self, dictionary_of_groups):
+        '''
+        helper function for filtering clumps
+        '''
+        raise NotImplementedError
 
 
 class ShortestSifter(Sifter):
