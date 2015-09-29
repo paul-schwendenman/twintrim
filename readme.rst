@@ -8,6 +8,9 @@ Introduction
 Twintrimmer is a project designed to automatically remove duplicate files
 specially those created by downloading in a browser.
 
+.. image:: https://travis-ci.org/paul-schwendenman/twintrim.svg?branch=release
+.. image:: https://travis-ci.org/paul-schwendenman/twintrim.svg?branch=master
+
 
 Modivation
 -----------
