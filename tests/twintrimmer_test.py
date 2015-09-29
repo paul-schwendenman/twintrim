@@ -494,7 +494,7 @@ class TestMainIntegration(TestCaseWithFileSystem):
         self.assertFalse(os.path.exists('examples/foo (2).txt'))
         self.assertTrue(os.path.exists('examples/foo (3).txt'))
 
-    @unittest.expectedFailure
+    @unittest.skip
     def test_removes_duplicate_file_foo_1_with_trailing_backslash(self):
         self.assertTrue(os.path.exists('examples/foo.txt'))
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
@@ -575,7 +575,7 @@ class TestMainIntegration(TestCaseWithFileSystem):
                          remove_links=True)
         self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
 
-    @unittest.expectedFailure
+    @unittest.skip
     def test_can_not_delete_file_due_to_OSError(self):
         os.chmod('examples/recur/file (2).txt', 0o700)
         os.chown('examples/recur/file (2).txt', 0, 0)
