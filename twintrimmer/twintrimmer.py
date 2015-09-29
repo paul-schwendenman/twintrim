@@ -46,25 +46,6 @@ class Clumper():
 
         return clumps
 
-class Sifter():
-    '''
-    general purpose class for dividing groups
-    '''
-    def __init__(self, *args, **kwargs):
-        pass
-
-    def sift(self, clump):
-        '''
-        divide the clumps returning the best and the rest
-        '''
-        raise NotImplementedError
-
-    def filter(self, dictionary_of_groups):
-        '''
-        helper function for filtering clumps
-        '''
-        raise NotImplementedError
-
 
 class HashClumper(Clumper):
     '''
@@ -156,13 +137,26 @@ class PathClumper(Clumper):
             yield cls.create_filename(filename, root)
 
 
+class Picker():
+    '''
+    general purpose class for picking from group
+    '''
+    def __init__(self, *args, **kwargs):
+        pass
 
-class ShortestSifter(Sifter):
+    def sift(self, clump):
+        '''
+        divide the clumps returning the best and the rest
+        '''
+        raise NotImplementedError
+
+
+class ShortestPicker(Picker):
     '''
     Used to separate the shortest name from the rest
     '''
     def __init__(self, *args, **kwargs):
-        super(ShortestSifter, self).__init__(*args, **kwargs)
+        super(ShortestPicker, self).__init__(*args, **kwargs)
 
     def sift(self, clump):
         best = functools.reduce(self.pick_shorter_name, clump)
@@ -212,13 +206,13 @@ class ShortestSifter(Sifter):
         else:
             return file2
 
-class InteractiveSifter(ShortestSifter):
+class InteractivePicker(ShortestPicker):
     '''
     This class allows the user to interactively select which file is
     selected to be preserved.
     '''
     def __init__(self, *args, **kwargs):
-        super(InteractiveSifter, self).__init__(*args, **kwargs)
+        super(InteractivePicker, self).__init__(*args, **kwargs)
 
     def filter(self, dictionary_of_groups):
         '''
@@ -230,7 +224,7 @@ class InteractiveSifter(ShortestSifter):
         '''
         Asks user for best after giving recommendation
         '''
-        default, rest = super(InteractiveSifter, self).sift(clump)
+        default, rest = super(InteractivePicker, self).sift(clump)
         files = [default] + list(rest)
         for num, file in enumerate(files):
             if file == default:
@@ -288,7 +282,7 @@ def remove_file(bad, best, **options):
             os.link(best.path, bad.path)
 
 
-def remove_by_clump(dict_of_names, sifter, **options):
+def remove_by_clump(dict_of_names, picker, **options):
     '''
     This function first groups the files by checksum, and then removes all
     but one copy of the file.
@@ -305,7 +299,7 @@ def remove_by_clump(dict_of_names, sifter, **options):
             LOGGER.info("Investigating duplicate key %s", file)
             LOGGER.debug("Values for key %s are %s", file,
                          ', '.join([item.name for item in dict_of_names[file]]))
-            best, rest = sifter.sift(dict_of_names[file])
+            best, rest = picker.sift(dict_of_names[file])
 
             for bad in rest:
                 try:
@@ -327,9 +321,9 @@ def main(path, **options):
     :param str path: the path to search for files and begin processing
     '''
     if options.get('interactive', False):
-        sifter = InteractiveSifter()
+        picker = InteractivePicker()
     else:
-        sifter = ShortestSifter()
+        picker = ShortestPicker()
 
     checksum_clumper = HashClumper(options['hash_function'])
     filepath_clumper = PathClumper(path, options['recursive'])
@@ -341,4 +335,4 @@ def main(path, **options):
         clumps = regex_clumper.dump_clumps(clumps)
 
     clumps = checksum_clumper.dump_clumps(clumps)
-    remove_by_clump(clumps, sifter, **options)
+    remove_by_clump(clumps, picker, **options)

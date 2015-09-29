@@ -26,17 +26,13 @@ class TestClumper(unittest.TestCase):
         self.assertEqual(out, {})
 
 
-class TestSifter(unittest.TestCase):
+class TestPicker(unittest.TestCase):
     def setUp(self):
-        self.sifter = twintrimmer.twintrimmer.Sifter()
+        self.picker = twintrimmer.twintrimmer.Picker()
 
     def test_sift_is_not_implemented(self):
         with self.assertRaises(NotImplementedError):
-            self.sifter.sift(None)
-
-    def test_filter_raises_not_implemented(self):
-        with self.assertRaises(NotImplementedError):
-            self.sifter.filter({('this'): {'one', 'two'}})
+            self.picker.sift(None)
 
 
 class TestPathClumper(unittest.TestCase):
@@ -126,7 +122,7 @@ class TestHashClumper(fake_filesystem_unittest.TestCase):
         self.assertEqual(len(filenames), 0)
 
 
-class TestShortestSifter(unittest.TestCase):
+class TestShortestPicker(unittest.TestCase):
     def setUp(self):
         filenames = ['file.txt', 'file1.txt', 'file2.txt']
         root = '/'
@@ -134,30 +130,30 @@ class TestShortestSifter(unittest.TestCase):
             twintrimmer.twintrimmer.PathClumper.create_filenames(filenames,
                                                                  root))
         self.filenames = {self.file, self.file1, self.file2}
-        self.sifter = twintrimmer.twintrimmer.ShortestSifter()
+        self.picker = twintrimmer.twintrimmer.ShortestPicker()
 
     def test_filter_raises_not_implemented(self):
         with self.assertRaises(NotImplementedError):
-            self.sifter.filter({('this'): {'one', 'two'}})
+            self.picker.filter({('this'): {'one', 'two'}})
 
     def test_file_txt_shorter_than_file_1_txt(self):
-        self.assertEqual(self.sifter.pick_shorter_name(self.file, self.file1),
+        self.assertEqual(self.picker.pick_shorter_name(self.file, self.file1),
                          self.file)
 
     def test_file_1_txt_shorter_than_file_2_txt(self):
-        self.assertEqual(self.sifter.pick_shorter_name(self.file1, self.file2),
+        self.assertEqual(self.picker.pick_shorter_name(self.file1, self.file2),
                          self.file1)
 
     def test_file_1_txt_not_shorter_than_file_txt(self):
-        self.assertEqual(self.sifter.pick_shorter_name(self.file1, self.file),
+        self.assertEqual(self.picker.pick_shorter_name(self.file1, self.file),
                          self.file)
 
     def test_file_2_txt_not_shorter_than_file_1_txt(self):
-        self.assertEqual(self.sifter.pick_shorter_name(self.file2, self.file1),
+        self.assertEqual(self.picker.pick_shorter_name(self.file2, self.file1),
                          self.file1)
 
     def test_sift_finds_shortest_name(self):
-        best, rest = self.sifter.sift(self.filenames)
+        best, rest = self.picker.sift(self.filenames)
         self.assertEqual(best, self.file)
         self.assertEqual(rest, {self.file1, self.file2})
 
@@ -230,14 +226,14 @@ class TestCaseWithFileSystem(fake_filesystem_unittest.TestCase):
             twintrimmer.Filename('foo (3).txt', None, None,
                                  'examples/foo (3).txt'),
         ]
-        self.sifter = twintrimmer.twintrimmer.ShortestSifter()
+        self.picker = twintrimmer.twintrimmer.ShortestPicker()
 
 
-class TestInteractiveSifter(unittest.TestCase):
+class TestInteractivePicker(unittest.TestCase):
     def setUp(self):
         filenames = ['file.txt', 'file1.txt', 'file2.txt']
         root = '/'
-        self.sifter = twintrimmer.twintrimmer.InteractiveSifter()
+        self.picker = twintrimmer.twintrimmer.InteractivePicker()
         self.file, self.file1, self.file2 = list(
             twintrimmer.twintrimmer.PathClumper.create_filenames(filenames,
                                                                  root))
@@ -245,12 +241,12 @@ class TestInteractiveSifter(unittest.TestCase):
 
     def test_filter_raises_not_implemented(self):
         with self.assertRaises(NotImplementedError):
-            self.sifter.filter({('this'): {'one', 'two'}})
+            self.picker.filter({('this'): {'one', 'two'}})
 
     @patch('builtins.input')
     def test_pick_user_by_index(self, mock_input):
         mock_input.return_value = '0'
-        best, rest = self.sifter.sift(self.filenames)
+        best, rest = self.picker.sift(self.filenames)
         self.assertEqual(self.file, best)
         self.assertEqual(len(rest), 2)
         self.assertEqual(mock_input.call_count, 1)
@@ -258,7 +254,7 @@ class TestInteractiveSifter(unittest.TestCase):
     @patch('builtins.input')
     def test_pick_user_follows_users_choice(self, mock_input):
         mock_input.return_value = 'file1.txt'
-        best, rest = self.sifter.sift(self.filenames)
+        best, rest = self.picker.sift(self.filenames)
         self.assertEqual(self.file1, best)
         self.assertEqual(len(rest), 2)
         self.assertEqual(mock_input.call_count, 1)
@@ -266,7 +262,7 @@ class TestInteractiveSifter(unittest.TestCase):
     @patch('builtins.input')
     def test_uses_default_for_no_input(self, mock_input):
         mock_input.return_value = ''
-        best, rest = self.sifter.sift(self.filenames)
+        best, rest = self.picker.sift(self.filenames)
         self.assertEqual(self.file, best)
         self.assertEqual(len(rest), 2)
         self.assertEqual(mock_input.call_count, 1)
@@ -274,7 +270,7 @@ class TestInteractiveSifter(unittest.TestCase):
     @patch('builtins.input')
     def test_user_supplies_full_filename(self, mock_input):
         mock_input.return_value = 'file1.txt'
-        best, rest = self.sifter.sift(self.filenames)
+        best, rest = self.picker.sift(self.filenames)
         self.assertEqual(self.file1, best)
         self.assertEqual(len(rest), 2)
         self.assertEqual(mock_input.call_count, 1)
@@ -282,7 +278,7 @@ class TestInteractiveSifter(unittest.TestCase):
     @patch('builtins.input')
     def test_user_typos_filename_on_input(self, mock_input):
         mock_input.side_effect = ['file3.txt', '5', 'file1.txt']
-        best, rest = self.sifter.sift(self.filenames)
+        best, rest = self.picker.sift(self.filenames)
         self.assertEqual(self.file1, best)
         self.assertEqual(len(rest), 2)
         self.assertEqual(mock_input.call_count, 3)
@@ -290,7 +286,7 @@ class TestInteractiveSifter(unittest.TestCase):
     @patch('builtins.input')
     def test_user_presses_keyboard_interrupt(self, mock_input):
         mock_input.side_effect = KeyboardInterrupt
-        best, rest = self.sifter.sift(self.filenames)
+        best, rest = self.picker.sift(self.filenames)
         self.assertEqual(self.file, best)
         self.assertEqual(len(rest), 0)
         self.assertEqual(mock_input.call_count, 1)
@@ -377,7 +373,7 @@ class TestMain(TestCaseWithFileSystem):
                          regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)')
         self.assertEqual(mock_remove.call_count, 1)
 
-    @patch('twintrimmer.twintrimmer.InteractiveSifter')
+    @patch('twintrimmer.twintrimmer.InteractivePicker')
     @patch('twintrimmer.twintrimmer.remove_by_clump')
     def test_walk_path_includes_child_directories_interactive(self, mock_interactive, mock_remove):
         twintrimmer.main('examples',
@@ -413,20 +409,20 @@ class TestRemoveByClump(TestCaseWithFileSystem):
     @patch('twintrimmer.twintrimmer.remove_file')
     def test_remove_by_checksum_picks_best_of_two_files(self, mock_remove):
         twintrimmer.twintrimmer.remove_by_clump(
-            {'baz': self.filename_set_two}, self.sifter)
+            {'baz': self.filename_set_two}, self.picker)
         self.assertEqual(mock_remove.call_count, 1)
 
     @patch('twintrimmer.twintrimmer.remove_file')
     def test_remove_by_checksum_catches_OSError(self, mock_remove):
         mock_remove.side_effect = PermissionError
         twintrimmer.twintrimmer.remove_by_clump(
-            {'baz': self.filename_set_two}, self.sifter)
+            {'baz': self.filename_set_two}, self.picker)
         self.assertEqual(mock_remove.call_count, 1)
 
     @patch('twintrimmer.twintrimmer.remove_file')
     def test_remove_by_checksum_skips_single_file(self, mock_remove):
         twintrimmer.twintrimmer.remove_by_clump(
-            {'baz3': self.filename_set_one}, self.sifter)
+            {'baz3': self.filename_set_one}, self.picker)
         self.assertEqual(mock_remove.call_count, 0)
 
 
@@ -498,7 +494,7 @@ class TestMainIntegration(TestCaseWithFileSystem):
         self.assertFalse(os.path.exists('examples/foo (2).txt'))
         self.assertTrue(os.path.exists('examples/foo (3).txt'))
 
-    @unittest.expectedFailure
+    @unittest.skip
     def test_removes_duplicate_file_foo_1_with_trailing_backslash(self):
         self.assertTrue(os.path.exists('examples/foo.txt'))
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
@@ -579,7 +575,7 @@ class TestMainIntegration(TestCaseWithFileSystem):
                          remove_links=True)
         self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
 
-    @unittest.expectedFailure
+    @unittest.skip
     def test_can_not_delete_file_due_to_OSError(self):
         os.chmod('examples/recur/file (2).txt', 0o700)
         os.chown('examples/recur/file (2).txt', 0, 0)
