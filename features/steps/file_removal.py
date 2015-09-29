@@ -27,3 +27,7 @@ def step_impl(context, filename):
 @when(u'we run "{program}" with no args')
 def step_impl(context, program):
     subprocess.call([program, context.path])
+
+@when(u'we run "{program}" with args: "{args}"')
+def step_impl(context, program, args):
+    subprocess.call([program, args, context.path])
