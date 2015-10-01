@@ -40,7 +40,7 @@ v0.5
 - fix some formatting
 
 
-v0.4 
+v0.4
 ------------------
 
 - added option for selecting hashing function
@@ -51,7 +51,7 @@ v0.3
 
 - cleaned up code
 - added more doc strings
- 
+
 
 v0.2
 ------------------

@@ -1,4 +1,4 @@
-Feature: remove failed # features/file_removal.feature:1
+Feature: Remove duplicate files
   Scenario: Remove one of two files
     Given we have "twintrim" installed
     Given we have two matching files "foo.txt" and "foo (2).txt"
