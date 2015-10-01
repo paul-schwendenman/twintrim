@@ -6,13 +6,6 @@ Feature: remove failed # features/file_removal.feature:1
     Then "foo (2).txt" is removed
     And "foo.txt" still exists
 
-  Scenario: Program completes no action with -n flag
-    Given we have "twintrim" installed
-    Given we have two matching files "foo.txt" and "foo (1).txt"
-    When we run "twintrim" with args: "-n"
-    Then "foo (1).txt" still exists
-    And "foo.txt" still exists
-
   Scenario: Program doesn't delete files with different checksums
     Given we have "twintrim" installed
     And we have two different files "foo.txt" and "foo (1).txt"
