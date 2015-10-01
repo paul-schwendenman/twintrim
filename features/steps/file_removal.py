@@ -17,7 +17,7 @@ def run_program(command):
     sys.stderr.write(fail)
     return code, done, fail
 
-@given(u'we have two files "{filename1}" and "{filename2}"')
+@given(u'we have two matching files "{filename1}" and "{filename2}"')
 def step_impl(context, filename1, filename2):
     data = "dummy data\n"
     with open(os.path.join(context.path, filename1), 'w') as file1:
