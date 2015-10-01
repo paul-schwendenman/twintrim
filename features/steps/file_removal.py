@@ -8,10 +8,11 @@ import shutil
 import subprocess
 import sys
 
-def run_program(command):
+def run_program(command, stdinput=""):
     doit = subprocess.Popen(command, universal_newlines=True, shell=True,
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (done, fail) = doit.communicate()
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            stdin=subprocess.PIPE)
+    (done, fail) = doit.communicate(stdinput)
     code = doit.wait()
     sys.stdout.write(done)
     sys.stderr.write(fail)
