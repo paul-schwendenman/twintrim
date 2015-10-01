@@ -11,7 +11,7 @@ Feature: Remove duplicate files
     And we have two different files "foo.txt" and "foo (1).txt"
     When we run "twintrim" with no args
     Then "foo.txt" still exists
-    And "foo.txt" still exists
+    And "foo (1).txt" still exists
 
   Scenario: Program deletes matching sums with different names in checksum mode
     Given we have "twintrim" installed
