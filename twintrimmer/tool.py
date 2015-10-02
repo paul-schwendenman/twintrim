@@ -11,7 +11,7 @@ import sys
 import textwrap
 from .twintrimmer import walk_path
 
-def terminal():
+def terminal(args=None):
     '''
         The main function handles the parsing of arguments as well as the
         initiation of the logging handlers.
@@ -114,7 +114,7 @@ def terminal():
                         action='store_true',
                         help='remove hardlinks rather than skipping')
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     if not os.path.isdir(args.path):
         parser.error('path was not a directory: "{0}"'.format(args.path))
@@ -153,4 +153,4 @@ def terminal():
     walk_path(**vars(args))
 
 if __name__ == '__main__':
-    terminal()
+    terminal(sys.argv[1:])
