@@ -1,3 +1,7 @@
+'''
+Steps for running interactively
+'''
+#pylint: disable=missing-docstring
 from behave import when
 from file_removal import run_program
 

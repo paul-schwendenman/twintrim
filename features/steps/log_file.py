@@ -1,3 +1,7 @@
+'''
+Steps for running with logging and checking the existance of the log file
+'''
+#pylint: disable=missing-docstring, function-redefined
 from behave import when, then
 import os
 

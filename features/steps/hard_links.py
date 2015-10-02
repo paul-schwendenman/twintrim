@@ -1,3 +1,6 @@
+'''
+Steps for creating and checking the existance of hard links
+'''
 #pylint: disable=missing-docstring, function-redefined
 from behave import given, then
 import os.path
