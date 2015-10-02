@@ -350,7 +350,7 @@ def walk_path(path, **options):
         else:
             remove_by_checksum(create_filenames(filenames, root), **options)
 
-def main(args=None):
+def main(args_param=None):
     '''
     The main function handles the parsing of arguments as well as the
     initiation of the logging handlers.
@@ -452,9 +452,10 @@ def main(args=None):
                         action='store_true',
                         help='remove hardlinks rather than skipping')
 
-    args = parser.parse_args(args)
+    args = parser.parse_args(args_param)
 
     if not os.path.isdir(args.path):
+        print(args.path)
         parser.error('path was not a directory: "{0}"'.format(args.path))
 
     if args.log_level != 3 and not args.log_file:

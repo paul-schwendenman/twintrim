@@ -514,6 +514,20 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
                               remove_links=True)
         self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
 
+class TestMain(unittest.TestCase):
+    @unittest.skip('Broken?')
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_no_action_argument_passes_correctly(self, mock_walk_path):
+        twintrimmer.twintrimmer.main(['--no-action /'])
+        mock_walk_path.assert_called_with(no_action=True)
+
+    @unittest.skip('Broken?')
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_no_action_single_argument_passes_correctly(self, mock_walk_path):
+        twintrimmer.twintrimmer.main(['-n /'])
+        mock_walk_path.assert_called_with(no_action=True)
+
+
 
 if __name__ == '__main__':
     unittest.main()
