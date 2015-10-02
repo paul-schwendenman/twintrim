@@ -26,4 +26,4 @@ setup(name='twintrimmer',
                    'Operating System :: POSIX :: Linux',
                    'Topic :: Utilities', ],
       entry_points=
-      {'console_scripts': ['twintrim = twintrimmer:tool.terminal'], }, )
+      {'console_scripts': ['twintrim = twintrimmer:twintrimmer.main'], }, )
