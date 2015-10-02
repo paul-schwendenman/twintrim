@@ -9,8 +9,8 @@ Twintrimmer is a project designed to automatically remove duplicate files
 specially those created by downloading in a browser.
 
 
-Build
--------
+Build Status
+-------------
 
 Master: |master|_
 Release: |release|_
@@ -99,6 +99,9 @@ cloning the repository, try running::
 Running the Tests
 ------------------
 
+Unit tests
+=============
+
 To run tests::
 
     python -m unittest discover -p '*_test.py'
@@ -111,6 +114,13 @@ or using nose::
        dependencies includes a personally patched version of pyfakefs
        which doesn't seem to work on python3.
 
+
+Behavior tests
+===============
+
+To run tests::
+
+    behave
 
 Hash algorithm options
 -----------------------
