@@ -1,5 +1,5 @@
 '''
-Twin trim - a duplicate file remover
+twintrimmer - a duplicate file remover
 
 The goal for this project is to help identify and remove files that have
 matching names and content.
@@ -24,6 +24,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 '''
-from .twintrimmer import (main, Filename, remove_file)
-from . import tool
+from .twintrimmer import (main, Filename, walk_path, remove_file)
 __all__ = ['main', 'remove_file']
+
+__author__ = 'Paul Schwendenman'
+__email__ = 'schwendenman.paul+twintrim@gmail.com'
+__license__ = 'MIT'
+__version__ = '0.9.1'
+__credits__ = ['Joel Friedly']

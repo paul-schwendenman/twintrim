@@ -1,7 +1,7 @@
 '''
-Acceptance style tests
+Steps for creating and checking the existance of files
 '''
-#pylint: disable=missing-docstring, function-redefined
+#pylint: disable=missing-docstring, function-redefined, unused-argument
 from behave import given, when, then
 import os
 import shutil
@@ -28,10 +28,10 @@ def step_impl(context, filename1, filename2):
 
 @given(u'we have two different files "{filename1}" and "{filename2}"')
 def step_impl(context, filename1, filename2):
-    data1 = "dummy data1\n"
-    data2 = "dummy data2\n"
+    data1 = "dummy data\n"
     with open(os.path.join(context.path, filename1), 'w') as file1:
         file1.write(data1)
+    data2 = "dummer data\n"
     with open(os.path.join(context.path, filename2), 'w') as file2:
         file2.write(data2)
 
