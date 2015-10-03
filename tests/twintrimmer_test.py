@@ -7,6 +7,9 @@ import twintrimmer
 from unittest.mock import patch
 import fake_filesystem_unittest
 import os
+import sys
+from io import StringIO
+
 
 
 class TestClumper(unittest.TestCase):
@@ -592,6 +595,16 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
 
 
 class TestMain(TestCaseWithFileSystem):
+    def setUp(self):
+        super(TestMain, self).setUp()
+        self.new_out, self.new_err = StringIO(), StringIO()
+        self.old_out, self.old_err = sys.stdout, sys.stderr
+        sys.stdout, sys.stderr = self.new_out, self.new_err
+
+    def tearDown(self):
+        super(TestMain, self).tearDown()
+        sys.stdout, sys.stderr = self.old_out, self.old_err
+
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_default_args_pass_correctly(self, mock_walk_path):
         twintrimmer.twintrimmer.main(['.'])
@@ -608,6 +621,8 @@ class TestMain(TestCaseWithFileSystem):
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
             no_action=False)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertEqual(self.new_err.getvalue(), '')
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_no_action_argument_passes_correctly(self, mock_walk_path):
@@ -625,6 +640,8 @@ class TestMain(TestCaseWithFileSystem):
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
             no_action=True)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertEqual(self.new_err.getvalue(), '')
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_no_action_single_argument_passes_correctly(self, mock_walk_path):
@@ -642,6 +659,8 @@ class TestMain(TestCaseWithFileSystem):
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
             no_action=True)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertEqual(self.new_err.getvalue(), '')
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_log_file_argument_passes_correctly(self, mock_walk_path):
@@ -659,6 +678,8 @@ class TestMain(TestCaseWithFileSystem):
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
             no_action=False)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertEqual(self.new_err.getvalue(), '')
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_hash_fuction_argument_passes_correctly(self, mock_walk_path):
@@ -676,6 +697,8 @@ class TestMain(TestCaseWithFileSystem):
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
             no_action=False)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertEqual(self.new_err.getvalue(), '')
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_short_recursive_argument_passes_correctly(self, mock_walk_path):
@@ -693,6 +716,8 @@ class TestMain(TestCaseWithFileSystem):
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
             no_action=False)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertEqual(self.new_err.getvalue(), '')
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_long_recursive_argument_passes_correctly(self, mock_walk_path):
@@ -710,6 +735,8 @@ class TestMain(TestCaseWithFileSystem):
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
             no_action=False)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertEqual(self.new_err.getvalue(), '')
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_make_links_argument_passes_correctly(self, mock_walk_path):
@@ -727,6 +754,8 @@ class TestMain(TestCaseWithFileSystem):
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
             no_action=False)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertEqual(self.new_err.getvalue(), '')
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_remove_link_arg_pass_correctly(self, mock_walk_path):
@@ -744,6 +773,8 @@ class TestMain(TestCaseWithFileSystem):
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
             no_action=False)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertEqual(self.new_err.getvalue(), '')
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_interactive_mode_passed_correctly(self, mock_walk_path):
@@ -761,6 +792,8 @@ class TestMain(TestCaseWithFileSystem):
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
             no_action=False)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertEqual(self.new_err.getvalue(), '')
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_short_arg_interactive_passed_correctly(self, mock_walk_path):
@@ -778,6 +811,8 @@ class TestMain(TestCaseWithFileSystem):
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
             no_action=False)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertEqual(self.new_err.getvalue(), '')
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_short_checksum_only_mode_passed_correctly(self, mock_walk_path):
@@ -795,6 +830,8 @@ class TestMain(TestCaseWithFileSystem):
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=True,
             no_action=False)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertEqual(self.new_err.getvalue(), '')
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_long_checksum_only_mode_passed_correctly(self, mock_walk_path):
@@ -812,6 +849,8 @@ class TestMain(TestCaseWithFileSystem):
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=True,
             no_action=False)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertEqual(self.new_err.getvalue(), '')
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_custom_regex_passed_correctly(self, mock_walk_path):
@@ -829,42 +868,56 @@ class TestMain(TestCaseWithFileSystem):
             regex_pattern=r'(^.+?)(?:\..+)$',
             skip_regex=False,
             no_action=False)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertEqual(self.new_err.getvalue(), '')
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_no_args_fails(self, mock_walk_path):
         with self.assertRaises(SystemExit):
             twintrimmer.twintrimmer.main([])
         self.assertEqual(mock_walk_path.call_count, 0)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertIn('error: the following arguments are required: path', self.new_err.getvalue())
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_pattern_with_skip_regex_fails(self, mock_walk_path):
         with self.assertRaises(SystemExit):
             twintrimmer.twintrimmer.main(['.', '-c', '-p', '(.*)'])
         self.assertEqual(mock_walk_path.call_count, 0)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertIn('Pattern set while skipping regex checking', self.new_err.getvalue())
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_invalid_arg_fails(self, mock_walk_path):
         with self.assertRaises(SystemExit):
             twintrimmer.twintrimmer.main(['.', '--invalid'])
         self.assertEqual(mock_walk_path.call_count, 0)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertIn('unrecognized arguments: --invalid', self.new_err.getvalue())
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_log_level_without_file_fails(self, mock_walk_path):
         with self.assertRaises(SystemExit):
             twintrimmer.twintrimmer.main(['.', '--log-level', '4'])
         self.assertEqual(mock_walk_path.call_count, 0)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertIn('Log level set without log file', self.new_err.getvalue())
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_bad_path_fails(self, mock_walk_path):
         with self.assertRaises(SystemExit):
             twintrimmer.twintrimmer.main(['/does/not/exist/'])
         self.assertEqual(mock_walk_path.call_count, 0)
+        self.assertEqual(self.new_out.getvalue(), '/does/not/exist/\n')
+        self.assertIn('path was not a directory', self.new_err.getvalue())
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_invalid_regex_fails(self, mock_walk_path):
         with self.assertRaises(SystemExit):
             twintrimmer.twintrimmer.main(['.', '-p', '(((r)'])
         self.assertEqual(mock_walk_path.call_count, 0)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertIn('Invalid regular expression: "(((r)"', self.new_err.getvalue())
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_unwritable_log_file_fails(self, mock_walk_path):
@@ -872,12 +925,24 @@ class TestMain(TestCaseWithFileSystem):
         with self.assertRaises(SystemExit):
             twintrimmer.twintrimmer.main(['.', '--log-file', 'examples/baz.txt'])
         self.assertEqual(mock_walk_path.call_count, 0)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertEqual(self.new_err.getvalue(), '')
 
     @patch('twintrimmer.twintrimmer.walk_path')
     def test_help_arg_show_helpful_message(self, mock_walk_path):
         with self.assertRaises(SystemExit):
             twintrimmer.twintrimmer.main(['--help'])
         self.assertEqual(mock_walk_path.call_count, 0)
+        self.assertIn('usage', self.new_out.getvalue())
+        self.assertEqual(self.new_err.getvalue(), '')
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_version_arg_show_version_message(self, mock_walk_path):
+        with self.assertRaises(SystemExit):
+            twintrimmer.twintrimmer.main(['--version'])
+        self.assertEqual(mock_walk_path.call_count, 0)
+        self.assertIn(twintrimmer.__version__, self.new_out.getvalue())
+        self.assertEqual(self.new_err.getvalue(), '')
 
 
 if __name__ == '__main__':

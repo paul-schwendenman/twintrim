@@ -25,10 +25,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 '''
 from .twintrimmer import (main, Filename, walk_path, remove_file)
-__all__ = ['main', 'remove_file']
+from .twintrimmer import __author__, __email__, __license__, __version__
 
-__author__ = 'Paul Schwendenman'
-__email__ = 'schwendenman.paul+twintrim@gmail.com'
-__license__ = 'MIT'
-__version__ = '0.9.1'
-__credits__ = ['Joel Friedly']
+__all__ = ['main', 'remove_file']

@@ -12,6 +12,13 @@ import sys
 import textwrap
 from collections import defaultdict, namedtuple
 
+__author__ = 'Paul Schwendenman'
+__email__ = 'schwendenman.paul+twintrim@gmail.com'
+__license__ = 'MIT'
+__version__ = '0.11'
+__credits__ = ['Joel Friedly']
+
+
 LOGGER = logging.getLogger(__name__)
 
 Filename = namedtuple('Filename', ['name', 'base', 'ext', 'path'])
@@ -442,6 +449,7 @@ def main(args_param=None):
                         default=False,
                         action='store_true',
                         help='remove hardlinks rather than skipping')
+    parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
 
     args = parser.parse_args(args_param)
 
