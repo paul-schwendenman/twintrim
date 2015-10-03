@@ -467,7 +467,7 @@ def main(args_param=None):
     try:
         re.compile(args.regex_pattern)
     except re.error:
-        parser.error('Invalid regular expression: "{0}"'.format(args.pattern))
+        parser.error('Invalid regular expression: "{0}"'.format(args.regex_pattern))
 
     stream = logging.StreamHandler()
     stream.setLevel((5 - args.verbosity) * 10)
