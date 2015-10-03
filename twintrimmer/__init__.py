@@ -31,10 +31,6 @@ from .twintrimmer import (generate_checksum_dict, create_filenames,
                           Filename, ask_for_best, generate_filename_dict,
                           is_substring, generate_checksum, main,
                           remove_files_for_deletion)
-__all__ = ['create_filenames', 'generate_checksum', 'walk_path', 'main']
+from .twintrimmer import __author__, __email__, __license__, __version__
 
-__author__ = 'Paul Schwendenman'
-__email__ = 'schwendenman.paul+twintrim@gmail.com'
-__license__ = 'MIT'
-__version__ = '0.10'
-__credits__ = ['Joel Friedly']
+__all__ = ['create_filenames', 'generate_checksum', 'walk_path', 'main']

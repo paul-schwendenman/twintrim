@@ -859,6 +859,14 @@ class TestMain(TestCaseWithFileSystem):
         self.assertIn('usage', self.new_out.getvalue())
         self.assertEqual(self.new_err.getvalue(), '')
 
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_version_arg_show_version_message(self, mock_walk_path):
+        with self.assertRaises(SystemExit):
+            twintrimmer.twintrimmer.main(['--version'])
+        self.assertEqual(mock_walk_path.call_count, 0)
+        self.assertIn(twintrimmer.__version__, self.new_out.getvalue())
+        self.assertEqual(self.new_err.getvalue(), '')
+
 
 if __name__ == '__main__':
     unittest.main()
