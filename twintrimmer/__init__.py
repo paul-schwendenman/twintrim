@@ -36,5 +36,5 @@ __all__ = ['create_filenames', 'generate_checksum', 'walk_path', 'main']
 __author__ = 'Paul Schwendenman'
 __email__ = 'schwendenman.paul+twintrim@gmail.com'
 __license__ = 'MIT'
-__version__ = '0.9.1'
+__version__ = '0.10'
 __credits__ = ['Joel Friedly']

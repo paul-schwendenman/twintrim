@@ -2,6 +2,13 @@
 changelog
 ------------------
 
+v0.10
+------------------
+
+- moved command line interface to better location
+- refactor arg parsing to make it testable
+- added tests for argument parsing
+- added behavior tests to prevent regression in overall functionality
 
 v0.9.1
 ------------------
