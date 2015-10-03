@@ -515,5 +515,294 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
         self.assertTrue(os.path.exists('examples/recur/file (2).txt'))
 
 
+class TestMain(TestCaseWithFileSystem):
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_default_args_pass_correctly(self, mock_walk_path):
+        twintrimmer.twintrimmer.main(['.'])
+        mock_walk_path.assert_called_with(
+            log_file=None,
+            log_level=3,
+            interactive=False,
+            hash_function='md5',
+            remove_links=False,
+            verbosity=1,
+            recursive=False,
+            path='.',
+            make_links=False,
+            regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
+            skip_regex=False,
+            no_action=False)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_no_action_argument_passes_correctly(self, mock_walk_path):
+        twintrimmer.twintrimmer.main(['--no-action', '.'])
+        mock_walk_path.assert_called_with(
+            log_file=None,
+            log_level=3,
+            interactive=False,
+            hash_function='md5',
+            remove_links=False,
+            verbosity=1,
+            recursive=False,
+            path='.',
+            make_links=False,
+            regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
+            skip_regex=False,
+            no_action=True)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_no_action_single_argument_passes_correctly(self, mock_walk_path):
+        twintrimmer.twintrimmer.main(['--n', '.'])
+        mock_walk_path.assert_called_with(
+            log_file=None,
+            log_level=3,
+            interactive=False,
+            hash_function='md5',
+            remove_links=False,
+            verbosity=1,
+            recursive=False,
+            path='.',
+            make_links=False,
+            regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
+            skip_regex=False,
+            no_action=True)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_log_file_argument_passes_correctly(self, mock_walk_path):
+        twintrimmer.twintrimmer.main(['.', '--log-file', 'file.log', '--log-level', '5'])
+        mock_walk_path.assert_called_with(
+            log_file='file.log',
+            log_level=5,
+            interactive=False,
+            hash_function='md5',
+            remove_links=False,
+            verbosity=1,
+            recursive=False,
+            path='.',
+            make_links=False,
+            regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
+            skip_regex=False,
+            no_action=False)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_hash_fuction_argument_passes_correctly(self, mock_walk_path):
+        twintrimmer.twintrimmer.main(['.', '--hash-function', 'sha1'])
+        mock_walk_path.assert_called_with(
+            log_file=None,
+            log_level=3,
+            interactive=False,
+            hash_function='sha1',
+            remove_links=False,
+            verbosity=1,
+            recursive=False,
+            path='.',
+            make_links=False,
+            regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
+            skip_regex=False,
+            no_action=False)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_short_recursive_argument_passes_correctly(self, mock_walk_path):
+        twintrimmer.twintrimmer.main(['.', '-r'])
+        mock_walk_path.assert_called_with(
+            log_file=None,
+            log_level=3,
+            interactive=False,
+            hash_function='md5',
+            remove_links=False,
+            verbosity=1,
+            recursive=True,
+            path='.',
+            make_links=False,
+            regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
+            skip_regex=False,
+            no_action=False)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_long_recursive_argument_passes_correctly(self, mock_walk_path):
+        twintrimmer.twintrimmer.main(['.', '--recursive'])
+        mock_walk_path.assert_called_with(
+            log_file=None,
+            log_level=3,
+            interactive=False,
+            hash_function='md5',
+            remove_links=False,
+            verbosity=1,
+            recursive=True,
+            path='.',
+            make_links=False,
+            regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
+            skip_regex=False,
+            no_action=False)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_make_links_argument_passes_correctly(self, mock_walk_path):
+        twintrimmer.twintrimmer.main(['.', '--make-links'])
+        mock_walk_path.assert_called_with(
+            log_file=None,
+            log_level=3,
+            interactive=False,
+            hash_function='md5',
+            remove_links=False,
+            verbosity=1,
+            recursive=False,
+            path='.',
+            make_links=True,
+            regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
+            skip_regex=False,
+            no_action=False)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_remove_link_arg_pass_correctly(self, mock_walk_path):
+        twintrimmer.twintrimmer.main(['.', '--remove-links'])
+        mock_walk_path.assert_called_with(
+            log_file=None,
+            log_level=3,
+            interactive=False,
+            hash_function='md5',
+            remove_links=True,
+            verbosity=1,
+            recursive=False,
+            path='.',
+            make_links=False,
+            regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
+            skip_regex=False,
+            no_action=False)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_interactive_mode_passed_correctly(self, mock_walk_path):
+        twintrimmer.twintrimmer.main(['.', '--interactive'])
+        mock_walk_path.assert_called_with(
+            log_file=None,
+            log_level=3,
+            interactive=True,
+            hash_function='md5',
+            remove_links=False,
+            verbosity=1,
+            recursive=False,
+            path='.',
+            make_links=False,
+            regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
+            skip_regex=False,
+            no_action=False)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_short_arg_interactive_passed_correctly(self, mock_walk_path):
+        twintrimmer.twintrimmer.main(['.', '-i'])
+        mock_walk_path.assert_called_with(
+            log_file=None,
+            log_level=3,
+            interactive=True,
+            hash_function='md5',
+            remove_links=False,
+            verbosity=1,
+            recursive=False,
+            path='.',
+            make_links=False,
+            regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
+            skip_regex=False,
+            no_action=False)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_short_checksum_only_mode_passed_correctly(self, mock_walk_path):
+        twintrimmer.twintrimmer.main(['.', '-c'])
+        mock_walk_path.assert_called_with(
+            log_file=None,
+            log_level=3,
+            interactive=False,
+            hash_function='md5',
+            remove_links=False,
+            verbosity=1,
+            recursive=False,
+            path='.',
+            make_links=False,
+            regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
+            skip_regex=True,
+            no_action=False)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_long_checksum_only_mode_passed_correctly(self, mock_walk_path):
+        twintrimmer.twintrimmer.main(['.', '--only-checksum'])
+        mock_walk_path.assert_called_with(
+            log_file=None,
+            log_level=3,
+            interactive=False,
+            hash_function='md5',
+            remove_links=False,
+            verbosity=1,
+            recursive=False,
+            path='.',
+            make_links=False,
+            regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
+            skip_regex=True,
+            no_action=False)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_custom_regex_passed_correctly(self, mock_walk_path):
+        twintrimmer.twintrimmer.main(['.', '--pattern', r'(^.+?)(?:\..+)$'])
+        mock_walk_path.assert_called_with(
+            log_file=None,
+            log_level=3,
+            interactive=False,
+            hash_function='md5',
+            remove_links=False,
+            verbosity=1,
+            recursive=False,
+            path='.',
+            make_links=False,
+            regex_pattern=r'(^.+?)(?:\..+)$',
+            skip_regex=False,
+            no_action=False)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_no_args_fails(self, mock_walk_path):
+        with self.assertRaises(SystemExit):
+            twintrimmer.twintrimmer.main([])
+        self.assertEqual(mock_walk_path.call_count, 0)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_pattern_with_skip_regex_fails(self, mock_walk_path):
+        with self.assertRaises(SystemExit):
+            twintrimmer.twintrimmer.main(['.', '-c', '-p', '(.*)'])
+        self.assertEqual(mock_walk_path.call_count, 0)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_invalid_arg_fails(self, mock_walk_path):
+        with self.assertRaises(SystemExit):
+            twintrimmer.twintrimmer.main(['.', '--invalid'])
+        self.assertEqual(mock_walk_path.call_count, 0)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_log_level_without_file_fails(self, mock_walk_path):
+        with self.assertRaises(SystemExit):
+            twintrimmer.twintrimmer.main(['.', '--log-level', '4'])
+        self.assertEqual(mock_walk_path.call_count, 0)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_bad_path_fails(self, mock_walk_path):
+        with self.assertRaises(SystemExit):
+            twintrimmer.twintrimmer.main(['/does/not/exist/'])
+        self.assertEqual(mock_walk_path.call_count, 0)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_invalid_regex_fails(self, mock_walk_path):
+        with self.assertRaises(SystemExit):
+            twintrimmer.twintrimmer.main(['.', '-p', '(((r)'])
+        self.assertEqual(mock_walk_path.call_count, 0)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_unwritable_log_file_fails(self, mock_walk_path):
+        os.chmod('examples/baz.txt', 0o000)
+        with self.assertRaises(SystemExit):
+            twintrimmer.twintrimmer.main(['.', '--log-file', 'examples/baz.txt'])
+        self.assertEqual(mock_walk_path.call_count, 0)
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_help_arg_show_helpful_message(self, mock_walk_path):
+        with self.assertRaises(SystemExit):
+            twintrimmer.twintrimmer.main(['--help'])
+        self.assertEqual(mock_walk_path.call_count, 0)
+
+
 if __name__ == '__main__':
     unittest.main()
