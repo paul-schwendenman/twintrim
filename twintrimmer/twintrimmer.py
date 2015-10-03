@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 '''
-duplicate file remover
+tool for removing duplicate files
 '''
 import argparse
 import functools

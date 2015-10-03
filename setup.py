@@ -2,19 +2,20 @@
 # Copyright 2015 Paul Schwendenman. All Rights Reserved.
 
 from setuptools import setup
+import twintrimmer
 
 try:
-    readme = open('readme.rst', 'r').read()
-except:
-    readme = ''
+    README = open('readme.rst', 'r').read()
+except OSError:
+    README = ''
 
 setup(name='twintrimmer',
-      version='0.9.1',
-      description='tool for removing duplicate files',
-      long_description=readme,
-      author='Paul Schwendenman',
-      author_email='schwendenman.paul+twintrim@gmail.com',
-      license='MIT',
+      version=twintrimmer.__version__,
+      description=twintrimmer.twintrimmer.__doc__.strip(),
+      long_description=README,
+      author=twintrimmer.__author__,
+      author_email=twintrimmer.__email__,
+      license=twintrimmer.__license__,
       url='https://github.com/paul-schwendenman/twintrim',
       packages=['twintrimmer'],
       classifiers=['Environment :: Console',
@@ -23,7 +24,10 @@ setup(name='twintrimmer',
                    'License :: OSI Approved :: MIT License',
                    'Programming Language :: Python :: 3',
                    'Programming Language :: Python :: 3.4',
+                   'Programming Language :: Python :: 3.5',
+                   'Programming Language :: Python :: 3 :: Only',
                    'Operating System :: POSIX :: Linux',
+                   'Operating System :: MacOS :: MacOS X',
                    'Topic :: Utilities', ],
       entry_points=
-      {'console_scripts': ['twintrim = twintrimmer:twintrimmer.main'], }, )
+      {'console_scripts': ['twintrim = twintrimmer:main'], }, )

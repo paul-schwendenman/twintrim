@@ -1,5 +1,5 @@
 '''
-Twin trim - a duplicate file remover
+twintrimmer - a duplicate file remover
 
 The goal for this project is to help identify and remove files that have
 matching names and content.
@@ -29,6 +29,12 @@ IN THE SOFTWARE.
 from .twintrimmer import (generate_checksum_dict, create_filenames,
                           pick_shorter_name, remove_by_checksum, walk_path,
                           Filename, ask_for_best, generate_filename_dict,
-                          is_substring, generate_checksum,
+                          is_substring, generate_checksum, main,
                           remove_files_for_deletion)
-__all__ = ['create_filenames', 'generate_checksum', 'walk_path']
+__all__ = ['create_filenames', 'generate_checksum', 'walk_path', 'main']
+
+__author__ = 'Paul Schwendenman'
+__email__ = 'schwendenman.paul+twintrim@gmail.com'
+__license__ = 'MIT'
+__version__ = '0.9.1'
+__credits__ = ['Joel Friedly']
