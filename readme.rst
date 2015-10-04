@@ -157,3 +157,10 @@ Additionally, these algorithms might be available (potentially more)
 For more information on these algorithms please see the hashlib documentation:
 
 	https://docs.python.org/3/library/hashlib.html
+
+
+Changelog
+----------
+
+.. include:: changelog.rst
+    :start-line: 3
