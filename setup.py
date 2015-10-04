@@ -29,6 +29,5 @@ setup(name='twintrimmer',
                    'Operating System :: POSIX :: Linux',
                    'Operating System :: MacOS :: MacOS X',
                    'Topic :: Utilities', ],
-      entry_points=
-      {'console_scripts': ['twintrim = twintrimmer:main'], },
+      entry_points={'console_scripts': ['twintrim = twintrimmer:main'], },
       test_suite='tests', )

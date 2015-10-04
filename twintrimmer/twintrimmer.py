@@ -18,10 +18,10 @@ __license__ = 'MIT'
 __version__ = '0.11'
 __credits__ = ['Joel Friedly']
 
-
 LOGGER = logging.getLogger(__name__)
 
 Filename = namedtuple('Filename', ['name', 'base', 'ext', 'path'])
+
 
 class ClumperError(Exception):
     '''
@@ -29,10 +29,12 @@ class ClumperError(Exception):
     '''
     pass
 
+
 class Clumper():
     '''
     general purpose class for grouping
     '''
+
     def __init__(self, *args, **kwargs):
         pass
 
@@ -62,6 +64,7 @@ class HashClumper(Clumper):
     '''
     Subclass of Clumper using hash algorithms
     '''
+
     def __init__(self, hash_name):
         super(HashClumper, self).__init__()
         self.hash_func = hashlib.new(hash_name)
@@ -74,16 +77,19 @@ class HashClumper(Clumper):
 
         try:
             with open(filename.path, 'rb') as file:
-                for chunk in iter(lambda: file.read(128 * hash_func.block_size), b''):
+                for chunk in iter(
+                    lambda: file.read(128 * hash_func.block_size), b''):
                     hash_func.update(chunk)
-            return (hash_func.hexdigest(),)
+            return (hash_func.hexdigest(), )
         except OSError as err:
             raise ClumperError('Checksum generation error: %s', err)
+
 
 class RegexClumper(Clumper):
     '''
     Subclass of Clumper using regular expressions
     '''
+
     def __init__(self, expr):
         super(RegexClumper, self).__init__()
         self.regex = re.compile(expr)
@@ -101,10 +107,12 @@ class RegexClumper(Clumper):
 
         return match.groups()
 
+
 class PathClumper(Clumper):
     '''
     Clumper for grouping by path
     '''
+
     def __init__(self, root_path, recursive=False):
         super(PathClumper, self).__init__()
         self.root_path = root_path
@@ -114,7 +122,7 @@ class PathClumper(Clumper):
         '''
         return a tuple containing the path
         '''
-        return (path,)
+        return (path, )
 
     def dump_clumps(self, clumper=None):
         '''
@@ -126,9 +134,11 @@ class PathClumper(Clumper):
 
         for path, _, filenames in os.walk(self.root_path):
             if not self.recursive and path != self.root_path:
-                LOGGER.debug("Skipping child directory %s of %s", path, self.root_path)
+                LOGGER.debug("Skipping child directory %s of %s", path,
+                             self.root_path)
                 continue
-            clumps[self.make_clump(path)] = self.create_filenames_from_list(filenames, path)
+            clumps[self.make_clump(path)] = self.create_filenames_from_list(
+                filenames, path)
         return clumps
 
     @staticmethod
@@ -163,6 +173,7 @@ class Picker():
     '''
     general purpose class for picking from group
     '''
+
     def __init__(self, *args, **kwargs):
         pass
 
@@ -177,6 +188,7 @@ class ShortestPicker(Picker):
     '''
     Used to separate the shortest name from the rest
     '''
+
     def __init__(self, *args, **kwargs):
         super(ShortestPicker, self).__init__(*args, **kwargs)
 
@@ -217,7 +229,8 @@ class ShortestPicker(Picker):
         >>> pick_shorter_name(file2, file3)
         Filename(name='file (1).txt', base='file (1)', ext='.txt', path='/file (1).txt')
         '''
-        LOGGER.debug("Finding the shortest of %s and %s", file1.name, file2.name)
+        LOGGER.debug("Finding the shortest of %s and %s", file1.name,
+                     file2.name)
         if len(file1.name) > len(file2.name):
             return file2
         elif len(file1.name) < len(file2.name) or file1.name < file2.name:
@@ -225,11 +238,13 @@ class ShortestPicker(Picker):
         else:
             return file2
 
+
 class InteractivePicker(ShortestPicker):
     '''
     This class allows the user to interactively select which file is
     selected to be preserved.
     '''
+
     def __init__(self, *args, **kwargs):
         super(InteractivePicker, self).__init__(*args, **kwargs)
 
@@ -310,8 +325,9 @@ def remove_by_clump(dict_of_names, picker, **options):
     for file in dict_of_names:
         if len(dict_of_names[file]) > 1:
             LOGGER.info("Investigating duplicate key %s", file)
-            LOGGER.debug("Values for key %s are %s", file,
-                         ', '.join([item.name for item in dict_of_names[file]]))
+            LOGGER.debug(
+                "Values for key %s are %s", file,
+                ', '.join([item.name for item in dict_of_names[file]]))
             best, rest = picker.sift(dict_of_names[file])
 
             for bad in rest:
@@ -322,8 +338,9 @@ def remove_by_clump(dict_of_names, picker, **options):
             LOGGER.info('%s was kept as only copy', best.path)
 
         else:
-            LOGGER.debug('Skipping non duplicate checksum %s for key %s', file,
-                         ', '.join([item.name for item in dict_of_names[file]]))
+            LOGGER.debug(
+                'Skipping non duplicate checksum %s for key %s', file,
+                ', '.join([item.name for item in dict_of_names[file]]))
 
 
 def walk_path(path, **options):
@@ -349,6 +366,7 @@ def walk_path(path, **options):
 
     clumps = checksum_clumper.dump_clumps(clumps)
     remove_by_clump(clumps, picker, **options)
+
 
 def main(args_param=None):
     '''
@@ -404,11 +422,13 @@ def main(args_param=None):
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=textwrap.dedent(epilog))
     parser.add_argument('path', help='path to check')
-    parser.add_argument('-n', '--no-action',
+    parser.add_argument('-n',
+                        '--no-action',
                         default=False,
                         action='store_true',
                         help='show what files would have been deleted')
-    parser.add_argument('-r', '--recursive',
+    parser.add_argument('-r',
+                        '--recursive',
                         default=False,
                         action='store_true',
                         help='search directories recursively')
@@ -421,19 +441,22 @@ def main(args_param=None):
                         type=int,
                         default=3,
                         help='set log file debug level')
-    parser.add_argument('-p', '--pattern',
+    parser.add_argument('-p',
+                        '--pattern',
                         dest='regex_pattern',
                         type=str,
                         default=r'(^.+?)(?: \(\d\))*(\..+)$',
                         help='set filename matching regex')
     parser.add_argument(
-        '-c', '--only-checksum',
+        '-c',
+        '--only-checksum',
         default=False,
         action='store_true',
         dest='skip_regex',
         help='toggle searching by checksum rather than name first')
 
-    parser.add_argument('-i', '--interactive',
+    parser.add_argument('-i',
+                        '--interactive',
                         default=False,
                         action='store_true',
                         help='ask for file deletion interactively')
@@ -451,7 +474,9 @@ def main(args_param=None):
                         default=False,
                         action='store_true',
                         help='remove hardlinks rather than skipping')
-    parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
+    parser.add_argument('--version',
+                        action='version',
+                        version='%(prog)s ' + __version__)
 
     args = parser.parse_args(args_param)
 
@@ -468,7 +493,8 @@ def main(args_param=None):
     try:
         re.compile(args.regex_pattern)
     except re.error:
-        parser.error('Invalid regular expression: "{0}"'.format(args.regex_pattern))
+        parser.error('Invalid regular expression: "{0}"'.format(
+            args.regex_pattern))
 
     stream = logging.StreamHandler()
     stream.setLevel((5 - args.verbosity) * 10)
