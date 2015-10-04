@@ -46,7 +46,7 @@ class TestPathClumper(unittest.TestCase):
         filenames = ['test_file.txt']
         root = '/'
         list_output = list(
-            twintrimmer.twintrimmer.PathClumper.create_filenames(filenames,
+            twintrimmer.twintrimmer.PathClumper.create_filenames_from_list(filenames,
                                                                  root))
         self.assertEqual(len(list_output), 1)
         self.assertIs(type(list_output[0]), twintrimmer.Filename)
@@ -63,7 +63,7 @@ class TestPathClumper(unittest.TestCase):
         filenames = []
         root = '/'
         list_output = list(
-            twintrimmer.twintrimmer.PathClumper.create_filenames(filenames,
+            twintrimmer.twintrimmer.PathClumper.create_filenames_from_list(filenames,
                                                                  root))
         self.assertEqual(len(list_output), 0)
 
@@ -130,14 +130,10 @@ class TestShortestPicker(unittest.TestCase):
         filenames = ['file.txt', 'file1.txt', 'file2.txt']
         root = '/'
         self.file, self.file1, self.file2 = list(
-            twintrimmer.twintrimmer.PathClumper.create_filenames(filenames,
+            twintrimmer.twintrimmer.PathClumper.create_filenames_from_list(filenames,
                                                                  root))
         self.filenames = {self.file, self.file1, self.file2}
         self.picker = twintrimmer.twintrimmer.ShortestPicker()
-
-    def test_filter_raises_not_implemented(self):
-        with self.assertRaises(NotImplementedError):
-            self.picker.filter({('this'): {'one', 'two'}})
 
     def test_file_txt_shorter_than_file_1_txt(self):
         self.assertEqual(self.picker.pick_shorter_name(self.file, self.file1),
@@ -167,9 +163,9 @@ class TestRegexClumper(unittest.TestCase):
         root = '/'
         bad = ['file']
         self.filenames = list(
-            twintrimmer.twintrimmer.PathClumper.create_filenames(filenames,
+            twintrimmer.twintrimmer.PathClumper.create_filenames_from_list(filenames,
                                                                  root))
-        self.bad = list(twintrimmer.twintrimmer.PathClumper.create_filenames(
+        self.bad = list(twintrimmer.twintrimmer.PathClumper.create_filenames_from_list(
             bad, root))[0]
 
     def test_custom_regex(self):
@@ -238,13 +234,9 @@ class TestInteractivePicker(unittest.TestCase):
         root = '/'
         self.picker = twintrimmer.twintrimmer.InteractivePicker()
         self.file, self.file1, self.file2 = list(
-            twintrimmer.twintrimmer.PathClumper.create_filenames(filenames,
+            twintrimmer.twintrimmer.PathClumper.create_filenames_from_list(filenames,
                                                                  root))
         self.filenames = {self.file, self.file1, self.file2}
-
-    def test_filter_raises_not_implemented(self):
-        with self.assertRaises(NotImplementedError):
-            self.picker.filter({('this'): {'one', 'two'}})
 
     @patch('builtins.input')
     def test_pick_user_by_index(self, mock_input):

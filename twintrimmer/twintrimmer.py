@@ -66,8 +66,10 @@ class HashClumper(Clumper):
         super(HashClumper, self).__init__()
         self.hash_func = hashlib.new(hash_name)
 
-
     def make_clump(self, filename):
+        '''
+        return a tuple containing the hex form of the checksum for the file
+        '''
         hash_func = self.hash_func.copy()
 
         try:
@@ -87,6 +89,9 @@ class RegexClumper(Clumper):
         self.regex = re.compile(expr)
 
     def make_clump(self, filename):
+        '''
+        Return a tuple of regular expression groups for matching
+        '''
         match = self.regex.match(filename.name)
         if not match:
             raise ClumperError('No regex match found for %s' % (filename.path))
@@ -106,9 +111,15 @@ class PathClumper(Clumper):
         self.recursive = recursive
 
     def make_clump(self, path):
+        '''
+        return a tuple containing the path
+        '''
         return (path,)
 
     def dump_clumps(self, clumper=None):
+        '''
+        Return dictionary of paths mapped to a list of file objects
+        '''
         if clumper is not None:
             raise NotImplementedError
         clumps = {}
@@ -117,11 +128,11 @@ class PathClumper(Clumper):
             if not self.recursive and path != self.root_path:
                 LOGGER.debug("Skipping child directory %s of %s", path, self.root_path)
                 continue
-            clumps[self.make_clump(path)] = self.create_filenames(filenames, path)
+            clumps[self.make_clump(path)] = self.create_filenames_from_list(filenames, path)
         return clumps
 
     @staticmethod
-    def create_filename(filename, root):
+    def create_filename_object_from_string(filename, root):
         '''
         Create a Filename object from a filename
         '''
@@ -129,7 +140,7 @@ class PathClumper(Clumper):
                         path=os.path.join(root, filename))
 
     @classmethod
-    def create_filenames(cls, filenames, root):
+    def create_filenames_from_list(cls, filenames, root):
         '''
         Makes a generator that yields Filename objects
 
@@ -145,7 +156,7 @@ class PathClumper(Clumper):
         '''
         LOGGER.info("Creating Filename objects")
         for filename in filenames:
-            yield cls.create_filename(filename, root)
+            yield cls.create_filename_object_from_string(filename, root)
 
 
 class Picker():
@@ -170,15 +181,12 @@ class ShortestPicker(Picker):
         super(ShortestPicker, self).__init__(*args, **kwargs)
 
     def sift(self, clump):
+        '''
+        Compare all names to find the best one
+        '''
         best = functools.reduce(self.pick_shorter_name, clump)
         rest = clump - {best}
         return best, rest
-
-    def filter(self, dictionary_of_groups):
-        '''
-        helper function for filtering clumps
-        '''
-        raise NotImplementedError
 
     @staticmethod
     def pick_shorter_name(file1, file2):
@@ -224,12 +232,6 @@ class InteractivePicker(ShortestPicker):
     '''
     def __init__(self, *args, **kwargs):
         super(InteractivePicker, self).__init__(*args, **kwargs)
-
-    def filter(self, dictionary_of_groups):
-        '''
-        helper function for filtering clumps
-        '''
-        raise NotImplementedError
 
     def sift(self, clump):
         '''

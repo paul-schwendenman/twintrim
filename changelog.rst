@@ -1,4 +1,4 @@
-changelog
+Change log
 ------------------
 
 v0.11

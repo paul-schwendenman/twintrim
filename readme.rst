@@ -62,9 +62,12 @@ optional arguments:
                         set hash function to use for checksums
   --make-link           create hard link rather than remove file
   --remove-links        remove hardlinks rather than skipping
+  --version             show program's version number and exit
 
 
-examples:
+
+Examples
+==========
 
     find matches with default regex::
 
@@ -87,12 +90,12 @@ examples:
 
 
 Try it out
------------
+============
 
 If you would like to try it out I have included an example directory. After
 cloning the repository, try running::
 
-	python -m twintrimmer.tool examples/
+	python -m twintrimmer examples/
 
 
 Running the Tests
@@ -117,8 +120,8 @@ command to install pyfakefs::
 
     pip install git+https://github.com/jmcgeheeiv/pyfakefs
 
-coverage
-----------
+Code coverage
+===============
 
 To show the test coverage::
 
@@ -131,8 +134,11 @@ To run tests::
 
     behave
 
+Miscellaneous
+----------------
+
 Hash algorithm options
------------------------
+=======================
 
 Depending on your installed OpenSSL library your available algorithms might change.
 
@@ -159,8 +165,4 @@ For more information on these algorithms please see the hashlib documentation:
 	https://docs.python.org/3/library/hashlib.html
 
 
-Changelog
-----------
-
 .. include:: changelog.rst
-    :start-line: 3

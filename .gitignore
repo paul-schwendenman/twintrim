@@ -12,3 +12,6 @@ env/
 
 # Documentation
 docs/_build
+
+.coverage
+build/*
