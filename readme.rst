@@ -8,7 +8,6 @@ Introduction
 Twintrimmer is a project designed to automatically remove duplicate files
 specially those created by downloading in a browser.
 
-
 Build Status
 -------------
 
@@ -63,9 +62,12 @@ optional arguments:
                         set hash function to use for checksums
   --make-link           create hard link rather than remove file
   --remove-links        remove hardlinks rather than skipping
+  --version             show program's version number and exit
 
 
-examples:
+
+Examples
+==========
 
     find matches with default regex::
 
@@ -88,12 +90,12 @@ examples:
 
 
 Try it out
------------
+============
 
 If you would like to try it out I have included an example directory. After
 cloning the repository, try running::
 
-	python -m twintrimmer.tool examples/
+	python -m twintrimmer examples/
 
 
 Running the Tests
@@ -110,10 +112,20 @@ or using nose::
 
     python3 -m nose --with-json-extended
 
-:note: the requirements-test.txt file is required to run tests. one of the
-       dependencies includes a personally patched version of pyfakefs
-       which doesn't seem to work on python3.
+:note: pyfakefs is not being updated on pypi and should be installed directly
+       from the github repository, due to issues with pyfakefs and python3 in
+       the pypi version
 
+command to install pyfakefs::
+
+    pip install git+https://github.com/jmcgeheeiv/pyfakefs
+
+Code coverage
+===============
+
+To show the test coverage::
+
+    python -m nose --with-coverage --cover-package twintrimmer.twintrimmer
 
 Behavior tests
 ===============
@@ -122,8 +134,11 @@ To run tests::
 
     behave
 
+Miscellaneous
+----------------
+
 Hash algorithm options
------------------------
+=======================
 
 Depending on your installed OpenSSL library your available algorithms might change.
 
@@ -150,8 +165,4 @@ For more information on these algorithms please see the hashlib documentation:
 	https://docs.python.org/3/library/hashlib.html
 
 
-Changelog
-----------
-
 .. include:: changelog.rst
-    :start-line: 3

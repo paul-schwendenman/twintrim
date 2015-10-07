@@ -1,5 +1,19 @@
-changelog
+Change log
 ------------------
+
+v0.12
+================
+
+- changed the underlying API to be flatter and more extensible
+  - created two clases clumpers and pickers
+  - clumpers lump groups of file together
+  - pickers select one of the group for a purpose (example: to keeprather than delete)
+- added coverage and doc generation to builds
+- cleaned up documentation
+- Re-arranged the readme file.
+- Refactor tests a little
+- Flattened the walk_path function
+
 
 v0.11
 ================
