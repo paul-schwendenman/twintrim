@@ -15,7 +15,7 @@ from collections import defaultdict, namedtuple
 __author__ = 'Paul Schwendenman'
 __email__ = 'schwendenman.paul+twintrim@gmail.com'
 __license__ = 'MIT'
-__version__ = '0.12.1'
+__version__ = '0.13'
 __credits__ = ['Joel Friedly']
 
 LOGGER = logging.getLogger(__name__)
