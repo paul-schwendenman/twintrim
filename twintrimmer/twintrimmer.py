@@ -417,6 +417,9 @@ def main(args_param=None):
             examples/underscore/file__1.txt to be deleted
     '''
 
+    if sys.version_info < (3, 4):
+        sys.exit('This script currently only works with python 3.4 or greater')
+
     parser = argparse.ArgumentParser(
         description='tool for removing duplicate files',
         formatter_class=argparse.RawDescriptionHelpFormatter,
