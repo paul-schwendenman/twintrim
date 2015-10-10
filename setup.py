@@ -6,7 +6,7 @@ import twintrimmer
 
 try:
     README = open('readme.rst', 'r').read()
-except OSError:
+except IOError:
     README = ''
 
 setup(name='twintrimmer',
