@@ -11,11 +11,8 @@ specially those created by downloading in a browser.
 Build Status
 -------------
 
-Master: |master|_
-Release: |release|_
+Build: |master|_
 
-.. |release| image:: https://travis-ci.org/paul-schwendenman/twintrim.svg?branch=release
-.. _release: https://travis-ci.org/paul-schwendenman/twintrim
 .. |master| image:: https://travis-ci.org/paul-schwendenman/twintrim.svg?branch=master
 .. _master: https://travis-ci.org/paul-schwendenman/twintrim
 
