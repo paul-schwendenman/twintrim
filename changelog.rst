@@ -1,6 +1,11 @@
 Change log
 ------------------
 
+v0.13
+================
+
+- added catch for older pythons
+
 v0.12
 ================
 
