@@ -13,8 +13,9 @@ Contents:
 
    twintrimmer readme <readme_link>
    code
+   license
+   changelog
    coverage
-
 
 Indices and tables
 ==================

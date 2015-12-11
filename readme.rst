@@ -131,6 +131,31 @@ To run tests::
 
     behave
 
+Making the Documentation
+-------------------------
+
+HTML docs
+==========
+
+::
+
+    cd docs/
+    make html
+
+Documentation Coverage Report
+==============================
+
+To make the coverage report appear in the docs::
+
+    cd docs/
+    make coverage
+    make html
+
+Optionally, you can view the coverage report directly after
+running ``make coverage``::
+
+    cat _build/coverage/python.txt
+
 Miscellaneous
 ----------------
 
