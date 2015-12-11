@@ -1,6 +1,12 @@
 Change log
 ------------------
 
+v0.14
+================
+
+- added instructions to build documentation to readme
+- more documentation changes
+
 v0.13
 ================
 
