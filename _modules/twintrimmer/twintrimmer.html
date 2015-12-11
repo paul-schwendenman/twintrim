@@ -1,0 +1,633 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>twintrimmer.twintrimmer &mdash; twintrimmer 0.13 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/agogo.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.13',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="twintrimmer 0.13 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="header-wrapper" role="banner">
+      <div class="header">
+        <div class="headertitle"><a
+          href="../../index.html">twintrimmer 0.13 documentation</a></div>
+        <div class="rel" role="navigation" aria-label="related navigation">
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a>
+        </div>
+       </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="content">
+        <div class="document">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for twintrimmer.twintrimmer</h1><div class="highlight"><pre>
+<span class="c">#! /usr/bin/env python3</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">tool for removing duplicate files</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">textwrap</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">namedtuple</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;Paul Schwendenman&#39;</span>
+<span class="n">__email__</span> <span class="o">=</span> <span class="s">&#39;schwendenman.paul+twintrim@gmail.com&#39;</span>
+<span class="n">__license__</span> <span class="o">=</span> <span class="s">&#39;MIT&#39;</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s">&#39;0.13&#39;</span>
+<span class="n">__credits__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;Joel Friedly&#39;</span><span class="p">]</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="n">Filename</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s">&#39;Filename&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="s">&#39;base&#39;</span><span class="p">,</span> <span class="s">&#39;ext&#39;</span><span class="p">,</span> <span class="s">&#39;path&#39;</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="ClumperError"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.ClumperError">[docs]</a><span class="k">class</span> <span class="nc">ClumperError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Base Exception for Clumper errors</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="Clumper"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.Clumper">[docs]</a><span class="k">class</span> <span class="nc">Clumper</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    general purpose class for grouping</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="Clumper.make_clump"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.Clumper.make_clump">[docs]</a>    <span class="k">def</span> <span class="nf">make_clump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        make a clump of the item</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+<div class="viewcode-block" id="Clumper.dump_clumps"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.Clumper.dump_clumps">[docs]</a>    <span class="k">def</span> <span class="nf">dump_clumps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clumper</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        group list into clumps</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">clumps</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">clumper</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">clumps</span><span class="p">[</span><span class="n">key</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_clump</span><span class="p">(</span><span class="n">item</span><span class="p">)]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">ClumperError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">clumps</span>
+
+</div></div>
+<div class="viewcode-block" id="HashClumper"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.HashClumper">[docs]</a><span class="k">class</span> <span class="nc">HashClumper</span><span class="p">(</span><span class="n">Clumper</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Subclass of Clumper using hash algorithms</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hash_name</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">HashClumper</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hash_func</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">hash_name</span><span class="p">)</span>
+
+<div class="viewcode-block" id="HashClumper.make_clump"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.HashClumper.make_clump">[docs]</a>    <span class="k">def</span> <span class="nf">make_clump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        return a tuple containing the hex form of the checksum for the file</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">hash_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hash_func</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">file</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span>
+                    <span class="k">lambda</span><span class="p">:</span> <span class="nb">file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">128</span> <span class="o">*</span> <span class="n">hash_func</span><span class="o">.</span><span class="n">block_size</span><span class="p">),</span> <span class="n">b</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+                    <span class="n">hash_func</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">hash_func</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">(),</span> <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ClumperError</span><span class="p">(</span><span class="s">&#39;Checksum generation error: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="RegexClumper"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.RegexClumper">[docs]</a><span class="k">class</span> <span class="nc">RegexClumper</span><span class="p">(</span><span class="n">Clumper</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Subclass of Clumper using regular expressions</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RegexClumper</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RegexClumper.make_clump"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.RegexClumper.make_clump">[docs]</a>    <span class="k">def</span> <span class="nf">make_clump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Return a tuple of regular expression groups for matching</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">filename</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ClumperError</span><span class="p">(</span><span class="s">&#39;No regex match found for </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filename</span><span class="o">.</span><span class="n">path</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Regex groups for </span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                         <span class="nb">str</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()))</span>
+
+        <span class="k">return</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+
+</div></div>
+<div class="viewcode-block" id="PathClumper"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.PathClumper">[docs]</a><span class="k">class</span> <span class="nc">PathClumper</span><span class="p">(</span><span class="n">Clumper</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Clumper for grouping by path</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_path</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PathClumper</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root_path</span> <span class="o">=</span> <span class="n">root_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recursive</span> <span class="o">=</span> <span class="n">recursive</span>
+
+<div class="viewcode-block" id="PathClumper.make_clump"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.PathClumper.make_clump">[docs]</a>    <span class="k">def</span> <span class="nf">make_clump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        return a tuple containing the path</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="PathClumper.dump_clumps"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.PathClumper.dump_clumps">[docs]</a>    <span class="k">def</span> <span class="nf">dump_clumps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clumper</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Return dictionary of paths mapped to a list of file objects</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">clumper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="n">clumps</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">filenames</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_path</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">recursive</span> <span class="ow">and</span> <span class="n">path</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_path</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Skipping child directory </span><span class="si">%s</span><span class="s"> of </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">root_path</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="n">clumps</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">make_clump</span><span class="p">(</span><span class="n">path</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_filenames_from_list</span><span class="p">(</span>
+                <span class="n">filenames</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">clumps</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="PathClumper.create_filename_object_from_string"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.PathClumper.create_filename_object_from_string">[docs]</a>    <span class="k">def</span> <span class="nf">create_filename_object_from_string</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Create a Filename object from a filename</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">Filename</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">*</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span>
+                        <span class="n">path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="PathClumper.create_filenames_from_list"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.PathClumper.create_filenames_from_list">[docs]</a>    <span class="k">def</span> <span class="nf">create_filenames_from_list</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">filenames</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Makes a generator that yields Filename objects</span>
+
+<span class="sd">        Filename objects are a helper to allow multiple representations</span>
+<span class="sd">        of the same file to be transferred cleanly between functions.</span>
+
+<span class="sd">        :param filenames: list of filenames</span>
+<span class="sd">        :type filenames: iterable[str]</span>
+<span class="sd">        :param root: the parent directory of the filenames</span>
+<span class="sd">        :type root: str</span>
+<span class="sd">        :returns: Filename instance representing each filename</span>
+<span class="sd">        :rtype: Filename</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Creating Filename objects&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">cls</span><span class="o">.</span><span class="n">create_filename_object_from_string</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="Picker"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.Picker">[docs]</a><span class="k">class</span> <span class="nc">Picker</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    general purpose class for picking from group</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="Picker.sift"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.Picker.sift">[docs]</a>    <span class="k">def</span> <span class="nf">sift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clump</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        divide the clumps returning the best and the rest</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+</div></div>
+<div class="viewcode-block" id="ShortestPicker"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.ShortestPicker">[docs]</a><span class="k">class</span> <span class="nc">ShortestPicker</span><span class="p">(</span><span class="n">Picker</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Used to separate the shortest name from the rest</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ShortestPicker</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ShortestPicker.sift"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.ShortestPicker.sift">[docs]</a>    <span class="k">def</span> <span class="nf">sift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clump</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Compare all names to find the best one</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">best</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pick_shorter_name</span><span class="p">,</span> <span class="n">clump</span><span class="p">)</span>
+        <span class="n">rest</span> <span class="o">=</span> <span class="n">clump</span> <span class="o">-</span> <span class="p">{</span><span class="n">best</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">best</span><span class="p">,</span> <span class="n">rest</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ShortestPicker.pick_shorter_name"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.ShortestPicker.pick_shorter_name">[docs]</a>    <span class="k">def</span> <span class="nf">pick_shorter_name</span><span class="p">(</span><span class="n">file1</span><span class="p">,</span> <span class="n">file2</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This convenience function will help to find the shorter (often better)</span>
+<span class="sd">        filename.  If the file names are the same length it returns the file</span>
+<span class="sd">        that is less, hoping for numerically.</span>
+
+<span class="sd">        :param file1: first filename to compare</span>
+<span class="sd">        :type file1: Filename</span>
+<span class="sd">        :param file2: second filename to compare</span>
+<span class="sd">        :type file2: Filename</span>
+<span class="sd">        :returns: the shortest name</span>
+<span class="sd">        :rtype: Filename</span>
+
+<span class="sd">        It picks &quot;file.txt&quot; over &quot;file (1).txt&quot;, but beware it also picks</span>
+<span class="sd">        &quot;f.txt&quot; over &quot;file.txt&quot;.</span>
+
+<span class="sd">        It also picks &quot;file (1).txt&quot; over &quot;file (2).txt&quot;</span>
+
+<span class="sd">        &gt;&gt;&gt; file1 = Filename(&#39;file.txt&#39;, &#39;file&#39;, &#39;.txt&#39;, &#39;/file.txt&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; file2 = Filename(&#39;file (1).txt&#39;, &#39;file (1)&#39;, &#39;.txt&#39;, &#39;/file (1).txt&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; file3 = Filename(&#39;file (2).txt&#39;, &#39;file (2)&#39;, &#39;.txt&#39;, &#39;/file (2).txt&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; pick_shorter_name(file1, file2)</span>
+<span class="sd">        Filename(name=&#39;file.txt&#39;, base=&#39;file&#39;, ext=&#39;.txt&#39;, path=&#39;/file.txt&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; pick_shorter_name(file2, file1)</span>
+<span class="sd">        Filename(name=&#39;file.txt&#39;, base=&#39;file&#39;, ext=&#39;.txt&#39;, path=&#39;/file.txt&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; pick_shorter_name(file2, file3)</span>
+<span class="sd">        Filename(name=&#39;file (1).txt&#39;, base=&#39;file (1)&#39;, ext=&#39;.txt&#39;, path=&#39;/file (1).txt&#39;)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Finding the shortest of </span><span class="si">%s</span><span class="s"> and </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">file1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                     <span class="n">file2</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">file1</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">file2</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">file2</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">file1</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">file2</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="ow">or</span> <span class="n">file1</span><span class="o">.</span><span class="n">name</span> <span class="o">&lt;</span> <span class="n">file2</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">file1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">file2</span>
+
+</div></div>
+<div class="viewcode-block" id="InteractivePicker"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.InteractivePicker">[docs]</a><span class="k">class</span> <span class="nc">InteractivePicker</span><span class="p">(</span><span class="n">ShortestPicker</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This class allows the user to interactively select which file is</span>
+<span class="sd">    selected to be preserved.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">InteractivePicker</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="InteractivePicker.sift"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.InteractivePicker.sift">[docs]</a>    <span class="k">def</span> <span class="nf">sift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clump</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Asks user for best after giving recommendation</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">default</span><span class="p">,</span> <span class="n">rest</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">InteractivePicker</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">sift</span><span class="p">(</span><span class="n">clump</span><span class="p">)</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">default</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">rest</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="nb">file</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">files</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">file</span> <span class="o">==</span> <span class="n">default</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s">&quot;{0}. {1} (default)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="nb">file</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s">&quot;{0}. {1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="nb">file</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s">&#39;Pick which file to keep (^C to skip): &#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+                    <span class="n">best</span> <span class="o">=</span> <span class="n">default</span>
+                    <span class="k">break</span>
+                <span class="k">elif</span> <span class="n">result</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)):</span>
+                    <span class="n">best</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="p">)]</span>
+                    <span class="k">break</span>
+                <span class="k">elif</span> <span class="n">result</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">file</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="nb">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">]:</span>
+                    <span class="n">best</span> <span class="o">=</span> <span class="p">[</span><span class="nb">file</span> <span class="k">for</span> <span class="nb">file</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="nb">file</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">result</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">break</span>
+            <span class="n">rest</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">-</span> <span class="p">{</span><span class="n">best</span><span class="p">}</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&#39;User picked </span><span class="si">%s</span><span class="s"> over </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Skipped&#39;</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&#39;User skipped in interactive mode&#39;</span><span class="p">)</span>
+            <span class="n">best</span> <span class="o">=</span> <span class="n">default</span>
+            <span class="n">rest</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">return</span> <span class="n">best</span><span class="p">,</span> <span class="n">rest</span>
+
+</div></div>
+<div class="viewcode-block" id="remove_file"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.remove_file">[docs]</a><span class="k">def</span> <span class="nf">remove_file</span><span class="p">(</span><span class="n">bad</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Preform the deletion of file that has been identified as a duplicate</span>
+
+<span class="sd">    :param Filename bad: the file to be deleted</span>
+<span class="sd">    :param Filename best: the file that was kept instead of &#39;bad&#39;</span>
+<span class="sd">    :param bool remove_links: causes function to check if best and bad</span>
+<span class="sd">                             are hardlinks before deletion</span>
+<span class="sd">    :param bool no_action: show what files would have been deleted.</span>
+<span class="sd">    :param bool make_links: create a hard link to best from path bad,</span>
+<span class="sd">                           after bad is deleted</span>
+<span class="sd">    :raises OSError: when error occurs modifing the file</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">options</span><span class="p">[</span><span class="s">&#39;remove_links&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">samefile</span><span class="p">(</span><span class="n">best</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">bad</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;hard link skipped </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">bad</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">options</span><span class="p">[</span><span class="s">&#39;no_action&#39;</span><span class="p">]:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;{0} would have been deleted&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bad</span><span class="o">.</span><span class="n">path</span><span class="p">))</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> would have been deleted&#39;</span><span class="p">,</span> <span class="n">bad</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">bad</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> was deleted&#39;</span><span class="p">,</span> <span class="n">bad</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;make_links&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;hard link created: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">bad</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">best</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">bad</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="remove_by_clump"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.remove_by_clump">[docs]</a><span class="k">def</span> <span class="nf">remove_by_clump</span><span class="p">(</span><span class="n">dict_of_names</span><span class="p">,</span> <span class="n">picker</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This function first groups the files by checksum, and then removes all</span>
+<span class="sd">    but one copy of the file.</span>
+
+<span class="sd">    :param list_of_names: list of objects to remove</span>
+<span class="sd">    :type list_of_names:  iterable[Filename]</span>
+<span class="sd">    :param bool interactive: allow the user to pick which file to keep</span>
+<span class="sd">    :param str hash_name: the name of the hash function used to compute the</span>
+<span class="sd">                         checksum</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">for</span> <span class="nb">file</span> <span class="ow">in</span> <span class="n">dict_of_names</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dict_of_names</span><span class="p">[</span><span class="nb">file</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Investigating duplicate key </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">file</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s">&quot;Values for key </span><span class="si">%s</span><span class="s"> are </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">file</span><span class="p">,</span>
+                <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">item</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dict_of_names</span><span class="p">[</span><span class="nb">file</span><span class="p">]]))</span>
+            <span class="n">best</span><span class="p">,</span> <span class="n">rest</span> <span class="o">=</span> <span class="n">picker</span><span class="o">.</span><span class="n">sift</span><span class="p">(</span><span class="n">dict_of_names</span><span class="p">[</span><span class="nb">file</span><span class="p">])</span>
+
+            <span class="k">for</span> <span class="n">bad</span> <span class="ow">in</span> <span class="n">rest</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">remove_file</span><span class="p">(</span><span class="n">bad</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;File deletion error: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> was kept as only copy&#39;</span><span class="p">,</span> <span class="n">best</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s">&#39;Skipping non duplicate checksum </span><span class="si">%s</span><span class="s"> for key </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="nb">file</span><span class="p">,</span>
+                <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">item</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dict_of_names</span><span class="p">[</span><span class="nb">file</span><span class="p">]]))</span>
+
+</div>
+<div class="viewcode-block" id="walk_path"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.walk_path">[docs]</a><span class="k">def</span> <span class="nf">walk_path</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This function steps through the directory structure and identifies</span>
+<span class="sd">    groups for more in depth investigation.</span>
+
+<span class="sd">    :param str path: the path to search for files and begin processing</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;interactive&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+        <span class="n">picker</span> <span class="o">=</span> <span class="n">InteractivePicker</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">picker</span> <span class="o">=</span> <span class="n">ShortestPicker</span><span class="p">()</span>
+
+    <span class="n">checksum_clumper</span> <span class="o">=</span> <span class="n">HashClumper</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s">&#39;hash_function&#39;</span><span class="p">])</span>
+    <span class="n">filepath_clumper</span> <span class="o">=</span> <span class="n">PathClumper</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">options</span><span class="p">[</span><span class="s">&#39;recursive&#39;</span><span class="p">])</span>
+
+    <span class="n">clumps</span> <span class="o">=</span> <span class="n">filepath_clumper</span><span class="o">.</span><span class="n">dump_clumps</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">options</span><span class="p">[</span><span class="s">&#39;skip_regex&#39;</span><span class="p">]:</span>
+        <span class="n">regex_clumper</span> <span class="o">=</span> <span class="n">RegexClumper</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s">&#39;regex_pattern&#39;</span><span class="p">])</span>
+        <span class="n">clumps</span> <span class="o">=</span> <span class="n">regex_clumper</span><span class="o">.</span><span class="n">dump_clumps</span><span class="p">(</span><span class="n">clumps</span><span class="p">)</span>
+
+    <span class="n">clumps</span> <span class="o">=</span> <span class="n">checksum_clumper</span><span class="o">.</span><span class="n">dump_clumps</span><span class="p">(</span><span class="n">clumps</span><span class="p">)</span>
+    <span class="n">remove_by_clump</span><span class="p">(</span><span class="n">clumps</span><span class="p">,</span> <span class="n">picker</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../code.html#twintrimmer.twintrimmer.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">args_param</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    The main function handles the parsing of arguments as well as the</span>
+<span class="sd">    initiation of the logging handlers.</span>
+
+<span class="sd">    positional arguments:</span>
+<span class="sd">      path                  path to check</span>
+
+<span class="sd">    optional arguments:</span>
+<span class="sd">      -h, --help            show this help message and exit</span>
+<span class="sd">      -n, --no-action       show what files would have been deleted</span>
+<span class="sd">      -r, --recursive       search directories recursively</span>
+<span class="sd">      --verbosity VERBOSITY</span>
+<span class="sd">                            set print debug level</span>
+<span class="sd">      --log-file LOG_FILE   write to log file.</span>
+<span class="sd">      --log-level LOG_LEVEL</span>
+<span class="sd">                            set log file debug level</span>
+<span class="sd">      -p PATTERN, --pattern PATTERN</span>
+<span class="sd">                            set filename matching regex</span>
+<span class="sd">      -c, --only-checksum   toggle searching by checksum rather than name first</span>
+<span class="sd">      -i, --interactive     ask for file deletion interactively</span>
+<span class="sd">      --hash-function</span>
+<span class="sd">                            {&#39;sha224&#39;, &#39;sha384&#39;, &#39;sha1&#39;, &#39;md5&#39;, &#39;sha512&#39;, &#39;sha256&#39;}</span>
+<span class="sd">                            set hash function to use for checksums</span>
+<span class="sd">      --make-link           create hard link rather than remove file</span>
+<span class="sd">      --remove-links        remove hardlinks rather than skipping</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">epilog</span> <span class="o">=</span> <span class="s">r&#39;&#39;&#39;</span>
+<span class="s">    examples:</span>
+
+<span class="s">        find matches with default regex:</span>
+
+<span class="s">            $ ./twintrimmer.py -n ~/downloads</span>
+
+<span class="s">        find matches ignoring the extension:</span>
+
+<span class="s">            $  ls examples/</span>
+<span class="s">            Google.html  Google.html~</span>
+<span class="s">            $ ./twintrimmer.py -n -p &#39;(^.+?)(?: \(\d\))*\..+&#39; examples/</span>
+<span class="s">            examples/Google.html~ would have been deleted</span>
+
+<span class="s">        find matches with &quot;__1&quot; added to basename:</span>
+
+<span class="s">            $ ls examples/underscore/</span>
+<span class="s">            file__1.txt  file.txt</span>
+<span class="s">            $ ./twintrimmer.py -n -p &#39;(.+?)(?:__\d)*\..*&#39; examples/underscore/</span>
+<span class="s">            examples/underscore/file__1.txt to be deleted</span>
+<span class="s">    &#39;&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s">&#39;This script currently only works with python 3.4 or greater&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s">&#39;tool for removing duplicate files&#39;</span><span class="p">,</span>
+        <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span><span class="p">,</span>
+        <span class="n">epilog</span><span class="o">=</span><span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="n">epilog</span><span class="p">))</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;path&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;path to check&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-n&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;--no-action&#39;</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                        <span class="n">action</span><span class="o">=</span><span class="s">&#39;store_true&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&#39;show what files would have been deleted&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-r&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;--recursive&#39;</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                        <span class="n">action</span><span class="o">=</span><span class="s">&#39;store_true&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&#39;search directories recursively&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--verbosity&#39;</span><span class="p">,</span>
+                        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&#39;set print debug level&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--log-file&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;write to log file.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--log-level&#39;</span><span class="p">,</span>
+                        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&#39;set log file debug level&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-p&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;--pattern&#39;</span><span class="p">,</span>
+                        <span class="n">dest</span><span class="o">=</span><span class="s">&#39;regex_pattern&#39;</span><span class="p">,</span>
+                        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="s">r&#39;(^.+?)(?: \(\d\))*(\..+)$&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&#39;set filename matching regex&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s">&#39;-c&#39;</span><span class="p">,</span>
+        <span class="s">&#39;--only-checksum&#39;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s">&#39;store_true&#39;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s">&#39;skip_regex&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;toggle searching by checksum rather than name first&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-i&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;--interactive&#39;</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                        <span class="n">action</span><span class="o">=</span><span class="s">&#39;store_true&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&#39;ask for file deletion interactively&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--hash-function&#39;</span><span class="p">,</span>
+                        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="s">&#39;md5&#39;</span><span class="p">,</span>
+                        <span class="n">choices</span><span class="o">=</span><span class="n">hashlib</span><span class="o">.</span><span class="n">algorithms_available</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&#39;set hash function to use for checksums&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--make-links&#39;</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                        <span class="n">action</span><span class="o">=</span><span class="s">&#39;store_true&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&#39;create hard link rather than remove file&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--remove-links&#39;</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                        <span class="n">action</span><span class="o">=</span><span class="s">&#39;store_true&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s">&#39;remove hardlinks rather than skipping&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--version&#39;</span><span class="p">,</span>
+                        <span class="n">action</span><span class="o">=</span><span class="s">&#39;version&#39;</span><span class="p">,</span>
+                        <span class="n">version</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%(prog)s</span><span class="s"> &#39;</span> <span class="o">+</span> <span class="n">__version__</span><span class="p">)</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args_param</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;path was not a directory: &quot;{0}&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">path</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">log_level</span> <span class="o">!=</span> <span class="mi">3</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">log_file</span><span class="p">:</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;Log level set without log file&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">regex_pattern</span> <span class="o">!=</span> <span class="s">r&#39;(^.+?)(?: \(\d\))*(\..+)$&#39;</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">skip_regex</span><span class="p">:</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;Pattern set while skipping regex checking&#39;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">regex_pattern</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">re</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;Invalid regular expression: &quot;{0}&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">regex_pattern</span><span class="p">))</span>
+
+    <span class="n">stream</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">setLevel</span><span class="p">((</span><span class="mi">5</span> <span class="o">-</span> <span class="n">args</span><span class="o">.</span><span class="n">verbosity</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="n">formatter_simple</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
+        <span class="s">&#39;</span><span class="si">%(asctime)s</span><span class="s"> - </span><span class="si">%(levelname)s</span><span class="s"> - </span><span class="si">%(message)s</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter_simple</span><span class="p">)</span>
+    <span class="n">root_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">root_logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+    <span class="n">root_logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">log_file</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">log_file</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">log_file</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s">&quot;Couldn&#39;t open log file: {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+        <span class="n">log_file</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter_simple</span><span class="p">)</span>
+        <span class="n">log_file</span><span class="o">.</span><span class="n">setLevel</span><span class="p">((</span><span class="mi">5</span> <span class="o">-</span> <span class="n">args</span><span class="o">.</span><span class="n">log_level</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="n">root_logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span>
+
+    <span class="n">root_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Args: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+    <span class="n">walk_path</span><span class="p">(</span><span class="o">**</span><span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
+
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+        </div>
+        <div class="sidebar">
+          <h3>Table Of Contents</h3>
+          <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme_link.html">twintrimmer readme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code.html">Documentation for the Code</a></li>
+</ul>
+
+          <div role="search">
+            <h3 style="margin-top: 1.5em;">Search</h3>
+            <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+            </form>
+            <p class="searchtip" style="font-size: 90%">
+                Enter search terms or a module, class or function name.
+            </p>
+          </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+    <div class="footer-wrapper">
+      <div class="footer">
+        <div class="left">
+          <div role="navigation" aria-label="related navigaton">
+            <a href="../../py-modindex.html" title="Python Module Index"
+              >modules</a> |
+            <a href="../../genindex.html" title="General Index"
+              >index</a>
+          </div>
+          <div role="note" aria-label="source link">
+          </div>
+        </div>
+
+        <div class="right">
+          
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Paul Schwendenman.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+  </body>
+</html>
