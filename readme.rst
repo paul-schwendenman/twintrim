@@ -11,11 +11,8 @@ specially those created by downloading in a browser.
 Build Status
 -------------
 
-Master: |master|_
-Release: |release|_
+Build: |master|_
 
-.. |release| image:: https://travis-ci.org/paul-schwendenman/twintrim.svg?branch=release
-.. _release: https://travis-ci.org/paul-schwendenman/twintrim
 .. |master| image:: https://travis-ci.org/paul-schwendenman/twintrim.svg?branch=master
 .. _master: https://travis-ci.org/paul-schwendenman/twintrim
 
@@ -134,6 +131,31 @@ To run tests::
 
     behave
 
+Making the Documentation
+-------------------------
+
+HTML docs
+==========
+
+::
+
+    cd docs/
+    make html
+
+Documentation Coverage Report
+==============================
+
+To make the coverage report appear in the docs::
+
+    cd docs/
+    make coverage
+    make html
+
+Optionally, you can view the coverage report directly after
+running ``make coverage``::
+
+    cat _build/coverage/python.txt
+
 Miscellaneous
 ----------------
 
@@ -163,6 +185,3 @@ Additionally, these algorithms might be available (potentially more)
 For more information on these algorithms please see the hashlib documentation:
 
 	https://docs.python.org/3/library/hashlib.html
-
-
-.. include:: changelog.rst
