@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Twintrimmer &mdash; twintrimmer 0.13 documentation</title>
+    <title>Twintrimmer &mdash; twintrimmer 0.14 documentation</title>
     
     <link rel="stylesheet" href="_static/agogo.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.13',
+        VERSION:     '0.14',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="twintrimmer 0.13 documentation" href="index.html" />
+    <link rel="top" title="twintrimmer 0.14 documentation" href="index.html" />
     <link rel="next" title="Documentation for the Code" href="code.html" />
     <link rel="prev" title="Welcome to twintrimmer’s documentation!" href="index.html" /> 
   </head>
@@ -31,7 +31,7 @@
     <div class="header-wrapper" role="banner">
       <div class="header">
         <div class="headertitle"><a
-          href="index.html">twintrimmer 0.13 documentation</a></div>
+          href="index.html">twintrimmer 0.14 documentation</a></div>
         <div class="rel" role="navigation" aria-label="related navigation">
           <a href="index.html" title="Welcome to twintrimmer’s documentation!"
              accesskey="P">previous</a> |
@@ -62,8 +62,7 @@ specially those created by downloading in a browser.</p>
 </div>
 <div class="section" id="build-status">
 <h2>Build Status<a class="headerlink" href="#build-status" title="Permalink to this headline">¶</a></h2>
-<p>Master: <a class="reference external" href="https://travis-ci.org/paul-schwendenman/twintrim"><img alt="master" src="https://travis-ci.org/paul-schwendenman/twintrim.svg?branch=master" /></a>
-Release: <a class="reference external" href="https://travis-ci.org/paul-schwendenman/twintrim"><img alt="release" src="https://travis-ci.org/paul-schwendenman/twintrim.svg?branch=release" /></a></p>
+<p>Build: <a class="reference external" href="https://travis-ci.org/paul-schwendenman/twintrim"><img alt="master" src="https://travis-ci.org/paul-schwendenman/twintrim.svg?branch=master" /></a></p>
 </div>
 <div class="section" id="modivation">
 <h2>Modivation<a class="headerlink" href="#modivation" title="Permalink to this headline">¶</a></h2>
@@ -219,6 +218,30 @@ the pypi version</td>
 </div>
 </div>
 </div>
+<div class="section" id="making-the-documentation">
+<h2>Making the Documentation<a class="headerlink" href="#making-the-documentation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="html-docs">
+<h3>HTML docs<a class="headerlink" href="#html-docs" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre>cd docs/
+make html
+</pre></div>
+</div>
+</div>
+<div class="section" id="documentation-coverage-report">
+<h3>Documentation Coverage Report<a class="headerlink" href="#documentation-coverage-report" title="Permalink to this headline">¶</a></h3>
+<p>To make the coverage report appear in the docs:</p>
+<div class="highlight-python"><div class="highlight"><pre>cd docs/
+make coverage
+make html
+</pre></div>
+</div>
+<p>Optionally, you can view the coverage report directly after
+running <code class="docutils literal"><span class="pre">make</span> <span class="pre">coverage</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre>cat _build/coverage/python.txt
+</pre></div>
+</div>
+</div>
+</div>
 <div class="section" id="miscellaneous">
 <h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="hash-algorithm-options">
@@ -247,109 +270,6 @@ module on all platforms.</p>
 <div><a class="reference external" href="https://docs.python.org/3/library/hashlib.html">https://docs.python.org/3/library/hashlib.html</a></div></blockquote>
 </div>
 </div>
-<div class="section" id="change-log">
-<h2>Change log<a class="headerlink" href="#change-log" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="v0-13">
-<h3>v0.13<a class="headerlink" href="#v0-13" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>added catch for older pythons</li>
-</ul>
-</div>
-<div class="section" id="v0-12">
-<h3>v0.12<a class="headerlink" href="#v0-12" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>changed the underlying API to be flatter and more extensible
-- created two clases clumpers and pickers
-- clumpers lump groups of file together
-- pickers select one of the group for a purpose (example: to keeprather than delete)</li>
-<li>added coverage and doc generation to builds</li>
-<li>cleaned up documentation</li>
-<li>Re-arranged the readme file.</li>
-<li>Refactor tests a little</li>
-<li>Flattened the walk_path function</li>
-</ul>
-</div>
-<div class="section" id="v0-11">
-<h3>v0.11<a class="headerlink" href="#v0-11" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>added &#8220;&#8211;version&#8221;</li>
-</ul>
-</div>
-<div class="section" id="v0-10">
-<h3>v0.10<a class="headerlink" href="#v0-10" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>moved command line interface to better location</li>
-<li>refactor arg parsing to make it testable</li>
-<li>added tests for argument parsing</li>
-<li>added behavior tests to prevent regression in overall functionality</li>
-</ul>
-</div>
-<div class="section" id="v0-9-1">
-<h3>v0.9.1<a class="headerlink" href="#v0-9-1" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>updated setup.py to fix regression</li>
-</ul>
-</div>
-<div class="section" id="v0-9">
-<h3>v0.9<a class="headerlink" href="#v0-9" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>setup sphinx</li>
-<li>improved documentation</li>
-<li>full test coverage</li>
-</ul>
-</div>
-<div class="section" id="v0-8">
-<h3>v0.8<a class="headerlink" href="#v0-8" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>reformat project</li>
-<li>more tests</li>
-</ul>
-</div>
-<div class="section" id="v0-7">
-<h3>v0.7<a class="headerlink" href="#v0-7" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>isolate argument handling and logging setup</li>
-</ul>
-</div>
-<div class="section" id="v0-6">
-<h3>v0.6<a class="headerlink" href="#v0-6" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>added option for making hard links instead of deleting</li>
-<li>added detection for hard links</li>
-<li>added unit tests</li>
-</ul>
-</div>
-<div class="section" id="v0-5">
-<h3>v0.5<a class="headerlink" href="#v0-5" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>fix some formatting</li>
-</ul>
-</div>
-<div class="section" id="v0-4">
-<h3>v0.4<a class="headerlink" href="#v0-4" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>added option for selecting hashing function</li>
-<li>added some error catching</li>
-</ul>
-</div>
-<div class="section" id="v0-3">
-<h3>v0.3<a class="headerlink" href="#v0-3" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>cleaned up code</li>
-<li>added more doc strings</li>
-</ul>
-</div>
-<div class="section" id="v0-2">
-<h3>v0.2<a class="headerlink" href="#v0-2" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>added flag for no action</li>
-<li>custom pattern matching</li>
-<li>external log file</li>
-<li>interactive mode</li>
-<li>checksum only mode</li>
-</ul>
-</div>
-</div>
 </div>
 
 
@@ -366,11 +286,13 @@ module on all platforms.</p>
 <li class="toctree-l2"><a class="reference internal" href="#modivation">Modivation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-the-tests">Running the Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#making-the-documentation">Making the Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#miscellaneous">Miscellaneous</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#change-log">Change log</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="code.html">Documentation for the Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change log</a></li>
 </ul>
 
           <div role="search">
