@@ -1,14 +1,16 @@
 language: python
+os:
+  - linux
 python:
   - "3.4"
   - "3.5"
+  - "3.5-dev"
   - "nightly"
 cache:
   directories:
     - $HOME/.cache/pip
 install:
   - pip install .
-  - pip install git+https://github.com/jmcgeheeiv/pyfakefs
   - pip install -r requirements-test.txt
 script:
   - python -m nose --with-coverage --cover-package twintrimmer --cover-min-percentage=99 --cover-erase

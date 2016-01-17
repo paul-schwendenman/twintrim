@@ -108,14 +108,6 @@ or using nose::
 
     python3 -m nose --with-json-extended
 
-:note: pyfakefs is not being updated on pypi and should be installed directly
-       from the github repository, due to issues with pyfakefs and python3 in
-       the pypi version
-
-command to install pyfakefs::
-
-    pip install git+https://github.com/jmcgeheeiv/pyfakefs
-
 Code coverage
 ===============
 
