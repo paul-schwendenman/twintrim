@@ -15,7 +15,6 @@ install:
   - pip install git+https://github.com/jmcgeheeiv/pyfakefs
   - pip install -r requirements-test.txt
 script:
-  - python --version
-  - python3 -m nose --with-coverage --cover-package twintrimmer --cover-min-percentage=99 --cover-erase
+  - python -m nose --with-coverage --cover-package twintrimmer --cover-min-percentage=99 --cover-erase
   - behave
   - sphinx-build -n -b html -d docs/_build/doctrees docs/ docs/_build/html

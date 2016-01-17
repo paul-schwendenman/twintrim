@@ -5,7 +5,7 @@ Tests for the twintrimmer module
 import unittest
 import twintrimmer
 from unittest.mock import patch
-import fake_filesystem_unittest
+import pyfakefs.fake_filesystem_unittest as fake_filesystem_unittest
 import os
 import sys
 from io import StringIO
