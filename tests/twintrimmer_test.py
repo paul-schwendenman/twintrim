@@ -1,14 +1,14 @@
 '''
 Tests for the twintrimmer module
 '''
-#pylint: disable=missing-docstring, invalid-name
-import unittest
-import twintrimmer
-from unittest.mock import patch
-import pyfakefs.fake_filesystem_unittest as fake_filesystem_unittest
+#pylint: disable=missing-docstring, invalid-name, too-many-public-methods
+from io import StringIO
 import os
 import sys
-from io import StringIO
+import unittest
+from unittest.mock import patch
+from pyfakefs import fake_filesystem_unittest
+import twintrimmer
 
 
 class TestClumper(unittest.TestCase):
@@ -346,7 +346,7 @@ class TestWalkPath(TestCaseWithFileSystem):
 
     @patch('twintrimmer.twintrimmer.remove_by_clump')
     def test_walk_path_includes_child_directories_and_regex_matching(
-        self, mock_remove):
+            self, mock_remove):
         twintrimmer.walk_path('examples',
                               hash_function='md5',
                               recursive=True,
@@ -356,7 +356,7 @@ class TestWalkPath(TestCaseWithFileSystem):
 
     @patch('twintrimmer.twintrimmer.remove_by_clump')
     def test_walk_path_skips_child_directories_but_not_regex_matching(
-        self, mock_remove):
+            self, mock_remove):
         twintrimmer.walk_path('examples',
                               hash_function='md5',
                               recursive=False,
@@ -366,7 +366,7 @@ class TestWalkPath(TestCaseWithFileSystem):
 
     @patch('twintrimmer.twintrimmer.remove_by_clump')
     def test_walk_path_includes_child_directories_but_not_regex_matching(
-        self, mock_remove):
+            self, mock_remove):
         twintrimmer.walk_path('examples',
                               hash_function='md5',
                               recursive=True,
@@ -377,7 +377,7 @@ class TestWalkPath(TestCaseWithFileSystem):
     @patch('twintrimmer.twintrimmer.InteractivePicker')
     @patch('twintrimmer.twintrimmer.remove_by_clump')
     def test_walk_path_includes_child_directories_interactive(
-        self, mock_interactive, mock_remove):
+            self, mock_interactive, mock_remove):
         twintrimmer.walk_path('examples',
                               hash_function='md5',
                               interactive=True,
@@ -929,7 +929,7 @@ class TestMain(TestCaseWithFileSystem):
         os.chmod('examples/baz.txt', 0o000)
         with self.assertRaises(SystemExit):
             twintrimmer.twintrimmer.main(['.', '--log-file', 'examples/baz.txt'
-                                          ])
+                                         ])
         self.assertEqual(mock_walk_path.call_count, 0)
         self.assertEqual(self.new_out.getvalue(), '')
         self.assertEqual(self.new_err.getvalue(), '')
