@@ -78,7 +78,7 @@ class HashClumper(Clumper):
         try:
             with open(filename.path, 'rb') as file:
                 for chunk in iter(
-                    lambda: file.read(128 * hash_func.block_size), b''):
+                        lambda: file.read(128 * hash_func.block_size), b''):
                     hash_func.update(chunk)
             return (hash_func.hexdigest(), )
         except OSError as err:
@@ -142,7 +142,7 @@ class PathClumper(Clumper):
         return clumps
 
     @staticmethod
-    def create_filename_object_from_string(filename, root):
+    def create_filename_from_string(filename, root):
         '''
         Create a Filename object from a filename
         '''
@@ -166,7 +166,7 @@ class PathClumper(Clumper):
         '''
         LOGGER.info("Creating Filename objects")
         for filename in filenames:
-            yield cls.create_filename_object_from_string(filename, root)
+            yield cls.create_filename_from_string(filename, root)
 
 
 class Picker():
