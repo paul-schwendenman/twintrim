@@ -9,9 +9,14 @@ python:
 cache:
   directories:
     - $HOME/.cache/pip
+before_install:
+  - python --version
+  - uname -a
+  - lsb_release -a
 install:
   - pip install .
   - pip install -r requirements-test.txt
+  - pip freeze
 script:
   - python -m nose --with-coverage --cover-package twintrimmer --cover-min-percentage=99 --cover-erase
   - behave
