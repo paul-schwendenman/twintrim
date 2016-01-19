@@ -181,6 +181,14 @@ class Picker():
         '''
         divide the clumps returning the best and the rest
         '''
+        best = self.compare(clump)
+        rest = clump - {best}
+        return best, rest
+
+    def compare(self, clump):
+        '''
+        return the best of the clump
+        '''
         raise NotImplementedError
 
 
@@ -192,13 +200,11 @@ class ShortestPicker(Picker):
     def __init__(self, *args, **kwargs):
         super(ShortestPicker, self).__init__(*args, **kwargs)
 
-    def sift(self, clump):
+    def compare(self, clump):
         '''
         Compare all names to find the best one
         '''
-        best = functools.reduce(self.pick_shorter_name, clump)
-        rest = clump - {best}
-        return best, rest
+        return functools.reduce(self.pick_shorter_name, clump)
 
     @staticmethod
     def pick_shorter_name(file1, file2):
@@ -237,6 +243,27 @@ class ShortestPicker(Picker):
             return file1
         else:
             return file2
+
+
+class ModificationPicker(Picker):
+    '''
+    Separate by modification time stamp
+    '''
+    def compare(self, clump):
+        '''
+        Compare all names to find the best one
+        '''
+        return functools.reduce(self.pick_older_file, clump)
+
+    @staticmethod
+    def pick_older_file(item_a, item_b):
+        '''
+        Finds the oldest modification time
+        '''
+        if os.stat(item_a.path).st_mtime < os.stat(item_b.path).st_mtime:
+            return item_a
+        else:
+            return item_b
 
 
 class InteractivePicker(ShortestPicker):
@@ -351,8 +378,13 @@ def walk_path(path, **options):
     :param str path: the path to search for files and begin processing
     '''
     if options.get('interactive', False):
+        LOGGER.info('Interactive mode')
         picker = InteractivePicker()
+    elif options.get('keep_oldest', False):
+        LOGGER.info('Keep oldest mode')
+        picker = ModificationPicker()
     else:
+        LOGGER.info('Default to shortest filename mode')
         picker = ShortestPicker()
 
     checksum_clumper = HashClumper(options['hash_function'])
@@ -463,6 +495,11 @@ def main(args_param=None):
                         default=False,
                         action='store_true',
                         help='ask for file deletion interactively')
+
+    parser.add_argument('--keep-oldest',
+                        default=False,
+                        action='store_true',
+                        help='keep file with oldest modification date')
 
     parser.add_argument('--hash-function',
                         type=str,

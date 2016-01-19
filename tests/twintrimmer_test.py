@@ -155,6 +155,45 @@ class TestShortestPicker(unittest.TestCase):
         self.assertEqual(best, self.file)
         self.assertEqual(rest, {self.file1, self.file2})
 
+class TestModificationPicker(fake_filesystem_unittest.TestCase):
+    def setUp(self):
+        self.setUpPyfakefs()
+        self.fs.CreateFile('examples/file2.txt', contents='foobar\n')
+        self.fs.CreateFile('examples/file1.txt', contents='foobar\n')
+        self.fs.CreateFile('examples/file.txt', contents='foobar\n')
+        filenames = ['file.txt', 'file1.txt', 'file2.txt']
+        root = 'examples/'
+        self.file, self.file1, self.file2 = list(
+            twintrimmer.twintrimmer.PathClumper.create_filenames_from_list(
+                filenames, root))
+        self.change_modification_time(self.file2.path, 2)
+        self.change_modification_time(self.file1.path, 1)
+        self.filenames = {self.file, self.file1, self.file2}
+        self.picker = twintrimmer.twintrimmer.ModificationPicker()
+
+    @staticmethod
+    def change_modification_time(filepath, mtime_delta):
+        statinfo = os.stat(filepath)
+        mtime = statinfo.st_mtime - mtime_delta
+        atime = statinfo.st_atime
+        os.utime(filepath, (atime, mtime))
+
+    def test_file_1_txt_older_than_file_txt(self):
+        print(os.stat(self.file.path))
+        print(os.stat(self.file1.path))
+        print(os.stat(self.file2.path))
+        self.assertEqual(self.picker.pick_older_file(self.file, self.file1),
+                         self.file1)
+
+    def test_file_txt_not_older_than_file_1_txt(self):
+        self.assertEqual(self.picker.pick_older_file(self.file1, self.file),
+                         self.file1)
+
+    def test_sift_finds_shortest_name(self):
+        best, rest = self.picker.sift(self.filenames)
+        self.assertEqual(best, self.file2)
+        self.assertEqual(rest, {self.file, self.file1})
+
 
 class TestRegexClumper(unittest.TestCase):
     def setUp(self):
@@ -386,6 +425,19 @@ class TestWalkPath(TestCaseWithFileSystem):
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)')
         self.assertEqual(mock_remove.call_count, 1)
         self.assertEqual(mock_interactive.call_count, 1)
+
+    @patch('twintrimmer.twintrimmer.ModificationPicker')
+    @patch('twintrimmer.twintrimmer.remove_by_clump')
+    def test_walk_path_calls_modification_picker(
+            self, mock_modification, mock_remove):
+        twintrimmer.walk_path('examples',
+                              hash_function='md5',
+                              keep_oldest=True,
+                              recursive=True,
+                              skip_regex=False,
+                              regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)')
+        self.assertEqual(mock_remove.call_count, 1)
+        self.assertEqual(mock_modification.call_count, 1)
 
 
 class TestRemoveByClump(TestCaseWithFileSystem):
@@ -619,6 +671,7 @@ class TestMain(TestCaseWithFileSystem):
             make_links=False,
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
+            keep_oldest=False,
             no_action=False)
         self.assertEqual(self.new_out.getvalue(), '')
         self.assertEqual(self.new_err.getvalue(), '')
@@ -638,6 +691,7 @@ class TestMain(TestCaseWithFileSystem):
             make_links=False,
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
+            keep_oldest=False,
             no_action=True)
         self.assertEqual(self.new_out.getvalue(), '')
         self.assertEqual(self.new_err.getvalue(), '')
@@ -657,6 +711,7 @@ class TestMain(TestCaseWithFileSystem):
             make_links=False,
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
+            keep_oldest=False,
             no_action=True)
         self.assertEqual(self.new_out.getvalue(), '')
         self.assertEqual(self.new_err.getvalue(), '')
@@ -677,6 +732,7 @@ class TestMain(TestCaseWithFileSystem):
             make_links=False,
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
+            keep_oldest=False,
             no_action=False)
         self.assertEqual(self.new_out.getvalue(), '')
         self.assertEqual(self.new_err.getvalue(), '')
@@ -696,6 +752,7 @@ class TestMain(TestCaseWithFileSystem):
             make_links=False,
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
+            keep_oldest=False,
             no_action=False)
         self.assertEqual(self.new_out.getvalue(), '')
         self.assertEqual(self.new_err.getvalue(), '')
@@ -715,6 +772,7 @@ class TestMain(TestCaseWithFileSystem):
             make_links=False,
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
+            keep_oldest=False,
             no_action=False)
         self.assertEqual(self.new_out.getvalue(), '')
         self.assertEqual(self.new_err.getvalue(), '')
@@ -734,6 +792,7 @@ class TestMain(TestCaseWithFileSystem):
             make_links=False,
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
+            keep_oldest=False,
             no_action=False)
         self.assertEqual(self.new_out.getvalue(), '')
         self.assertEqual(self.new_err.getvalue(), '')
@@ -753,6 +812,7 @@ class TestMain(TestCaseWithFileSystem):
             make_links=True,
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
+            keep_oldest=False,
             no_action=False)
         self.assertEqual(self.new_out.getvalue(), '')
         self.assertEqual(self.new_err.getvalue(), '')
@@ -772,6 +832,7 @@ class TestMain(TestCaseWithFileSystem):
             make_links=False,
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
+            keep_oldest=False,
             no_action=False)
         self.assertEqual(self.new_out.getvalue(), '')
         self.assertEqual(self.new_err.getvalue(), '')
@@ -791,6 +852,7 @@ class TestMain(TestCaseWithFileSystem):
             make_links=False,
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
+            keep_oldest=False,
             no_action=False)
         self.assertEqual(self.new_out.getvalue(), '')
         self.assertEqual(self.new_err.getvalue(), '')
@@ -810,6 +872,27 @@ class TestMain(TestCaseWithFileSystem):
             make_links=False,
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=False,
+            keep_oldest=False,
+            no_action=False)
+        self.assertEqual(self.new_out.getvalue(), '')
+        self.assertEqual(self.new_err.getvalue(), '')
+
+    @patch('twintrimmer.twintrimmer.walk_path')
+    def test_keep_oldest_mode_passed_correctly(self, mock_walk_path):
+        twintrimmer.twintrimmer.main(['.', '--keep-oldest'])
+        mock_walk_path.assert_called_with(
+            log_file=None,
+            log_level=3,
+            interactive=False,
+            hash_function='md5',
+            remove_links=False,
+            verbosity=1,
+            recursive=False,
+            path='.',
+            make_links=False,
+            regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
+            skip_regex=False,
+            keep_oldest=True,
             no_action=False)
         self.assertEqual(self.new_out.getvalue(), '')
         self.assertEqual(self.new_err.getvalue(), '')
@@ -829,6 +912,7 @@ class TestMain(TestCaseWithFileSystem):
             make_links=False,
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=True,
+            keep_oldest=False,
             no_action=False)
         self.assertEqual(self.new_out.getvalue(), '')
         self.assertEqual(self.new_err.getvalue(), '')
@@ -848,6 +932,7 @@ class TestMain(TestCaseWithFileSystem):
             make_links=False,
             regex_pattern='(^.+?)(?: \\(\\d\\))*(\\..+)$',
             skip_regex=True,
+            keep_oldest=False,
             no_action=False)
         self.assertEqual(self.new_out.getvalue(), '')
         self.assertEqual(self.new_err.getvalue(), '')
@@ -867,6 +952,7 @@ class TestMain(TestCaseWithFileSystem):
             make_links=False,
             regex_pattern=r'(^.+?)(?:\..+)$',
             skip_regex=False,
+            keep_oldest=False,
             no_action=False)
         self.assertEqual(self.new_out.getvalue(), '')
         self.assertEqual(self.new_err.getvalue(), '')
