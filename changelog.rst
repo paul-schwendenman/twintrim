@@ -4,6 +4,7 @@ Change log
 v0.15 - pre
 ================
 
+- added a modification time based picker
 - updated dependencies
 - cleaned up code a bit
 

@@ -21,7 +21,7 @@ Clumpers
     :members: make_clump, dump_clumps
 
 .. autoclass:: twintrimmer.twintrimmer.PathClumper
-    :members: make_clump, dump_clumps, create_filename_object_from_string, create_filenames_from_list
+    :members: make_clump, dump_clumps, create_filename_from_string, create_filenames_from_list
 
 .. autoclass:: twintrimmer.twintrimmer.RegexClumper
     :members: make_clump, dump_clumps
@@ -36,9 +36,11 @@ Pickers
 --------
 
 .. autoclass:: twintrimmer.twintrimmer.Picker
-    :members: sift
+    :members: sift, compare
 .. autoclass:: twintrimmer.twintrimmer.ShortestPicker
-    :members: sift, pick_shorter_name
+    :members: sift, compare, pick_shorter_name
+.. autoclass:: twintrimmer.twintrimmer.ModificationPicker
+    :members: sift, compare, pick_older_file
 .. autoclass:: twintrimmer.twintrimmer.InteractivePicker
     :members: sift
 
