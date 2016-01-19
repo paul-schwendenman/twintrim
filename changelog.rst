@@ -1,6 +1,12 @@
 Change log
 ------------------
 
+v0.15 - pre
+================
+
+- updated dependencies
+- cleaned up code a bit
+
 v0.14
 ================
 
