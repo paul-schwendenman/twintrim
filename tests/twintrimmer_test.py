@@ -124,6 +124,18 @@ class TestHashClumper(fake_filesystem_unittest.TestCase):
         self.assertEqual(len(filenames), 0)
 
 
+class TestInodeClumper(unittest.TestCase):
+    def setUp(self):
+        self.clumper = twintrimmer.twintrimmer.InodeClumper()
+
+    @patch('os.stat')
+    def test_no_action_does_no_action(self, mock_stat):
+        mock_stat.st_ino.side_effect = 10
+        file = twintrimmer.Filename(None, None, None, 'examples/foo.txt')
+        self.clumper.make_clump(file)
+        self.assertEqual(mock_stat.call_count, 1)
+
+
 class TestShortestPicker(unittest.TestCase):
     def setUp(self):
         filenames = ['file.txt', 'file1.txt', 'file2.txt']

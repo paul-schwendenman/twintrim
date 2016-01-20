@@ -108,6 +108,17 @@ class RegexClumper(Clumper):
         return match.groups()
 
 
+class InodeClumper(Clumper):
+    '''
+    Clumper Subclass for grouping by inode
+    '''
+    def make_clump(self, filename):
+        '''
+        Return tuple of the inode number
+        '''
+        return (os.stat(filename.path).st_ino,)
+
+
 class PathClumper(Clumper):
     '''
     Clumper for grouping by path
