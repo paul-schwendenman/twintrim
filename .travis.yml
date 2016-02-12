@@ -15,7 +15,7 @@ before_install:
   - lsb_release -a
 install:
   - pip install .
-  - pip install -r requirements-dev.txt
+  - pip install -r dev-requirements.txt
   - pip freeze
 script:
   - python -m nose --with-coverage --cover-package twintrimmer --cover-min-percentage=99 --cover-erase
