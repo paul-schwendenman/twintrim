@@ -115,7 +115,7 @@ Code coverage
 
 To show the test coverage::
 
-    pytest --cov=twintrimmer --cov-fail-under=100
+    pytest --cov=twintrimmer
 
 Behavior tests
 ===============
