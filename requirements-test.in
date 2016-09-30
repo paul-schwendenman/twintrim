@@ -1,0 +1,7 @@
+Sphinx
+behave
+coverage
+mock
+pyfakefs
+pytest
+pytest-cov

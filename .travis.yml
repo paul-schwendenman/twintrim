@@ -18,6 +18,6 @@ install:
   - pip install -r requirements-test.txt
   - pip freeze
 script:
-  - python -m nose --with-coverage --cover-package twintrimmer --cover-min-percentage=99 --cover-erase
+  - pytest --cov=twintrimmer --cov-fail-under=100
   - behave
   - sphinx-build -n -b html -d docs/_build/doctrees docs/ docs/_build/html
