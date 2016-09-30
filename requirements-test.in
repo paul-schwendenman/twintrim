@@ -2,5 +2,6 @@ Sphinx
 behave
 coverage
 mock
-nose
 pyfakefs
+pytest
+pytest-cov

@@ -103,18 +103,19 @@ Unit tests
 
 To run tests::
 
+    pytest
+
+or using unittest discover::
+
     python -m unittest discover -p '*_test.py'
 
-or using nose::
-
-    python3 -m nose --with-json-extended
 
 Code coverage
 ===============
 
 To show the test coverage::
 
-    python -m nose --with-coverage --cover-package twintrimmer.twintrimmer
+    pytest --cov=twintrimmer --cov-fail-under=100
 
 Behavior tests
 ===============
