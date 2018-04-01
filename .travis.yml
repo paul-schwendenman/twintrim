@@ -2,15 +2,16 @@ language: python
 python:
   - "3.4"
   - "3.5"
+  - "3.6"
   - "nightly"
 cache:
   directories:
     - $HOME/.cache/pip
 install:
+  - pip install pipenv
+  - pipenv install --dev --three
   - pip install .
-  - pip install git+https://github.com/jmcgeheeiv/pyfakefs
-  - pip install -r requirements-test.txt
 script:
-  - python -m nose --with-coverage --cover-package twintrimmer --cover-min-percentage=99 --cover-erase
-  - behave
-  - sphinx-build -n -b html -d docs/_build/doctrees docs/ docs/_build/html
+  - pipenv run -- python -m nose --with-coverage --cover-package twintrimmer --cover-min-percentage=99 --cover-erase
+  - pipenv run -- behave
+  - pipenv run -- sphinx-build -n -b html -d docs/_build/doctrees docs/ docs/_build/html
