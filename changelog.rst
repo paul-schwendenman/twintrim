@@ -1,6 +1,15 @@
 Change log
 ------------------
 
+v0.15 - pre
+================
+
+- added a modification time based picker
+- updated dependencies
+- cleaned up code a bit
+- migrate to pytest and reach 100% coverage
+- update dependencies
+
 v0.14
 ================
 

@@ -39,3 +39,12 @@ Feature: Remove duplicate files
     And "foo (2).txt" still exists
     But "foo (3).txt" is removed
     And "foo (4).txt" is removed
+
+  Scenario: Program prefers older files in timestamp mode
+    Given we have "twintrim" installed
+    And we have two matching files "foo.txt" and "foo (1).txt"
+    And "foo (1).txt" was last modified 10 minutes ago
+    And "foo.txt" was last modified 5 minutes ago
+    When we run "twintrim" with args: "--keep-oldest"
+    Then "foo (1).txt" still exists
+    But "foo.txt" is removed

@@ -54,3 +54,11 @@ def step_impl(context, program):
 @when(u'we run "{program}" with args: "{args}"')
 def step_impl(context, program, args):
     run_program(' '.join([program, args, context.path]))
+
+@given(u'"{filename}" was last modified {minutes} minutes ago')
+def step_impl(context, filename, minutes):
+    filepath = os.path.join(context.path, filename)
+    statinfo = os.stat(filepath)
+    mtime = statinfo.st_mtime - 60 * int(minutes)
+    atime = statinfo.st_atime
+    os.utime(filepath, (atime, mtime))

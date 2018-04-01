@@ -11,10 +11,9 @@ specially those created by downloading in a browser.
 Build Status
 -------------
 
-Build: |master|_
-
-.. |master| image:: https://travis-ci.org/paul-schwendenman/twintrim.svg?branch=master
-.. _master: https://travis-ci.org/paul-schwendenman/twintrim
+.. image:: https://travis-ci.org/paul-schwendenman/twintrim.svg?branch=master
+    :target: https://travis-ci.org/paul-schwendenman/twintrim
+    :alt: Build status
 
 Modivation
 -----------
@@ -54,6 +53,7 @@ optional arguments:
                         set filename matching regex
   -c, --only-checksum   toggle searching by checksum rather than name first
   -i, --interactive     ask for file deletion interactively
+  --keep-oldest         keep file with oldest modification date
   --hash-function
                         {'sha224', 'sha384', 'sha1', 'md5', 'sha512', 'sha256'}
                         set hash function to use for checksums
@@ -103,18 +103,19 @@ Unit tests
 
 To run tests::
 
+    pytest
+
+or using unittest discover::
+
     python -m unittest discover -p '*_test.py'
 
-or using nose::
-
-    python3 -m nose
 
 Code coverage
 ===============
 
 To show the test coverage::
 
-    python -m nose --with-coverage --cover-package twintrimmer.twintrimmer
+    pytest --cov=twintrimmer
 
 Behavior tests
 ===============
