@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+
+[dev-packages]
+behave = "==1.2.5"
+coverage = "==4.2"
+mock = "==2.0.0"
+pyfakefs = "==2.7"
+pytest-cov = "==2.3.1"
+pytest = "==3.0.3"
+Sphinx = "==1.4.6"
+
+[requires]
+python_version = "3.6"

@@ -1,11 +1,11 @@
 '''
 Tests for the twintrimmer module
 '''
-#pylint: disable=missing-docstring, invalid-name, too-many-public-methods
+# pylint: disable=missing-docstring, invalid-name, too-many-public-methods
 from io import StringIO
+import unittest
 import os
 import sys
-import unittest
 from unittest.mock import patch
 from pyfakefs import fake_filesystem_unittest
 import twintrimmer
@@ -517,6 +517,7 @@ class TestWalkPathIntegration(TestCaseWithFileSystem):
                               skip_regex=False,
                               regex_pattern=r'(^.+?)(?: \(\d\))*(\..+)',
                               recursive=False,
+                              no_action=True,
                               remove_links=False)
         self.assertTrue(os.path.exists('examples/foo (1).txt'))
 

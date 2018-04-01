@@ -4,7 +4,7 @@ os:
 python:
   - "3.4"
   - "3.5"
-  - "3.5-dev"
+  - "3.6"
   - "nightly"
 cache:
   directories:
@@ -14,9 +14,9 @@ before_install:
   - uname -a
   - lsb_release -a
 install:
+  - pip install pipenv
+  - pipenv install --dev --three
   - pip install .
-  - pip install -r requirements-test.txt
-  - pip freeze
 script:
   - pytest --cov=twintrimmer --cov-fail-under=100
   - behave
